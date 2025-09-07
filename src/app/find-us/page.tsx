@@ -1,24 +1,16 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import HeroSection from '@/components/HeroSection';
 
 export default function FindUsPage() {
   return (
     <div className="min-h-screen bg-cream">
-      {/* Hero Section */}
-      <section 
-        className="relative h-64 bg-cover bg-center flex items-center justify-center"
-        style={{
-          backgroundImage: `url('/api/placeholder/1200/400')`,
-          backgroundColor: '#8B4513' // Fallback brown color similar to supermarket shelves
-        }}
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        <div className="relative text-center text-white px-4">
-          <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
-            We are available Online or in Supermarket and Groceries store near you!
-          </h1>
-        </div>
-      </section>
+      <HeroSection 
+        title="Agriko"
+        subtitle="Find Us"
+        description="We are available Online or in Supermarket and Groceries store near you! Discover our premium organic products at your nearest retail location."
+        showButtons={false}
+      />
 
       {/* Partners Section */}
       <section className="py-16 bg-cream">
@@ -56,8 +48,8 @@ export default function FindUsPage() {
                 <p className="text-sm text-neutral-600">Metro Danao</p>
                 <p className="text-sm text-neutral-600">Metro Bacolod</p>
                 <p className="text-sm text-neutral-600">Metro Ayala</p>
-                <p className="text-sm text-neutral-600">Metro Carmen (Fresh N' Easy Carmen)</p>
-                <p className="text-sm text-neutral-600">Metro Banilad (Fresh N' Easy Banilad)</p>
+                <p className="text-sm text-neutral-600">Metro Carmen (Fresh N&#39; Easy Carmen)</p>
+                <p className="text-sm text-neutral-600">Metro Banilad (Fresh N&#39; Easy Banilad)</p>
                 <p className="text-sm text-neutral-600">Metro IT Park</p>
                 <p className="text-sm text-neutral-600">Metro Canduman</p>
                 <p className="text-sm text-neutral-600">Metro Banawa</p>

@@ -4,16 +4,18 @@ import Image from 'next/image';
 import { getOrderById } from '@/lib/woocommerce';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
 import type { Metadata } from 'next';
+import HeroSection from '@/components/HeroSection';
 
 interface OrderPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // Generate metadata for the order page
 export async function generateMetadata({ params }: OrderPageProps): Promise<Metadata> {
-  const orderId = parseInt(params.id);
+  const { id } = await params;
+  const orderId = parseInt(id);
   
   if (isNaN(orderId)) {
     return {
@@ -46,7 +48,8 @@ export async function generateMetadata({ params }: OrderPageProps): Promise<Meta
 }
 
 export default async function OrderPage({ params }: OrderPageProps) {
-  const orderId = parseInt(params.id);
+  const { id } = await params;
+  const orderId = parseInt(id);
   
   if (isNaN(orderId)) {
     notFound();
@@ -80,7 +83,14 @@ export default async function OrderPage({ params }: OrderPageProps) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <HeroSection 
+        title="Agriko"
+        subtitle="Order Confirmation"
+        description={`Thank you for your order #${order.number}! Your organic products will be prepared and delivered fresh from our farm.`}
+        showButtons={false}
+      />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Success Banner */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
         <div className="flex items-center">
@@ -92,7 +102,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
           <div className="ml-3">
             <h1 className="text-2xl font-bold text-green-800">Order Confirmed!</h1>
             <p className="text-green-700 mt-1">
-              Thank you for your order. We've received your order and will begin processing it shortly.
+              Thank you for your order. We&#39;ve received your order and will begin processing it shortly.
             </p>
           </div>
         </div>
@@ -244,19 +254,19 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
         {/* Order Status & Next Steps */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">What's Next?</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">What&#39;s Next?</h3>
           <div className="text-sm text-gray-600 space-y-2">
             {order.status === 'pending' && (
               <>
-                <p>• We're processing your order</p>
-                <p>• You'll receive a confirmation email shortly</p>
-                <p>• We'll notify you when your order ships</p>
+                <p>• We&#39;re processing your order</p>
+                <p>• You&#39;ll receive a confirmation email shortly</p>
+                <p>• We&#39;ll notify you when your order ships</p>
               </>
             )}
             {order.status === 'processing' && (
               <>
                 <p>• Your order is being prepared</p>
-                <p>• We'll notify you when your order ships</p>
+                <p>• We&#39;ll notify you when your order ships</p>
                 <p>• Expected shipping: 1-2 business days</p>
               </>
             )}
@@ -300,6 +310,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
           Contact Support
         </Link>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

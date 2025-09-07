@@ -13,11 +13,12 @@ import { WCProduct } from '@/types/woocommerce';
 import AddToCartButton from './AddToCartButton';
 import ProductGallery from './ProductGallery';
 import RelatedProducts from './RelatedProducts';
+import Link from 'next/link';
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // Generate static params for ISR
@@ -35,8 +36,9 @@ export async function generateStaticParams() {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: ProductPageProps) {
+  const { slug } = await params;
   try {
-    const product = await getProductBySlug(params.slug);
+    const product = await getProductBySlug(slug);
     
     if (!product) {
       return {
@@ -142,9 +144,9 @@ async function ProductContent({ slug }: { slug: string }) {
       availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       url: `/product/${product.slug}`
     },
-    aggregateRating: product.average_rating ? {
+    aggregateRating: product.average_rating && String(product.average_rating) !== '0' ? {
       '@type': 'AggregateRating',
-      ratingValue: product.average_rating,
+      ratingValue: String(product.average_rating),
       reviewCount: product.rating_count || 0
     } : undefined,
   };
@@ -161,18 +163,18 @@ async function ProductContent({ slug }: { slug: string }) {
         <nav className="flex mb-8" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-3">
             <li className="inline-flex items-center">
-              <a href="/" className="text-gray-700 hover:text-primary-600">
+              <Link href="/" className="text-gray-700 hover:text-primary-600">
                 Home
-              </a>
+              </Link>
             </li>
             <li>
               <div className="flex items-center">
                 <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                 </svg>
-                <a href="/products" className="ml-1 text-gray-700 hover:text-primary-600 md:ml-2">
+                <Link href="/products" className="ml-1 text-gray-700 hover:text-primary-600 md:ml-2">
                   Products
-                </a>
+                </Link>
               </div>
             </li>
             {product.categories && product.categories.length > 0 && (
@@ -336,10 +338,11 @@ async function ProductContent({ slug }: { slug: string }) {
   );
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { slug } = await params;
   return (
     <Suspense fallback={<ProductSkeleton />}>
-      <ProductContent slug={params.slug} />
+      <ProductContent slug={slug} />
     </Suspense>
   );
 }

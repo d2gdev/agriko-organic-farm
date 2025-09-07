@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { createOrder } from '@/lib/woocommerce';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
 import { CheckoutData, WCAddress } from '@/types/woocommerce';
+import HeroSection from '@/components/HeroSection';
 
 interface FormErrors {
   [key: string]: string;
@@ -59,11 +60,11 @@ export default function CheckoutPage() {
     // Billing validation
     if (!billingData.first_name.trim()) newErrors.billing_first_name = 'First name is required';
     if (!billingData.last_name.trim()) newErrors.billing_last_name = 'Last name is required';
-    if (!billingData.email.trim()) newErrors.billing_email = 'Email is required';
+    if (!billingData.email?.trim()) newErrors.billing_email = 'Email is required';
     if (!billingData.address_1.trim()) newErrors.billing_address_1 = 'Address is required';
     if (!billingData.city.trim()) newErrors.billing_city = 'City is required';
     if (!billingData.postcode.trim()) newErrors.billing_postcode = 'ZIP/Postal code is required';
-    if (!billingData.phone.trim()) newErrors.billing_phone = 'Phone number is required';
+    if (!billingData.phone || !billingData.phone.trim()) newErrors.billing_phone = 'Phone number is required';
 
     // Email validation
     if (billingData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(billingData.email)) {
@@ -142,8 +143,15 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+    <>
+      <HeroSection 
+        title="Agriko"
+        subtitle="Secure Checkout"
+        description="Complete your order and enjoy premium organic products delivered fresh from our farm to your table."
+        showButtons={false}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
 
       {errors.general && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -581,6 +589,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       </form>
-    </div>
+      </div>
+    </>
   );
 }

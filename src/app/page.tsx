@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { getAllProducts, getFeaturedProducts } from '@/lib/woocommerce';
 import ProductCard from '@/components/ProductCard';
+import HeroSection from '@/components/HeroSection';
 import Link from 'next/link';
 
 // Loading component for products grid
@@ -93,50 +94,11 @@ async function LatestProducts() {
 export default function HomePage() {
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-700 to-primary-900 text-white overflow-hidden">
-        {/* Background image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ 
-            backgroundImage: "url('/hero.png')",
-            backgroundAttachment: "fixed",
-            backgroundRepeat: "no-repeat"
-          }}
-        ></div>
-        <div className="absolute inset-0 bg-black bg-opacity-60"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 leading-tight">
-              Agriko
-              <span className="block text-accent-500">From Our Farm, To Your Cup</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-primary-100 mb-10 max-w-4xl mx-auto leading-relaxed font-light">
-              Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <a
-                href="#latest-products"
-                className="btn-primary text-lg px-10 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
-              >
-                Shop Our Products
-              </a>
-              <Link
-                href="/categories"
-                className="border-2 border-white text-white px-10 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-700 transition-all duration-300 transform hover:-translate-y-0.5"
-              >
-                View Product Categories
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* Bottom wave decoration */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg className="w-full h-16 text-cream" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="currentColor">
-            <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"></path>
-          </svg>
-        </div>
-      </section>
+      <HeroSection 
+        title="Agriko"
+        subtitle="From Our Farm, To Your Cup"
+        description="Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm."
+      />
 
       {/* Featured Products Section */}
       <section className="py-20 bg-white">
@@ -213,7 +175,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-primary-700 bg-opacity-90"></div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <blockquote className="text-2xl md:text-3xl font-serif italic text-white leading-relaxed mb-8">
-            "Agriko's organic rice varieties and herbal powders have transformed our family's health routine. The quality is exceptional - especially their Black Rice and Moringa powder!"
+            &quot;Agriko&#39;s organic rice varieties and herbal powders have transformed our family&#39;s health routine. The quality is exceptional - especially their Black Rice and Moringa powder!&quot;
           </blockquote>
           <div className="text-accent-400">
             <p className="font-semibold text-lg mb-1">Maria Santos</p>

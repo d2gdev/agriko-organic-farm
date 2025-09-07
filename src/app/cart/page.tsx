@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
+import HeroSection from '@/components/HeroSection';
 
 export default function CartPage() {
   const { state, updateQuantity, removeItem } = useCart();
@@ -20,28 +21,45 @@ export default function CartPage() {
 
   if (state.items.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center">
-          <svg className="mx-auto h-24 w-24 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m4.5-5a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z" />
-          </svg>
-          <h1 className="text-3xl font-bold text-gray-900 mt-4 mb-2">Your cart is empty</h1>
-          <p className="text-lg text-gray-600 mb-8">
-            Start shopping to fill your cart with great products.
-          </p>
-          <Link
-            href="/"
-            className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
-          >
-            Continue Shopping
-          </Link>
+      <>
+        <HeroSection 
+          title="Agriko"
+          subtitle="Shopping Cart"
+          description="Your cart is currently empty. Browse our premium organic products and add them to your cart."
+          primaryButtonText="Start Shopping"
+          primaryButtonHref="/"
+          showButtons={false}
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center">
+            <svg className="mx-auto h-24 w-24 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m4.5-5a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z" />
+            </svg>
+            <h1 className="text-3xl font-bold text-gray-900 mt-4 mb-2">Your cart is empty</h1>
+            <p className="text-lg text-gray-600 mb-8">
+              Start shopping to fill your cart with great products.
+            </p>
+            <Link
+              href="/"
+              className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+            >
+              Continue Shopping
+            </Link>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <HeroSection 
+        title="Agriko"
+        subtitle="Shopping Cart"
+        description="Review your selected organic products before checkout. Quality farm-fresh items delivered to your door."
+        showButtons={false}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
@@ -250,6 +268,7 @@ export default function CartPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

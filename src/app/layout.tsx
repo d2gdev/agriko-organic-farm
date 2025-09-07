@@ -48,9 +48,15 @@ export const metadata: Metadata = {
     description: 'Premium organic rice varieties, pure herbal powders, and health blends from our sustainable family farm.',
     images: ['/og-image.jpg'],
   },
-  viewport: 'width=device-width, initial-scale=1',
-  themeColor: '#389d65',
 };
+
+export async function generateViewport() {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    themeColor: '#389d65',
+  };
+}
 
 export default function RootLayout({
   children,

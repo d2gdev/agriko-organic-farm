@@ -24,6 +24,8 @@ export interface WCProduct {
   weight: string;
   dimensions: WCDimensions;
   meta_data: WCMetaData[];
+  average_rating: string;
+  rating_count: number;
 }
 
 export interface WCCategory {
