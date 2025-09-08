@@ -30,6 +30,11 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise
 // Generic API request function with timeout and retry
 async function wcRequest<T>(endpoint: string, options: RequestInit = {}, retries: number = 2): Promise<T> {
   if (!WC_API_URL) {
+    // During build time or when API is unavailable, return empty array for GET requests
+    if (!options.method || options.method === 'GET') {
+      console.warn('WooCommerce API URL not available during build, returning empty result');
+      return [] as unknown as T;
+    }
     throw new Error('Missing WooCommerce API URL. Please check your environment variables.');
   }
   
