@@ -15,8 +15,8 @@
     "optimize-images:report": "node scripts/smart-image-optimizer.js --report",
     "build:smart": "npm run optimize-images && npm run build:export",
     "deploy:git": "git add -A && git commit -m \"Deploy update\" && git push",
-    "deploy:sync": "ssh root@143.42.189.57 'cd /var/www/shop-git && git pull && cp -r out/* /var/www/shop/ && echo \"✅ Files synced to /var/www/shop\"'",
-    "deploy": "npm run build:export && npm run deploy:git && npm run deploy:sync",
+    "deploy:files": "scp -r out/* root@143.42.189.57:/var/www/shop/",  
+    "deploy": "npm run build:export && npm run deploy:git && npm run deploy:files",
     "deploy:full": "npm run lint && npm run type-check && npm run deploy",
     "image:report": "npm run optimize-images:report",
     "image:clean": "rm -rf public/optimized .image-cache.json"
