@@ -5,27 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { usePathname } from 'next/navigation';
-import SearchModal from './SearchModal';
-import { WCProduct } from '@/types/woocommerce';
 
-interface NavbarProps {
-  products?: WCProduct[];
-  isSearchOpen?: boolean;
-  setIsSearchOpen?: (open: boolean) => void;
-}
-
-export default function Navbar({ 
-  products = [], 
-  isSearchOpen: externalIsSearchOpen, 
-  setIsSearchOpen: externalSetIsSearchOpen 
-}: NavbarProps) {
+export default function EnhancedNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [internalIsSearchOpen, setInternalIsSearchOpen] = useState(false);
-  
-  // Use external state if provided, otherwise use internal state
-  const isSearchOpen = externalIsSearchOpen ?? internalIsSearchOpen;
-  const setIsSearchOpen = externalSetIsSearchOpen ?? setInternalIsSearchOpen;
   const { state, toggleCart } = useCart();
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -68,8 +51,7 @@ export default function Navbar({
   };
 
   const navItems = [
-    { name: 'Home', href: '/', icon: '🏠' },
-    { name: 'Shop', href: '/products', icon: '🛍️' },
+    { name: 'Products', href: '/', icon: '🌾' },
     { name: 'About', href: '/about', icon: '🏡' },
     { name: 'Find Us', href: '/find-us', icon: '📍' },
     { name: 'FAQ', href: '/faq', icon: '❓' },
@@ -78,15 +60,11 @@ export default function Navbar({
   ];
 
   return (
-    <nav 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-neutral-200/50' 
-          : 'bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200'
-      }`}
-      role="navigation"
-      aria-label="Main navigation"
-    >
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-neutral-200/50' 
+        : 'bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
@@ -112,11 +90,7 @@ export default function Navbar({
 
           {/* Desktop Navigation */}
           <div className="hidden lg:block">
-            <div 
-              className="flex items-center space-x-1"
-              role="menubar"
-              aria-label="Main menu"
-            >
+            <div className="flex items-center space-x-1">
               {navItems.map((item) => (
                 item.external ? (
                   <a
@@ -125,8 +99,6 @@ export default function Navbar({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group relative px-3 py-2 rounded-lg transition-all duration-200 hover:bg-primary-50"
-                    role="menuitem"
-                    aria-label={`${item.name} (opens in new window)`}
                   >
                     <div className="flex items-center space-x-2 text-neutral-700 group-hover:text-primary-700">
                       <span className="text-sm">{item.icon}</span>
@@ -148,9 +120,6 @@ export default function Navbar({
                         ? 'bg-primary-100 text-primary-700'
                         : 'text-neutral-700 hover:bg-primary-50 hover:text-primary-700'
                     }`}
-                    role="menuitem"
-                    aria-current={isActivePage(item.href) ? 'page' : undefined}
-                    aria-label={item.name}
                   >
                     <div className="flex items-center space-x-2">
                       <span className="text-sm">{item.icon}</span>
@@ -174,10 +143,9 @@ export default function Navbar({
 
           {/* Right side controls */}
           <div className="flex items-center space-x-3">
-            {/* Search Button */}
+            {/* Search Button (Future) */}
             <button 
-              onClick={() => setIsSearchOpen(true)}
-              className="p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hidden md:block hover:scale-110 active:animate-jiggle"
+              className="p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hidden md:block"
               aria-label="Search products"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,13 +205,7 @@ export default function Navbar({
         <div className={`lg:hidden transition-all duration-300 overflow-hidden ${
           isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         }`}>
-          <div 
-            className="py-4 space-y-2 border-t border-neutral-200 bg-white/95 backdrop-blur-sm" 
-            ref={menuRef}
-            role="menu"
-            aria-label="Mobile navigation menu"
-            aria-hidden={!isMenuOpen}
-          >
+          <div className="py-4 space-y-2 border-t border-neutral-200 bg-white/95 backdrop-blur-sm" ref={menuRef}>
             {navItems.map((item, index) => (
               item.external ? (
                 <a
@@ -254,8 +216,6 @@ export default function Navbar({
                   className="flex items-center justify-between px-4 py-3 text-neutral-700 hover:text-primary-700 hover:bg-primary-50 rounded-lg mx-2 transition-all duration-200 group"
                   onClick={() => setIsMenuOpen(false)}
                   style={{ animationDelay: `${index * 50}ms` }}
-                  role="menuitem"
-                  aria-label={`${item.name} (opens in new window)`}
                 >
                   <div className="flex items-center space-x-3">
                     <span className="text-lg">{item.icon}</span>
@@ -276,9 +236,6 @@ export default function Navbar({
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                   style={{ animationDelay: `${index * 50}ms` }}
-                  role="menuitem"
-                  aria-current={isActivePage(item.href) ? 'page' : undefined}
-                  aria-label={item.name}
                 >
                   <span className="text-lg">{item.icon}</span>
                   <span className="font-medium">{item.name}</span>
@@ -291,13 +248,6 @@ export default function Navbar({
           </div>
         </div>
       </div>
-      
-      {/* Search Modal */}
-      <SearchModal 
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        products={products}
-      />
     </nav>
   );
 }

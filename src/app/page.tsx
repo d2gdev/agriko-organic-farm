@@ -2,13 +2,13 @@ import { Suspense } from 'react';
 import { getAllProducts, getFeaturedProducts } from '@/lib/woocommerce';
 import ProductCard from '@/components/ProductCard';
 import HeroSection from '@/components/HeroSection';
-import { ProductGridSkeleton } from '@/components/LoadingStates';
+import { OrganicProductGridSkeleton } from '@/components/OrganicLoadingStates';
 import Link from 'next/link';
 import Image from 'next/image';
 
-// Loading component for products grid (using design system)
+// Loading component for products grid (using organic theme)
 function ProductsGridSkeleton() {
-  return <ProductGridSkeleton count={8} />;
+  return <OrganicProductGridSkeleton count={8} />;
 }
 
 // Featured Products Section
@@ -416,8 +416,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonial Section */}
-      <section className="py-20 relative overflow-hidden">
+      {/* Enhanced Testimonial Section */}
+      <section className="py-24 relative overflow-hidden min-h-[600px] flex items-center">
         <Image
           src="/images/philippines-flag-background.jpg"
           alt="Philippines Flag Background - Representing Agriko's Proud Filipino Heritage and Local Organic Farming Tradition"
@@ -425,14 +425,28 @@ export default function HomePage() {
           fill
           className="object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-red-600/80 via-red-900/70 to-black/70"></div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <blockquote className="text-heading-2 font-serif italic text-white leading-relaxed mb-8">
+        
+        {/* Enhanced gradients for better depth */}
+        <div className="absolute inset-0 bg-gradient-to-br from-red-600/60 via-red-900/80 to-black/90"></div>
+        <div className="absolute inset-0 bg-black/20"></div>
+        
+        {/* Decorative quote marks */}
+        <div className="absolute top-12 left-12 text-accent-400/20 text-9xl font-serif leading-none pointer-events-none hidden md:block select-none">&ldquo;</div>
+        <div className="absolute bottom-12 right-12 text-accent-400/20 text-9xl font-serif leading-none rotate-180 pointer-events-none hidden md:block select-none">&rdquo;</div>
+        
+        {/* Content */}
+        <div className="relative max-w-5xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
+          <blockquote className="text-2xl md:text-3xl lg:text-4xl font-serif italic text-white leading-relaxed mb-12 drop-shadow-lg max-w-4xl mx-auto opacity-0 animate-fade-in-up">
             &quot;Agriko&#39;s organic rice varieties and herbal powders have transformed our family&#39;s health routine. The quality is exceptional - especially their Black Rice and Moringa powder!&quot;
           </blockquote>
-          <div className="text-accent-400">
-            <p className="font-semibold text-large mb-1">Maria Santos</p>
-            <p className="text-white">Health-Conscious Mom, Manila</p>
+          
+          <div className="flex flex-col items-center space-y-3 opacity-0 animate-fade-in-up-delayed">
+            <div className="w-20 h-0.5 bg-accent-400 mb-2"></div>
+            <p className="font-semibold text-xl text-accent-400 tracking-wide">Maria Santos</p>
+            <p className="text-white/90 text-lg">Health-Conscious Mom, Quezon City</p>
+            <div className="flex space-x-1 mt-3 text-accent-400 text-lg animate-pulse-stars">
+              ★★★★★
+            </div>
           </div>
         </div>
       </section>

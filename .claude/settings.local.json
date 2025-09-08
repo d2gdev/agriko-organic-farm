@@ -25,7 +25,8 @@
       "Bash(npm run deploy:sync:*)",
       "Bash(npm run deploy:source:*)",
       "Bash(npm run deploy:remote:*)",
-      "Bash(ssh:*)"
+      "Bash(ssh:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

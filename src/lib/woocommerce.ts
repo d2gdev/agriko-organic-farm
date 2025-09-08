@@ -1,4 +1,5 @@
 import { WCProduct, WCCategory, WCOrder, CheckoutData } from '@/types/woocommerce';
+import { productCache } from './productCache';
 
 const WC_API_URL = process.env.NEXT_PUBLIC_WC_API_URL;
 const WC_CONSUMER_KEY = process.env.WC_CONSUMER_KEY;
@@ -16,8 +17,18 @@ const getAuthHeader = () => {
   };
 };
 
-// Generic API request function
-async function wcRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+// Timeout helper
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error(`Request timeout after ${timeoutMs}ms`)), timeoutMs);
+    }),
+  ]);
+}
+
+// Generic API request function with timeout and retry
+async function wcRequest<T>(endpoint: string, options: RequestInit = {}, retries: number = 2): Promise<T> {
   if (!WC_API_URL) {
     throw new Error('Missing WooCommerce API URL. Please check your environment variables.');
   }
@@ -29,19 +40,33 @@ async function wcRequest<T>(endpoint: string, options: RequestInit = {}): Promis
     ...options,
   };
 
-  try {
-    const response = await fetch(url, defaultOptions);
-    
-    if (!response.ok) {
-      throw new Error(`WooCommerce API error: ${response.status} ${response.statusText}`);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const fetchPromise = fetch(url, defaultOptions);
+      const response = await withTimeout(fetchPromise, 10000);
+      
+      if (!response.ok) {
+        if (response.status >= 500 && attempt < retries) {
+          console.warn(`Server error ${response.status} on attempt ${attempt + 1}, retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+          continue;
+        }
+        throw new Error(`WooCommerce API error: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (attempt === retries) {
+        console.error(`Error fetching ${endpoint} after ${retries + 1} attempts:`, error);
+        throw error;
+      }
+      console.warn(`Request failed on attempt ${attempt + 1}, retrying...`, error);
+      await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
     }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error fetching ${endpoint}:`, error);
-    throw error;
   }
+  
+  throw new Error('Max retries exceeded');
 }
 
 // Product functions
@@ -80,11 +105,34 @@ export async function getProductById(id: number): Promise<WCProduct | null> {
 }
 
 export async function getProductBySlug(slug: string): Promise<WCProduct | null> {
+  const cacheKey = `slug:${slug}`;
+  
+  // Try cache first
+  const cached = productCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   try {
     const products = await wcRequest<WCProduct[]>(`/products?slug=${slug}`);
-    return products.length > 0 ? products[0] : null;
+    const product = products.length > 0 ? products[0] : null;
+    
+    if (product) {
+      productCache.set(cacheKey, product);
+      productCache.set(`id:${product.id}`, product);
+    }
+    
+    return product;
   } catch (error) {
     console.error(`Product with slug ${slug} not found:`, error);
+    
+    // Return stale cache if available
+    const stale = productCache.getStale(cacheKey);
+    if (stale) {
+      console.warn(`Returning stale cache for slug ${slug}`);
+      return stale;
+    }
+    
     return null;
   }
 }

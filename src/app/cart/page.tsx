@@ -136,7 +136,7 @@ export default function CartPage() {
                 const itemTotal = parseFloat(item.product.price) * item.quantity;
 
                 return (
-                  <div key={itemKey} className="p-6">
+                  <div key={itemKey} className="p-6 animate-fadeInUp hover:bg-gray-50 transition-colors duration-200">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                       {/* Product Info */}
                       <div className="col-span-1 md:col-span-6 flex items-start space-x-4">

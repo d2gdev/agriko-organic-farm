@@ -92,7 +92,7 @@ export default function ContactPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Contact Information */}
-              <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="bg-white rounded-xl shadow-lg p-8 animate-slideInFromLeft animation-delay-100">
                 <h2 className="text-heading-2 text-primary-700 mb-6">Get In Touch</h2>
                 
                 <div className="space-y-6">
@@ -127,7 +127,7 @@ export default function ContactPage() {
               </div>
 
               {/* Contact Form */}
-              <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="bg-white rounded-xl shadow-lg p-8 animate-slideInFromRight animation-delay-200">
                 <h2 className="text-heading-2 text-primary-700 mb-6">Send us a Message</h2>
                 
                 <form className="space-y-6">
@@ -137,7 +137,7 @@ export default function ContactPage() {
                       type="text"
                       id="name"
                       name="name"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 hover:border-primary-300 focus:scale-105"
                       placeholder="Your name"
                     />
                   </div>
@@ -148,7 +148,7 @@ export default function ContactPage() {
                       type="email"
                       id="email"
                       name="email"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 hover:border-primary-300 focus:scale-105"
                       placeholder="your.email@example.com"
                     />
                   </div>
@@ -159,14 +159,14 @@ export default function ContactPage() {
                       id="message"
                       name="message"
                       rows={5}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 hover:border-primary-300 focus:scale-105"
                       placeholder="Your message..."
                     ></textarea>
                   </div>
                   
                   <button
                     type="submit"
-                    className="w-full bg-primary-700 text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary-800 transition-colors"
+                    className="w-full bg-primary-700 text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary-800 transition-all duration-300 transform hover:scale-105 active:animate-jiggle hover:animate-glow"
                   >
                     Send Message
                   </button>

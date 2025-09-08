@@ -94,13 +94,10 @@ export default function FindUsPage() {
               {/* Logo Container */}
               <div className="bg-gray-50 p-8 pt-12 flex items-center justify-center h-48">
                 <div className="flex items-center justify-center w-full h-full">
-                  <Image
-                    src="/images/metro1.jpeg"
-                    alt="Metro Supermarket"
-                    width={200}
-                    height={128}
-                    className="object-contain max-h-32"
-                  />
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-blue-600 mb-2">METRO</div>
+                    <div className="text-sm text-gray-600">SUPERMARKET</div>
+                  </div>
                 </div>
               </div>
               
@@ -261,7 +258,7 @@ export default function FindUsPage() {
                 
                 <Link 
                   href="/contact"
-                  className="inline-block bg-white text-primary-700 px-8 py-3 rounded-lg font-semibold hover:bg-accent-50 transition-colors mt-4"
+                  className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-accent-50 transition-colors mt-4"
                 >
                   LEARN MORE
                 </Link>

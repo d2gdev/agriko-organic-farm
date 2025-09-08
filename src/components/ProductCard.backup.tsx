@@ -12,14 +12,12 @@ interface ProductCardProps {
   product: WCProduct;
   className?: string;
   priority?: boolean;
-  layout?: 'grid' | 'list';
 }
 
 export default function ProductCard({ 
   product, 
   className = '', 
-  priority = false,
-  layout = 'grid'
+  priority = false 
 }: ProductCardProps) {
   const { addItem, toggleCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
@@ -113,7 +111,7 @@ export default function ProductCard({
         }}
       />
       
-      <article className={`group relative ${className} animate-fadeInUp`} role="article" aria-labelledby={`product-${product.id}-name`}>
+      <div className={`group relative ${className} animate-fadeInUp`}>
         {/* Card Container */}
         <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 hover:shadow-xl hover:border-primary-200 transition-all duration-500 ease-out overflow-hidden hover:-translate-y-2 h-full flex flex-col relative">
           
@@ -193,25 +191,15 @@ export default function ProductCard({
               </div>
             )}
 
-            <Link 
-              href={`/product/${product.slug}`} 
-              className="block flex-1"
-              aria-label={`View details for ${product.name}`}
-            >
+            <Link href={`/product/${product.slug}`} className="block flex-1">
               {/* Product Name */}
-              <h3 
-                id={`product-${product.id}-name`}
-                className="text-lg font-semibold text-neutral-900 mb-3 line-clamp-2 leading-tight group-hover:text-primary-700 transition-colors duration-200"
-              >
+              <h3 className="text-lg font-semibold text-neutral-900 mb-3 line-clamp-2 leading-tight group-hover:text-primary-700 transition-colors duration-200">
                 {product.name}
               </h3>
               
               {/* Description */}
               {shortDescription && (
-                <p 
-                  id={`product-${product.id}-description`}
-                  className="text-neutral-600 text-sm mb-4 line-clamp-3 leading-relaxed"
-                >
+                <p className="text-neutral-600 text-sm mb-4 line-clamp-3 leading-relaxed">
                   {shortDescription}
                 </p>
               )}
@@ -251,10 +239,7 @@ export default function ProductCard({
                 <button
                   onClick={handleAddToCart}
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-neutral-400 disabled:to-neutral-500 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2 group/button active:animate-jiggle hover:animate-glow product-action-btn"
-                  aria-label={`Add ${product.name} to shopping cart`}
-                  aria-describedby={`product-${product.id}-description`}
-                  aria-disabled={!inStock || isLoading}
+                  className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-neutral-400 disabled:to-neutral-500 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2 group/button active:animate-jiggle hover:animate-glow"
                 >
                   {isLoading ? (
                     <>
@@ -274,7 +259,7 @@ export default function ProductCard({
             </div>
           </div>
         </div>
-      </article>
+      </div>
     </>
   );
 }

@@ -9,6 +9,7 @@ import { createOrder } from '@/lib/woocommerce';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
 import { CheckoutData, WCAddress } from '@/types/woocommerce';
 import HeroSection from '@/components/HeroSection';
+import { PlantGrowingLoader } from '@/components/OrganicLoadingStates';
 
 interface FormErrors {
   [key: string]: string;
@@ -164,7 +165,7 @@ export default function CheckoutPage() {
           {/* Billing & Shipping Information */}
           <div className="lg:col-span-2 space-y-8">
             {/* Billing Information */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-slideInFromLeft animation-delay-100">
               <h2 className="text-heading-2 text-gray-900 mb-6">Billing Information</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -176,7 +177,7 @@ export default function CheckoutPage() {
                     type="text"
                     value={billingData.first_name}
                     onChange={(e) => updateBillingData('first_name', e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200 focus:scale-105 ${
                       errors.billing_first_name ? 'border-red-500' : 'border-gray-300'
                     }`}
                   />
@@ -341,7 +342,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Shipping Information */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-slideInFromLeft animation-delay-200">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-heading-2 text-gray-900">Shipping Information</h2>
                 <label className="flex items-center">
@@ -449,7 +450,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Payment Method */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-slideInFromLeft animation-delay-300">
               <h2 className="text-heading-2 text-gray-900 mb-6">Payment Method</h2>
               
               <div className="space-y-4">
@@ -486,7 +487,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Order Notes */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-slideInFromLeft animation-delay-400">
               <h2 className="text-heading-2 text-gray-900 mb-6">Order Notes (Optional)</h2>
               <textarea
                 value={customerNote}
@@ -500,7 +501,7 @@ export default function CheckoutPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-6 animate-slideInFromRight animation-delay-100">
               <h2 className="text-heading-2 text-gray-900 mb-6">Order Summary</h2>
               
               {/* Order Items */}
@@ -563,15 +564,12 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full bg-primary-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary-700 disabled:bg-primary-400 transition-colors mt-6 flex items-center justify-center"
+                className="w-full bg-primary-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary-700 disabled:bg-primary-400 transition-colors mt-6 flex items-center justify-center active:animate-jiggle hover:animate-glow transform hover:scale-105"
               >
                 {isProcessing ? (
                   <>
-                    <svg className="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Processing...
+                    <PlantGrowingLoader className="mr-2" />
+                    <span>Processing your order...</span>
                   </>
                 ) : (
                   'Place Order'

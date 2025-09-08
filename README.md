@@ -166,24 +166,50 @@ npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
 npm run type-check   # TypeScript type checking
+
+# Deployment (New Git-based System)
+npm run deploy       # Complete deployment (build + Git + upload)
+npm run deploy:full  # Deployment with quality checks
 ```
 
-## Deployment
+## 🚀 Deployment (Git-Based System)
 
-### Vercel (Recommended)
+### Quick Deployment
+```bash
+npm run deploy
+```
 
+**What this does:**
+1. Builds the static site locally
+2. Commits & pushes changes to Git
+3. Uploads files directly to the server
+
+### Available Deployment Commands
+- `npm run deploy` - Complete deployment
+- `npm run deploy:full` - With linting and type-checking  
+- `npm run deploy:git` - Push source to Git only
+- `npm run deploy:files` - Upload files only
+
+### Server Details
+- **Server:** 143.42.189.57
+- **Document Root:** `/var/www/shop/`
+- **Repository:** `github.com/d2gdev/agriko-organic-farm`
+
+### Documentation
+- **Quick Guide:** `HOW_TO_DEPLOY.md`
+- **Detailed Guide:** `DEPLOYMENT_GIT.md`
+- **Image Optimization:** `IMAGE_OPTIMIZATION_AUTOMATED.md`
+
+### Legacy Deployment Options
+
+**Vercel (Alternative)**
 1. Push your code to GitHub/GitLab/Bitbucket
 2. Connect your repository to Vercel
 3. Add environment variables in Vercel dashboard
 4. Deploy automatically on every push
 
-### Other Platforms
-
-The application can be deployed to any platform that supports Next.js:
-- Netlify
-- AWS Amplify
-- Railway
-- DigitalOcean App Platform
+**Other Platforms**
+- Netlify, AWS Amplify, Railway, DigitalOcean App Platform
 
 ## Environment Variables
 

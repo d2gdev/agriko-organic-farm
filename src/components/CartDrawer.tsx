@@ -15,12 +15,12 @@ export default function CartDrawer() {
     <>
       {/* Overlay */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-50"
+        className="fixed inset-0 bg-black bg-opacity-50 z-50 animate-fadeIn"
         onClick={closeCart}
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out overflow-hidden">
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out overflow-hidden animate-slideInFromRight">
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -59,7 +59,7 @@ export default function CartDrawer() {
                 {state.items.map((item, index) => {
                   const itemKey = `${item.product.id}-${item.variation?.id || 'no-variation'}`;
                   return (
-                    <div key={itemKey} className="flex items-start space-x-4 bg-gray-50 rounded-lg p-3">
+                    <div key={itemKey} className={`flex items-start space-x-4 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-all duration-200 animate-fadeInUp`} style={{animationDelay: `${index * 100}ms`}}>
                       {/* Product Image */}
                       <div className="flex-shrink-0">
                         <Image
@@ -100,7 +100,7 @@ export default function CartDrawer() {
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.variation?.id)}
-                              className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full text-gray-600 transition-colors"
+                              className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full text-gray-600 transition-all duration-200 hover:scale-110 active:animate-jiggle"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -113,7 +113,7 @@ export default function CartDrawer() {
                             
                             <button
                               onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.variation?.id)}
-                              className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full text-gray-600 transition-colors"
+                              className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full text-gray-600 transition-all duration-200 hover:scale-110 active:animate-jiggle"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -125,7 +125,7 @@ export default function CartDrawer() {
                         {/* Remove Button */}
                         <button
                           onClick={() => removeItem(item.product.id, item.variation?.id)}
-                          className="text-xs text-red-500 hover:text-red-700 mt-2 transition-colors"
+                          className="text-xs text-red-500 hover:text-red-700 mt-2 transition-all duration-200 hover:scale-105 active:animate-jiggle"
                         >
                           Remove
                         </button>
@@ -153,14 +153,14 @@ export default function CartDrawer() {
                 <Link
                   href="/cart"
                   onClick={closeCart}
-                  className="bg-gray-200 text-gray-900 px-4 py-3 rounded-lg font-medium text-center hover:bg-gray-300 transition-colors"
+                  className="bg-gray-200 text-gray-900 px-4 py-3 rounded-lg font-medium text-center hover:bg-gray-300 transition-all duration-200 transform hover:scale-105 active:animate-jiggle"
                 >
                   View Cart
                 </Link>
                 <Link
                   href="/checkout"
                   onClick={closeCart}
-                  className="bg-primary-600 text-white px-4 py-3 rounded-lg font-medium text-center hover:bg-primary-700 transition-colors"
+                  className="bg-primary-600 text-white px-4 py-3 rounded-lg font-medium text-center hover:bg-primary-700 transition-all duration-200 transform hover:scale-105 active:animate-jiggle hover:animate-glow"
                 >
                   Checkout
                 </Link>

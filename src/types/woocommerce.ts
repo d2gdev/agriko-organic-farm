@@ -26,6 +26,8 @@ export interface WCProduct {
   meta_data: WCMetaData[];
   average_rating: string;
   rating_count: number;
+  date_created: string;
+  date_modified: string;
 }
 
 export interface WCCategory {

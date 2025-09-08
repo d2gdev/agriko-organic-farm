@@ -2,323 +2,220 @@
 
 ## 📋 Complete Deployment Guide
 
-This document explains how to deploy your Agriko Next.js e-commerce site to your Ubuntu server running Apache2.
+This document explains how to deploy your Agriko Next.js e-commerce site using the new **Git-based deployment system**.
 
 ---
 
 ## 🏗️ Architecture Overview
 
-**Deployment Type**: Static Export + Apache2
-- **Local**: Windows development environment with PowerShell
-- **Server**: Ubuntu 20.04+ with Apache2 serving static files
+**Deployment Type**: Git + Static Export + Apache2
+- **Local**: Windows development environment with Git
+- **Server**: Ubuntu 20.04+ with Apache2 serving static files  
 - **Domain**: https://shop.agrikoph.com
-- **Method**: Static file generation + SCP/rsync deployment
+- **Repository**: https://github.com/d2gdev/agriko-organic-farm
+- **Method**: Local build + Git push + Direct file transfer
 
 ---
 
-## 🚀 Quick Deployment (5 Minutes)
+## 🚀 Quick Deployment (2 Minutes)
 
-### Prerequisites
-- ✅ Node.js and npm installed locally
-- ✅ SSH access to your server (`root@143.42.189.57`)
-- ✅ Apache2 configured on server
-
-### Step 1: Build the Application
-```powershell
-# In your project directory (C:\Users\Sean\Documents\Agriko)
-npm run build:export
-```
-**What this does**: Generates 23 static HTML pages in the `out/` directory
-
-### Step 2: Deploy to Server
-```powershell
-# Option A: Quick deployment (manual password entry)
-scp -r out/* root@143.42.189.57:/var/www/shop/
-
-# Option B: With backup first
-ssh root@143.42.189.57 "cp -r /var/www/shop /var/www/shop.backup.$(date +%Y%m%d-%H%M%S)"
-scp -r out/* root@143.42.189.57:/var/www/shop/
+### Single Command Deployment
+```bash
+npm run deploy
 ```
 
-### Step 3: Set Permissions
-```powershell
-ssh root@143.42.189.57 "chmod -R 755 /var/www/shop"
-```
+**What this does:**
+1. ✅ Builds the static site locally (fast)
+2. ✅ Commits & pushes changes to Git (version control)
+3. ✅ Uploads built files to server (direct transfer)
 
-**Done!** Your site is now live at https://shop.agrikoph.com
+### With Quality Checks
+```bash
+npm run deploy:full
+```
+Includes linting and type-checking before deployment.
 
 ---
 
-## 🤖 Automated Deployment Scripts
+## 📋 Available Commands
 
-### Method 1: PowerShell Script (Recommended)
-```powershell
-# Run the automated deployment
-.\deploy-quick.ps1
-```
-
-**Features**:
-- ✅ Builds application automatically
-- ✅ Creates timestamped backups
-- ✅ Deploys via SCP
-- ✅ Sets correct permissions
-- ✅ Shows success/error status
-
-### Method 2: Full Interactive Script
-```powershell
-.\deploy.ps1
-```
-
-**Features**:
-- ✅ Quality checks (linting, type-checking)
-- ✅ Interactive backup options
-- ✅ Choice between SCP/rsync
-- ✅ Deployment verification
-- ✅ Error handling and rollback
+| Command | Purpose | When to Use |
+|---------|---------|-------------|
+| `npm run deploy` | Complete deployment | Daily development |
+| `npm run deploy:full` | With quality checks | Production releases |
+| `npm run deploy:git` | Push source to Git only | Code backup |
+| `npm run deploy:files` | Upload files only | After local build |
 
 ---
 
-## 📁 Server Configuration
+## 🔧 Setup Requirements
 
-### Server Details
-- **User**: `root`
-- **Host**: `143.42.189.57`
-- **Web Root**: `/var/www/shop`
-- **Apache Config**: `/etc/apache2/sites-available/shop-443.conf`
-- **SSL**: Let's Encrypt certificate
+### ✅ Prerequisites
+- [x] Node.js 18+ installed
+- [x] Git configured with GitHub access
+- [x] SSH access to server: `root@143.42.189.57`
+- [x] Server document root: `/var/www/shop/`
 
-### Directory Structure on Server
-```
-/var/www/shop/
-├── index.html              # Homepage
-├── _next/                  # Next.js assets (JS, CSS, images)
-├── about/                  # About page
-├── cart/                   # Shopping cart
-├── checkout/               # Checkout flow  
-├── contact/                # Contact page
-├── product/                # Product pages directory
-│   ├── honey/
-│   ├── black-rice/
-│   └── ... (11 total products)
-├── success/                # Order success page
-├── sitemap.xml            # SEO sitemap
-├── robots.txt             # SEO robots file
-└── [images and assets]    # Product images, logos, etc.
-```
+### ✅ First-Time Setup (Already Done)
+- [x] Git repository created and connected
+- [x] SSH keys or password authentication configured
+- [x] Apache2 configured to serve static files
+- [x] Deployment scripts configured in package.json
 
 ---
 
-## 🔧 Manual Deployment Steps (Detailed)
+## 🚀 Daily Workflow
 
-### 1. Prepare Local Build
-```powershell
-# Navigate to project directory
-cd C:\Users\Sean\Documents\Agriko
+### 1. Make Changes
+Edit your code, add features, fix bugs, etc.
 
-# Install/update dependencies
-npm ci --production=false
+### 2. Test Locally
+```bash
+npm run dev
+```
+Preview at http://localhost:3000
 
-# Run quality checks (optional but recommended)
-npm run lint
-npm run type-check
-
-# Build for production
-npm run build:export
+### 3. Deploy
+```bash
+npm run deploy
 ```
 
-### 2. Handle Existing Files on Server
-```powershell
-# Check what's currently on server
-ssh root@143.42.189.57 "ls -la /var/www/shop"
-
-# Create backup if files exist
-ssh root@143.42.189.57 "cp -r /var/www/shop /var/www/shop.backup.$(date +%Y%m%d-%H%M%S)"
-
-# Clear existing files (optional - for clean deployment)
-ssh root@143.42.189.57 "rm -rf /var/www/shop/*"
-```
-
-### 3. Deploy Files
-```powershell
-# Method A: Using SCP (recommended for PowerShell)
-scp -r out/* root@143.42.189.57:/var/www/shop/
-
-# Method B: Using rsync (if available)
-rsync -avz --delete out/ root@143.42.189.57:/var/www/shop/
-```
-
-### 4. Set Permissions and Test
-```powershell
-# Set correct permissions
-ssh root@143.42.189.57 "chmod -R 755 /var/www/shop"
-
-# Test the site
-curl -I https://shop.agrikoph.com
-```
+### 4. Verify
+Visit http://143.42.189.57 to see your changes live.
 
 ---
 
 ## 🔍 Troubleshooting
 
-### Common Issues and Solutions
+### Common Issues & Solutions
 
-#### 1. Build Failures
+**Issue: "SSH connection failed"**
 ```bash
-# Error: Module not found
-npm ci --production=false
+# Test SSH connection
+ssh root@143.42.189.57 "echo 'Connected successfully'"
+```
+
+**Issue: "Git push failed"**
+```bash
+# Check Git status
+git status
+
+# Push manually if needed
+git push origin main
+```
+
+**Issue: "Build failed"**
+```bash
+# Clean and rebuild
+rm -rf out/ .next/ node_modules/
+npm install
 npm run build:export
-
-# Error: TypeScript errors
-npm run type-check
-# Fix any type errors, then rebuild
 ```
 
-#### 2. SSH/SCP Connection Issues
-```powershell
-# Test SSH connection first
-ssh root@143.42.189.57
-
-# If using keys, ensure proper format (not .ppk)
-# Convert .ppk to OpenSSH format using PuTTYgen if needed
-
-# Use password authentication as fallback
-scp -o PasswordAuthentication=yes -r out/* root@143.42.189.57:/var/www/shop/
-```
-
-#### 3. Site Not Loading
-```powershell
-# Check Apache status
-ssh root@143.42.189.57 "systemctl status apache2"
-
-# Check Apache configuration
-ssh root@143.42.189.57 "apache2ctl configtest"
-
-# Reload Apache if needed
-ssh root@143.42.189.57 "systemctl reload apache2"
-
-# Check deployed files
-ssh root@143.42.189.57 "ls -la /var/www/shop"
-```
-
-#### 4. Page Not Found (404) Errors
-- **Issue**: Next.js static export uses trailing slashes
-- **Solution**: Access pages with trailing slash: `/about/` not `/about`
-- **Fixed**: Apache config handles this automatically
-
-#### 5. Images Not Loading
-```powershell
-# Check if images were deployed
-ssh root@143.42.189.57 "ls -la /var/www/shop/ | grep jpg"
-
-# Verify permissions
-ssh root@143.42.189.57 "chmod -R 755 /var/www/shop"
-```
-
----
-
-## 📊 Deployment Verification Checklist
-
-After deployment, verify these URLs return **200 OK**:
-
-- ✅ **Homepage**: https://shop.agrikoph.com
-- ✅ **About**: https://shop.agrikoph.com/about/
-- ✅ **Products**: https://shop.agrikoph.com/product/honey/
-- ✅ **Cart**: https://shop.agrikoph.com/cart/
-- ✅ **Contact**: https://shop.agrikoph.com/contact/
-- ✅ **SEO**: https://shop.agrikoph.com/sitemap.xml
-- ✅ **SEO**: https://shop.agrikoph.com/robots.txt
-
-**Test Command**:
-```powershell
-curl -I https://shop.agrikoph.com
-# Should return: HTTP/1.1 200 OK
-```
-
----
-
-## 🔄 CI/CD Automation (Optional)
-
-### GitHub Actions Setup
-If you want automatic deployment on git push:
-
-1. **Add Repository Secrets** (GitHub Settings → Secrets):
-   - `DEPLOY_HOST`: `143.42.189.57`
-   - `DEPLOY_USER`: `root`  
-   - `DEPLOY_PATH`: `/var/www/shop`
-   - `DEPLOY_SSH_KEY`: Your private SSH key (OpenSSH format)
-
-2. **Push to main branch** → Automatic deployment! 🎉
-
----
-
-## 📦 What Gets Deployed
-
-Your static export includes:
-
-### Pages (23 total)
-- **Homepage**: Product showcase and hero section
-- **Product Pages**: 11 individual WooCommerce product pages
-- **E-commerce**: Cart, checkout, success pages  
-- **Content**: About, contact, FAQ, find-us pages
-- **Error**: 404 page
-
-### Assets
-- **JavaScript**: Optimized Next.js bundles (~102KB shared)
-- **CSS**: Tailwind CSS compiled and minified
-- **Images**: All product images, logos, hero images
-- **Fonts**: Web font files
-- **SEO**: sitemap.xml, robots.txt
-
-### Performance
-- **Total Size**: ~18MB (including all images)
-- **Page Load**: < 2 seconds (static files)
-- **Caching**: 1 year cache for assets, optimized headers
-- **SEO**: Full meta tags, Open Graph, structured data
-
----
-
-## 🚀 Future Deployments
-
-For ongoing updates:
-
-### Quick Update (Most Common)
-```powershell
-# Build and deploy in one go
-npm run build:export && scp -r out/* root@143.42.189.57:/var/www/shop/
-```
-
-### Full Update with Backup
-```powershell
-# Use the automated script
-.\deploy-quick.ps1
-```
-
-### Content-Only Updates
-```powershell
-# If only content changed, skip build
+**Issue: "Files not uploading"**
+```bash
+# Manual file upload
 scp -r out/* root@143.42.189.57:/var/www/shop/
 ```
 
 ---
 
-## 💡 Pro Tips
+## 📊 Deployment Details
 
-1. **Always backup before deploying**: The scripts do this automatically
-2. **Test locally first**: `npm run dev` to verify changes
-3. **Use static export**: Faster and more reliable than SSR for e-commerce
-4. **Monitor Apache logs**: `ssh root@143.42.189.57 "tail -f /var/log/apache2/error.log"`
-5. **Keep deployment simple**: Static files are easier to manage than servers
+### What Gets Built
+- 23 static HTML pages
+- Optimized JavaScript bundles
+- CSS stylesheets
+- All images and assets
+- Sitemap and SEO files
+
+### Where Files Go
+```
+Server: root@143.42.189.57
+Directory: /var/www/shop/
+Web URL: http://143.42.189.57
+```
+
+### Typical Deployment Time
+- Build: 5-10 seconds
+- Git push: 2-5 seconds  
+- File upload: 30-60 seconds
+- **Total: ~1-2 minutes**
 
 ---
 
-## 📞 Support
+## 🆘 Emergency Procedures
 
-If you encounter issues:
+### Quick Rollback
+```bash
+# Go back to previous version
+git reset --hard HEAD~1
+npm run deploy:files
+```
 
-1. **Check build logs**: Look for errors in `npm run build:export`
-2. **Verify SSH access**: `ssh root@143.42.189.57`
-3. **Test Apache config**: `ssh root@143.42.189.57 "apache2ctl configtest"`
-4. **Check file permissions**: `ssh root@143.42.189.57 "ls -la /var/www/shop"`
-5. **Monitor site**: https://shop.agrikoph.com
+### Manual Recovery
+```bash
+# List server backups
+ssh root@143.42.189.57 "ls -la /var/www/shop.backup.*"
 
-**Your Agriko e-commerce deployment is production-ready! 🌱🚀**
+# Restore from backup
+ssh root@143.42.189.57 "cp -r /var/www/shop.backup.20250908-201146/* /var/www/shop/"
+```
+
+---
+
+## 🎯 Why This Approach?
+
+### ✅ Benefits
+- **Fast**: Local building uses your full machine resources
+- **Reliable**: Git provides version control and history
+- **Simple**: One command deployment
+- **Professional**: Industry-standard Git workflow
+- **Efficient**: No server-side building required
+
+### 📈 Compared to Previous Methods
+| Method | Speed | Reliability | Complexity |
+|--------|-------|-------------|------------|
+| **Git + SCP** | ⚡ Fast | ✅ Excellent | 🟢 Simple |
+| PowerShell Scripts | 🐌 Slow | ⚠️ Complex | 🟡 Medium |
+| Manual Upload | 🐌 Very Slow | ❌ Error-prone | 🔴 High |
+
+---
+
+## 📝 Legacy Methods (Still Available)
+
+### PowerShell Deployment
+```powershell
+.\deploy-quick.ps1
+```
+
+### Manual Steps
+```bash
+npm run build:export
+scp -r out/* root@143.42.189.57:/var/www/shop/
+```
+
+---
+
+## 📖 Additional Documentation
+
+- **Detailed Guide**: See `DEPLOYMENT_GIT.md` for comprehensive instructions
+- **Image Optimization**: See `IMAGE_OPTIMIZATION_AUTOMATED.md`
+- **Project Setup**: See `CLAUDE.md` for development guidelines
+
+---
+
+## ✅ Summary
+
+**For daily deployments, just run:**
+```bash
+npm run deploy
+```
+
+**Your website will be updated at:** http://143.42.189.57
+
+**Need help?** Check the troubleshooting section above or refer to `DEPLOYMENT_GIT.md` for detailed instructions.
+
+---
+
+*This deployment system was optimized for speed, reliability, and ease of use. 🚀*

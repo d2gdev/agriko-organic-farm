@@ -15,6 +15,7 @@ import ProductGallery from './ProductGallery';
 import RelatedProducts from './RelatedProducts';
 import Link from 'next/link';
 import Breadcrumb from '@/components/Breadcrumb';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface ProductPageProps {
   params: Promise<{
@@ -118,7 +119,33 @@ function ProductSkeleton() {
 }
 
 async function ProductContent({ slug }: { slug: string }) {
-  const product = await getProductBySlug(slug);
+  let product: WCProduct | null = null;
+  
+  try {
+    product = await getProductBySlug(slug);
+  } catch (error) {
+    console.error('Failed to fetch product:', error);
+    
+    // Return an error page instead of throwing
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Unable to Load Product
+          </h1>
+          <p className="text-gray-600 mb-6">
+            We&apos;re experiencing technical difficulties. Please try again in a few moments.
+          </p>
+          <Link 
+            href="/" 
+            className="bg-primary-600 text-white px-6 py-3 rounded-md hover:bg-primary-700 transition-colors inline-block"
+          >
+            Return to Homepage
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     notFound();
@@ -312,9 +339,11 @@ async function ProductContent({ slug }: { slug: string }) {
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   return (
-    <Suspense fallback={<ProductSkeleton />}>
-      <ProductContent slug={slug} />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<ProductSkeleton />}>
+        <ProductContent slug={slug} />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 

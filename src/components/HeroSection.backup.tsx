@@ -1,7 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import Button from '@/components/Button';
-import ScrollButton from '@/components/ScrollButton';
 
 interface HeroSectionProps {
   title: string;
@@ -76,33 +74,27 @@ export default function HeroSection({
         {/* CTA Buttons */}
         {showButtons && (
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-fade-in-up animation-delay-600">
-            <ScrollButton
-              targetSelector={primaryButtonHref}
-              variant="primary"
-              size="lg"
-              className="min-w-[200px] text-lg animate-glow"
-              rightIcon={
-                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              }
+            <a
+              href={primaryButtonHref}
+              className="group relative bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-8 py-4 rounded-2xl text-lg font-semibold shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 flex items-center space-x-2 min-w-[200px] justify-center"
             >
-              {primaryButtonText}
-            </ScrollButton>
+              <span>{primaryButtonText}</span>
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+              
+              {/* Subtle glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-primary-500 rounded-2xl blur opacity-0 group-hover:opacity-30 transition-opacity duration-300 -z-10"></div>
+            </a>
 
-            <Link href={secondaryButtonHref}>
-              <Button
-                variant="secondary"
-                size="lg"
-                className="min-w-[200px] text-lg bg-white/10 backdrop-blur-sm hover:bg-white/20 border-2 border-white/30 hover:border-white/50 text-white hover:text-white"
-                rightIcon={
-                  <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                  </svg>
-                }
-              >
-                {secondaryButtonText}
-              </Button>
+            <Link
+              href={secondaryButtonHref}
+              className="group relative bg-white/10 backdrop-blur-sm hover:bg-white/20 border-2 border-white/30 hover:border-white/50 text-white px-8 py-4 rounded-2xl text-lg font-semibold transition-all duration-300 transform hover:-translate-y-1 flex items-center space-x-2 min-w-[200px] justify-center"
+            >
+              <span>{secondaryButtonText}</span>
+              <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
             </Link>
           </div>
         )}

@@ -36,3 +36,12 @@ export function getProductMainImage(product: WCProduct): string {
 export function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, '');
 }
+
+// Utility function to combine class names (similar to clsx)
+export function cn(...classes: (string | string[] | undefined | null | false)[]): string {
+  return classes
+    .flat()
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+}
