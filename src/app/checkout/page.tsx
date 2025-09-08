@@ -112,8 +112,8 @@ export default function CheckoutPage() {
       // Clear the cart
       clearCart();
       
-      // Redirect to order confirmation
-      router.push(`/order/${order.id}`);
+      // Redirect to success page (order details sent via email for static export deployment)
+      router.push('/success');
     } catch (error) {
       console.error('Error creating order:', error);
       setErrors({ general: 'Failed to process your order. Please try again.' });
@@ -151,7 +151,7 @@ export default function CheckoutPage() {
         showButtons={false}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+        <h1 className="text-heading-1 text-gray-900 mb-8">Checkout</h1>
 
       {errors.general && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -165,7 +165,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2 space-y-8">
             {/* Billing Information */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Billing Information</h2>
+              <h2 className="text-heading-2 text-gray-900 mb-6">Billing Information</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -343,7 +343,7 @@ export default function CheckoutPage() {
             {/* Shipping Information */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Shipping Information</h2>
+                <h2 className="text-heading-2 text-gray-900">Shipping Information</h2>
                 <label className="flex items-center">
                   <input
                     type="checkbox"
@@ -450,7 +450,7 @@ export default function CheckoutPage() {
 
             {/* Payment Method */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Payment Method</h2>
+              <h2 className="text-heading-2 text-gray-900 mb-6">Payment Method</h2>
               
               <div className="space-y-4">
                 <label className="flex items-start">
@@ -487,7 +487,7 @@ export default function CheckoutPage() {
 
             {/* Order Notes */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Notes (Optional)</h2>
+              <h2 className="text-heading-2 text-gray-900 mb-6">Order Notes (Optional)</h2>
               <textarea
                 value={customerNote}
                 onChange={(e) => setCustomerNote(e.target.value)}
@@ -501,7 +501,7 @@ export default function CheckoutPage() {
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
+              <h2 className="text-heading-2 text-gray-900 mb-6">Order Summary</h2>
               
               {/* Order Items */}
               <div className="space-y-4 mb-6">
@@ -521,7 +521,7 @@ export default function CheckoutPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+                        <h3 className="text-heading-3 text-gray-900 line-clamp-2">
                           {item.product.name}
                         </h3>
                         <p className="text-sm text-gray-500">

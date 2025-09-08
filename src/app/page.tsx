@@ -2,28 +2,13 @@ import { Suspense } from 'react';
 import { getAllProducts, getFeaturedProducts } from '@/lib/woocommerce';
 import ProductCard from '@/components/ProductCard';
 import HeroSection from '@/components/HeroSection';
+import { ProductGridSkeleton } from '@/components/LoadingStates';
 import Link from 'next/link';
+import Image from 'next/image';
 
-// Loading component for products grid
+// Loading component for products grid (using design system)
 function ProductsGridSkeleton() {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
-          <div className="aspect-square bg-gray-200" />
-          <div className="p-4 space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-3/4" />
-            <div className="h-3 bg-gray-200 rounded w-full" />
-            <div className="h-3 bg-gray-200 rounded w-2/3" />
-            <div className="flex justify-between items-center">
-              <div className="h-5 bg-gray-200 rounded w-20" />
-              <div className="h-4 bg-gray-200 rounded w-16" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return <ProductGridSkeleton count={8} />;
 }
 
 // Featured Products Section
@@ -39,12 +24,44 @@ async function FeaturedProducts() {
       );
     }
 
+    // Featured Products ItemList Schema
+    const featuredProductsSchema = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "Premium Product Selection",
+      "description": "Discover our carefully curated collection of organic rice varieties, pure herbal powders, and health-boosting blends.",
+      "numberOfItems": featuredProducts.length,
+      "itemListElement": featuredProducts.map((product, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "Product",
+          "name": product.name,
+          "url": `https://shop.agrikoph.com/product/${product.slug}`,
+          "image": product.images?.[0]?.src || '',
+          "offers": {
+            "@type": "Offer",
+            "price": product.price,
+            "priceCurrency": "PHP"
+          }
+        }
+      }))
+    };
+
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {featuredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(featuredProductsSchema)
+          }}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {featuredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </>
     );
   } catch (error) {
     console.error('Error loading featured products:', error);
@@ -74,12 +91,44 @@ async function LatestProducts() {
       );
     }
 
+    // Latest Products ItemList Schema
+    const latestProductsSchema = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "Latest Products",
+      "description": "Explore our newest additions - from specialty rice blends to health-boosting herbal formulations, all crafted with care.",
+      "numberOfItems": latestProducts.length,
+      "itemListElement": latestProducts.map((product, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "Product",
+          "name": product.name,
+          "url": `https://shop.agrikoph.com/product/${product.slug}`,
+          "image": product.images?.[0]?.src || '',
+          "offers": {
+            "@type": "Offer",
+            "price": product.price,
+            "priceCurrency": "PHP"
+          }
+        }
+      }))
+    };
+
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {latestProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(latestProductsSchema)
+          }}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {latestProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </>
     );
   } catch (error) {
     console.error('Error loading latest products:', error);
@@ -92,23 +141,220 @@ async function LatestProducts() {
 }
 
 export default function HomePage() {
+  // Enhanced Organization Schema with more detailed LocalBusiness information
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": ["Organization", "LocalBusiness"],
+    "name": "Agriko Organic Farm",
+    "alternateName": "Agriko Multi-Trade & Enterprise Corp.",
+    "description": "Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm.",
+    "url": "https://shop.agrikoph.com",
+    "logo": "https://shop.agrikoph.com/images/Agriko-Logo.png",
+    "image": "https://shop.agrikoph.com/images/gerry-paglinawan-family-agriko-founders.jpg",
+    "founder": {
+      "@type": "Person",
+      "name": "Gerry Paglinawan"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Paglinawan Organic Eco Farm, Purok 6, Libertad",
+      "addressLocality": "Dumingag",
+      "addressRegion": "Zamboanga Del Sur",
+      "postalCode": "7028",
+      "addressCountry": "PH"
+    },
+    "contactPoint": [
+      {
+        "@type": "ContactPoint",
+        "email": "agrikoph@gmail.com",
+        "contactType": "customer service",
+        "availableLanguage": ["English", "Filipino"]
+      },
+      {
+        "@type": "ContactPoint",
+        "telephone": "+63XXXXXXXXXX", // Replace with actual phone number
+        "contactType": "customer service",
+        "availableLanguage": ["English", "Filipino"]
+      }
+    ],
+    "sameAs": [
+      "https://www.facebook.com/AgrikoPH/"
+    ],
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "08:00",
+        "closes": "17:00"
+      }
+    ],
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Agriko Organic Products",
+      "itemListElement": [
+        {
+          "@type": "OfferCatalog",
+          "name": "Organic Rice Varieties",
+          "description": "Black, Brown, Red, and White organic rice"
+        },
+        {
+          "@type": "OfferCatalog", 
+          "name": "Herbal Powders",
+          "description": "Turmeric, Ginger, and Moringa powders"
+        },
+        {
+          "@type": "OfferCatalog",
+          "name": "Health Blends & Honey",
+          "description": "5-in-1 Turmeric Tea Blend and pure organic honey"
+        }
+      ]
+    }
+  };
+
+  // Enhanced WebSite Schema
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Agriko Organic Farm",
+    "url": "https://shop.agrikoph.com",
+    "description": "Premium organic rice varieties, pure herbal powders, and health blends from our sustainable family farm.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://shop.agrikoph.com/search?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  };
+
+  // Enhanced WebPage Schema
+  const webpageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Agriko Organic Farm - Premium Rice & Health Products",
+    "description": "Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm.",
+    "url": "https://shop.agrikoph.com",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Agriko Organic Farm",
+      "url": "https://agrikoph.com"
+    },
+    "about": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://shop.agrikoph.com"
+        }
+      ]
+    }
+  };
+
+  // Review Schema
+  const reviewSchema = {
+    "@context": "https://schema.org",
+    "@type": "Review",
+    "reviewBody": "Agriko's organic rice varieties and herbal powders have transformed our family's health routine. The quality is exceptional - especially their Black Rice and Moringa powder!",
+    "reviewRating": {
+      "@type": "Rating",
+      "ratingValue": "5",
+      "bestRating": "5"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Maria Santos",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Manila",
+        "addressCountry": "PH"
+      }
+    },
+    "itemReviewed": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    },
+    "publisher": {
+      "@type": "Organization", 
+      "name": "Agriko Organic Farm"
+    }
+  };
+
+  // FAQ Schema
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What makes Agriko's rice premium quality?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our organic rice varieties - Black, Brown, Red, and White - are cultivated in nutrient-rich, pesticide-free soils for superior taste and nutrition."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What herbal powders does Agriko offer?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We offer premium Dulaw (Turmeric), Salabat (Ginger), and Moringa powders - pure, nutrient-dense superfoods with powerful health benefits."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What health blends and products are available?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We provide unique 5-in-1 Turmeric Tea Blend, pure organic honey, and specialized products like Agribata Kids Cereal for complete wellness."
+        }
+      }
+    ]
+  };
+
   return (
     <>
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            organizationSchema,
+            websiteSchema, 
+            webpageSchema,
+            reviewSchema,
+            faqSchema
+          ])
+        }}
+      />
+      
       <HeroSection 
         title="Agriko"
         subtitle="From Our Farm, To Your Cup"
         description="Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm."
+        secondaryButtonText="About Us"
+        secondaryButtonHref="/about"
       />
 
       {/* Featured Products Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-serif font-bold text-neutral-900 mb-6">
+            <h2 className="text-heading-1 text-neutral-900 mb-6">
               Premium Product Selection
             </h2>
-            <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
-              Discover our carefully curated collection of organic rice varieties, pure herbal powders, and health-boosting blends.
+            <p className="text-body-large text-neutral-600 max-w-3xl mx-auto leading-relaxed">
+              Discover our carefully curated collection of <Link href="/faq" className="text-primary-700 hover:text-primary-800 underline">organic rice varieties</Link>, pure herbal powders, and health-boosting blends. <Link href="/about" className="text-primary-700 hover:text-primary-800 underline">Learn more about our story</Link> and sustainable farming practices.
             </p>
           </div>
 
@@ -125,7 +371,7 @@ export default function HomePage() {
       <section className="py-20 bg-cream">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-serif font-bold text-neutral-900 mb-6">
+            <h2 className="text-heading-1 text-neutral-900 mb-6">
               Why Choose Agriko Organic Farm?
             </h2>
           </div>
@@ -137,9 +383,9 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-serif font-semibold text-neutral-900 mb-4">Premium Quality Rice</h3>
+              <h3 className="text-heading-3 text-neutral-900 mb-4">Premium Quality Rice</h3>
               <p className="text-neutral-600 leading-relaxed">
-                Our organic rice varieties - Black, Brown, Red, and White - are cultivated in nutrient-rich, pesticide-free soils for superior taste and nutrition.
+                Our <Link href="/faq" className="text-primary-700 hover:text-primary-800 underline">organic rice varieties</Link> - Black, Brown, Red, and White - are cultivated in nutrient-rich, pesticide-free soils for superior taste and nutrition. <Link href="/find-us" className="text-primary-700 hover:text-primary-800 underline">Find our products</Link> at major supermarkets nationwide.
               </p>
             </div>
 
@@ -149,9 +395,9 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-serif font-semibold text-neutral-900 mb-4">Pure Herbal Powders</h3>
+              <h3 className="text-heading-3 text-neutral-900 mb-4">Pure Herbal Powders</h3>
               <p className="text-neutral-600 leading-relaxed">
-                Premium Dulaw (Turmeric), Salabat (Ginger), and Moringa powders - pure, nutrient-dense superfoods with powerful health benefits.
+                Premium <Link href="/faq" className="text-primary-700 hover:text-primary-800 underline">Dulaw (Turmeric), Salabat (Ginger), and Moringa powders</Link> - pure, nutrient-dense superfoods with powerful health benefits. <Link href="/about" className="text-primary-700 hover:text-primary-800 underline">Discover the 5-in-1 blend ingredients</Link> and their wellness properties.
               </p>
             </div>
 
@@ -161,9 +407,9 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-serif font-semibold text-neutral-900 mb-4">Health Blends & Honey</h3>
+              <h3 className="text-heading-3 text-neutral-900 mb-4">Health Blends & Honey</h3>
               <p className="text-neutral-600 leading-relaxed">
-                Unique 5-in-1 Turmeric Tea Blend, pure organic honey, and specialized products like Agribata Kids Cereal for complete wellness.
+                Unique <Link href="/faq" className="text-primary-700 hover:text-primary-800 underline">5-in-1 Turmeric Tea Blend</Link>, pure organic honey, and specialized products like Agribata Kids Cereal for complete wellness. <Link href="/faq" className="text-primary-700 hover:text-primary-800 underline">Learn about health benefits</Link> and usage recommendations.
               </p>
             </div>
           </div>
@@ -171,15 +417,22 @@ export default function HomePage() {
       </section>
 
       {/* Testimonial Section */}
-      <section className="py-20 bg-primary-700 bg-leaf-texture relative overflow-hidden">
-        <div className="absolute inset-0 bg-primary-700 bg-opacity-90"></div>
+      <section className="py-20 relative overflow-hidden">
+        <Image
+          src="/images/philippines-flag-background.jpg"
+          alt="Philippines Flag Background - Representing Agriko's Proud Filipino Heritage and Local Organic Farming Tradition"
+          title="Philippines Flag - Agriko's Filipino Heritage"
+          fill
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-red-600/80 via-red-900/70 to-black/70"></div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <blockquote className="text-2xl md:text-3xl font-serif italic text-white leading-relaxed mb-8">
+          <blockquote className="text-heading-2 font-serif italic text-white leading-relaxed mb-8">
             &quot;Agriko&#39;s organic rice varieties and herbal powders have transformed our family&#39;s health routine. The quality is exceptional - especially their Black Rice and Moringa powder!&quot;
           </blockquote>
           <div className="text-accent-400">
-            <p className="font-semibold text-lg mb-1">Maria Santos</p>
-            <p className="text-primary-200">Health-Conscious Mom, Manila</p>
+            <p className="font-semibold text-large mb-1">Maria Santos</p>
+            <p className="text-white">Health-Conscious Mom, Manila</p>
           </div>
         </div>
       </section>
@@ -188,10 +441,10 @@ export default function HomePage() {
       <section id="latest-products" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-serif font-bold text-neutral-900 mb-6">
+            <h2 className="text-heading-1 text-neutral-900 mb-6">
               Latest Products
             </h2>
-            <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-body-large text-neutral-600 max-w-3xl mx-auto leading-relaxed">
               Explore our newest additions - from specialty rice blends to health-boosting herbal formulations, all crafted with care.
             </p>
           </div>
@@ -205,26 +458,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="relative py-24 bg-gradient-to-r from-primary-700 to-primary-900 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-leaf-texture opacity-10"></div>
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6 leading-tight">
-            Ready to Experience Premium Quality?
-          </h2>
-          <p className="text-xl md:text-2xl text-primary-100 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Join thousands of health-conscious families who trust Agriko for premium organic rice, herbal powders, and wellness products.
-          </p>
-          <div className="flex justify-center">
-            <Link
-              href="/contact"
-              className="border-2 border-white text-white px-10 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary-700 transition-all duration-300 transform hover:-translate-y-0.5"
-            >
-              Learn More
-            </Link>
-          </div>
-        </div>
-      </section>
     </>
   );
 }

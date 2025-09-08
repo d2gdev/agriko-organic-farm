@@ -6,7 +6,7 @@ export default function Footer() {
       <div 
         className="absolute inset-0 bg-cover bg-center opacity-30"
         style={{ 
-          backgroundImage: "url('/footer-background.jpg')",
+          backgroundImage: "url('/images/footer-background.jpg')",
           backgroundAttachment: "fixed",
           backgroundRepeat: "no-repeat"
         }}
@@ -16,14 +16,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Company Info */}
           <div className="md:col-span-2 space-y-6">
-            <h3 className="text-3xl font-serif font-bold text-accent-400">Agriko</h3>
+            <h3 className="text-heading-3 text-accent-400">Agriko</h3>
             <p className="text-white text-lg leading-relaxed">
               A family-owned organic farm committed to sustainable farming practices and delivering the freshest, healthiest produce to your table for over 20 years.
             </p>
             <div className="flex space-x-6">
-              <a href="#" className="text-white hover:text-accent-400 transition-colors transform hover:scale-110">
+              <a href="https://www.facebook.com/AgrikoPH/" target="_blank" rel="noopener noreferrer" className="text-white hover:text-accent-400 transition-colors transform hover:scale-110">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
               </a>
               <a href="#" className="text-white hover:text-accent-400 transition-colors transform hover:scale-110">
@@ -49,31 +49,32 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h4 className="text-xl font-serif font-semibold text-accent-400">Quick Links</h4>
+            <h4 className="text-heading-4 text-accent-400">Quick Links</h4>
             <ul className="space-y-3">
               <li><Link href="/" className="text-white hover:text-accent-400 transition-colors">Home</Link></li>
-              <li><Link href="/products" className="text-white hover:text-accent-400 transition-colors">Products</Link></li>
-              <li><Link href="/categories" className="text-white hover:text-accent-400 transition-colors">Categories</Link></li>
+              <li><Link href="/#latest-products" className="text-white hover:text-accent-400 transition-colors">Our Products</Link></li>
               <li><Link href="/about" className="text-white hover:text-accent-400 transition-colors">About Us</Link></li>
+              <li><Link href="/find-us" className="text-white hover:text-accent-400 transition-colors">Find Us</Link></li>
+              <li><Link href="/faq" className="text-white hover:text-accent-400 transition-colors">FAQ</Link></li>
               <li><Link href="/contact" className="text-white hover:text-accent-400 transition-colors">Contact</Link></li>
             </ul>
           </div>
 
           {/* Customer Service */}
           <div className="space-y-4">
-            <h4 className="text-xl font-serif font-semibold text-accent-400">Customer Service</h4>
+            <h4 className="text-heading-4 text-accent-400">Products & Info</h4>
             <ul className="space-y-3">
-              <li><Link href="/help" className="text-white hover:text-accent-400 transition-colors">Help Center</Link></li>
-              <li><Link href="/shipping" className="text-white hover:text-accent-400 transition-colors">Shipping Info</Link></li>
-              <li><Link href="/returns" className="text-white hover:text-accent-400 transition-colors">Returns</Link></li>
-              <li><Link href="/privacy" className="text-white hover:text-accent-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="text-white hover:text-accent-400 transition-colors">Terms of Service</Link></li>
+              <li><Link href="/faq" className="text-white hover:text-accent-400 transition-colors">Health Benefits</Link></li>
+              <li><Link href="/faq" className="text-white hover:text-accent-400 transition-colors">Storage Guide</Link></li>
+              <li><Link href="/about" className="text-white hover:text-accent-400 transition-colors">Our Farm</Link></li>
+              <li><Link href="/find-us" className="text-white hover:text-accent-400 transition-colors">Visit Us</Link></li>
+              <li><Link href="/faq" className="text-white hover:text-accent-400 transition-colors">Organic Certification</Link></li>
             </ul>
           </div>
 
           {/* Newsletter */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold">Stay Updated</h4>
+            <h4 className="text-heading-4">Stay Updated</h4>
             <p className="text-white text-sm">
               Subscribe to our newsletter for the latest products and offers.
             </p>
@@ -81,11 +82,11 @@ export default function Footer() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-md text-black placeholder-black focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
               <button
                 type="submit"
-                className="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors font-medium"
+                className="w-full bg-neutral-800 text-white py-2 px-4 rounded-md hover:bg-neutral-900 transition-colors font-medium"
               >
                 Subscribe
               </button>

@@ -11,13 +11,27 @@
       "Bash(npm uninstall:*)",
       "Bash(copy:*)",
       "WebFetch(domain:agrikoph.com)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run lint)",
+      "Bash(scp:*)",
+      "Bash(ls:*)",
+      "Bash(npm run optimize-images:*)",
+      "Bash(npm run image:report:*)",
+      "Bash(npm run deploy:smart:*)",
+      "Bash(npm run deploy:sync:*)",
+      "Bash(npm run deploy:source:*)",
+      "Bash(npm run deploy:remote:*)",
+      "Bash(ssh:*)"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "github-official"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

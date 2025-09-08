@@ -8,13 +8,25 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "build:export": "next build",
+    "optimize-images": "node scripts/smart-image-optimizer.js",
+    "optimize-images:force": "node scripts/smart-image-optimizer.js --force",
+    "optimize-images:report": "node scripts/smart-image-optimizer.js --report",
+    "build:smart": "npm run optimize-images && npm run build:export",
+    "deploy:git": "git add -A && git commit -m 'Deploy: $(date)' && git push",
+    "deploy:build": "ssh root@143.42.189.57 'cd /var/www/shop && git pull && npm ci && npm run build && rm -rf /var/www/html/* && cp -r out/* /var/www/html/'",
+    "deploy": "npm run deploy:git && npm run deploy:build",
+    "deploy:full": "npm run lint && npm run type-check && npm run deploy",
+    "image:report": "npm run optimize-images:report",
+    "image:clean": "rm -rf public/optimized .image-cache.json"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@types/node": "^24.3.1",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
@@ -26,7 +38,13 @@
     "postcss": "^8.5.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-hot-toast": "^2.6.0",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.9.2"
+  },
+  "devDependencies": {
+    "fs-extra": "^11.3.1",
+    "glob": "^11.0.3",
+    "sharp": "^0.34.3"
   }
 }

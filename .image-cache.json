@@ -1,0 +1,1068 @@
+{
+  "public\\puregold.png": {
+    "hash": "573fd56d24edfc2721a2d3a2d29a6f2d",
+    "mtime": 1757153473151,
+    "generated": [
+      {
+        "path": "optimized\\puregold-280w.jpeg",
+        "size": 6604,
+        "format": "jpeg",
+        "width": 280
+      },
+      {
+        "path": "optimized\\puregold-280w.webp",
+        "size": 4384,
+        "format": "webp",
+        "width": 280
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338233818
+  },
+  "public\\puregold1.png": {
+    "hash": "573fd56d24edfc2721a2d3a2d29a6f2d",
+    "mtime": 1757154056768,
+    "generated": [
+      {
+        "path": "optimized\\puregold1-280w.jpeg",
+        "size": 6604,
+        "format": "jpeg",
+        "width": 280
+      },
+      {
+        "path": "optimized\\puregold1-280w.webp",
+        "size": 4384,
+        "format": "webp",
+        "width": 280
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338233827
+  },
+  "public\\turmeric-powder-explosion-.png": {
+    "hash": "f4f3600b1c3a29d5f1fc22f7748c0741",
+    "mtime": 1757206000078,
+    "generated": [
+      {
+        "path": "optimized\\turmeric-powder-explosion--600w.jpeg",
+        "size": 89516,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\turmeric-powder-explosion--600w.webp",
+        "size": 161474,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338241757
+  },
+  "public\\philippines-.jpg": {
+    "hash": "ed393d21c939490273bf2be9dfe0ae22",
+    "mtime": 1757217487306,
+    "generated": [
+      {
+        "path": "optimized\\philippines--600w.jpeg",
+        "size": 17451,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\philippines--600w.webp",
+        "size": 9522,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338241849
+  },
+  "public\\Pure-Salabat-100g-with-Background.jpg": {
+    "hash": "df34df1450fa8a13505e98147f530f5d",
+    "mtime": 1757204979928,
+    "generated": [
+      {
+        "path": "optimized\\Pure-Salabat-100g-with-Background-300w.jpeg",
+        "size": 13845,
+        "format": "jpeg",
+        "width": 300
+      },
+      {
+        "path": "optimized\\Pure-Salabat-100g-with-Background-300w.webp",
+        "size": 9366,
+        "format": "webp",
+        "width": 300
+      },
+      {
+        "path": "optimized\\Pure-Salabat-100g-with-Background-600w.jpeg",
+        "size": 45366,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\Pure-Salabat-100g-with-Background-600w.webp",
+        "size": 29056,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "product",
+    "processedAt": 1757338241950
+  },
+  "public\\og-image.jpg": {
+    "hash": "25285ce01369162e3967112451f6551a",
+    "mtime": 1757337489095,
+    "generated": [
+      {
+        "path": "optimized\\og-image-512w.jpeg",
+        "size": 25188,
+        "format": "jpeg",
+        "width": 512
+      },
+      {
+        "path": "optimized\\og-image-512w.webp",
+        "size": 21168,
+        "format": "webp",
+        "width": 512
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338244517
+  },
+  "public\\metro1.jpeg": {
+    "hash": "495e037059db8fee70044ce6e3e211cc",
+    "mtime": 1757154056712,
+    "generated": [
+      {
+        "path": "optimized\\metro1-180w.jpeg",
+        "size": 6704,
+        "format": "jpeg",
+        "width": 180
+      },
+      {
+        "path": "optimized\\metro1-180w.webp",
+        "size": 4370,
+        "format": "webp",
+        "width": 180
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338244545
+  },
+  "public\\metro.jpeg": {
+    "hash": "495e037059db8fee70044ce6e3e211cc",
+    "mtime": 1757153473096,
+    "generated": [
+      {
+        "path": "optimized\\metro-180w.jpeg",
+        "size": 6704,
+        "format": "jpeg",
+        "width": 180
+      },
+      {
+        "path": "optimized\\metro-180w.webp",
+        "size": 4370,
+        "format": "webp",
+        "width": 180
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338244546
+  },
+  "public\\Honey-with-Background.jpg": {
+    "hash": "54f9887cecb3947403727087ba8dd9cc",
+    "mtime": 1757205027949,
+    "generated": [
+      {
+        "path": "optimized\\Honey-with-Background-300w.jpeg",
+        "size": 13325,
+        "format": "jpeg",
+        "width": 300
+      },
+      {
+        "path": "optimized\\Honey-with-Background-300w.webp",
+        "size": 8934,
+        "format": "webp",
+        "width": 300
+      },
+      {
+        "path": "optimized\\Honey-with-Background-600w.jpeg",
+        "size": 43494,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\Honey-with-Background-600w.webp",
+        "size": 27206,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "product",
+    "processedAt": 1757338244699
+  },
+  "public\\hero.png": {
+    "hash": "32b15ba0d2a0fa5564162b7f41cb37f7",
+    "mtime": 1757155554541,
+    "generated": [
+      {
+        "path": "optimized\\hero-600w.jpeg",
+        "size": 39575,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\hero-600w.webp",
+        "size": 21208,
+        "format": "webp",
+        "width": 600
+      },
+      {
+        "path": "optimized\\hero-600w.avif",
+        "size": 25263,
+        "format": "avif",
+        "width": 600
+      },
+      {
+        "path": "optimized\\hero-1200w.jpeg",
+        "size": 117319,
+        "format": "jpeg",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\hero-1200w.webp",
+        "size": 55322,
+        "format": "webp",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\hero-1200w.avif",
+        "size": 61588,
+        "format": "avif",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\hero-1408w.jpeg",
+        "size": 152410,
+        "format": "jpeg",
+        "width": 1408
+      },
+      {
+        "path": "optimized\\hero-1408w.webp",
+        "size": 70978,
+        "format": "webp",
+        "width": 1408
+      },
+      {
+        "path": "optimized\\hero-1408w.avif",
+        "size": 77402,
+        "format": "avif",
+        "width": 1408
+      }
+    ],
+    "type": "hero",
+    "processedAt": 1757338253486
+  },
+  "public\\gaisano1.png": {
+    "hash": "22c2bb720444963d41ddac68472713ba",
+    "mtime": 1757154056740,
+    "generated": [
+      {
+        "path": "optimized\\gaisano1-600w.jpeg",
+        "size": 37281,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\gaisano1-600w.webp",
+        "size": 68114,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338258225
+  },
+  "public\\gaisano.png": {
+    "hash": "22c2bb720444963d41ddac68472713ba",
+    "mtime": 1757153473124,
+    "generated": [
+      {
+        "path": "optimized\\gaisano-600w.jpeg",
+        "size": 37281,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\gaisano-600w.webp",
+        "size": 68114,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338258280
+  },
+  "public\\family-paglinawan.jpg": {
+    "hash": "d799a82037c3dad575ac53c6d52aa883",
+    "mtime": 1757216045454,
+    "generated": [
+      {
+        "path": "optimized\\family-paglinawan-600w.jpeg",
+        "size": 48384,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\family-paglinawan-600w.webp",
+        "size": 40666,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338258451
+  },
+  "public\\find-us.png": {
+    "hash": "a903f7144a28e2cda9e5c265912ea3f8",
+    "mtime": 1757153306382,
+    "generated": [
+      {
+        "path": "optimized\\find-us-600w.jpeg",
+        "size": 72114,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\find-us-600w.webp",
+        "size": 53212,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338258690
+  },
+  "public\\footer-background.jpg": {
+    "hash": "df4663a280519c66c58d66c7c2e26caa",
+    "mtime": 1757154056686,
+    "generated": [
+      {
+        "path": "optimized\\footer-background-600w.jpeg",
+        "size": 41762,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\footer-background-600w.webp",
+        "size": 40014,
+        "format": "webp",
+        "width": 600
+      },
+      {
+        "path": "optimized\\footer-background-1200w.jpeg",
+        "size": 148049,
+        "format": "jpeg",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\footer-background-1200w.webp",
+        "size": 134880,
+        "format": "webp",
+        "width": 1200
+      }
+    ],
+    "type": "background",
+    "processedAt": 1757338258999
+  },
+  "public\\Agriko-Website-Imagery-2.jpg": {
+    "hash": "10778d0196caf0bd3730ea14188213ae",
+    "mtime": 1757209765230,
+    "generated": [
+      {
+        "path": "optimized\\Agriko-Website-Imagery-2-600w.jpeg",
+        "size": 32362,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\Agriko-Website-Imagery-2-600w.webp",
+        "size": 16806,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338259176
+  },
+  "public\\eco-farm-scaled.jpg": {
+    "hash": "76c207c01ae65798616efe6f7ce7f940",
+    "mtime": 1757205816431,
+    "generated": [
+      {
+        "path": "optimized\\eco-farm-scaled-600w.jpeg",
+        "size": 98100,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\eco-farm-scaled-600w.webp",
+        "size": 93832,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338262478
+  },
+  "public\\blend-bg.png": {
+    "hash": "87c0e6f9d85176c5d1be23474c417201",
+    "mtime": 1757203284890,
+    "generated": [
+      {
+        "path": "optimized\\blend-bg-600w.jpeg",
+        "size": 82396,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\blend-bg-600w.webp",
+        "size": 55912,
+        "format": "webp",
+        "width": 600
+      },
+      {
+        "path": "optimized\\blend-bg-600w.avif",
+        "size": 62889,
+        "format": "avif",
+        "width": 600
+      },
+      {
+        "path": "optimized\\blend-bg-1200w.jpeg",
+        "size": 287565,
+        "format": "jpeg",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\blend-bg-1200w.webp",
+        "size": 181916,
+        "format": "webp",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\blend-bg-1200w.avif",
+        "size": 201938,
+        "format": "avif",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\blend-bg-1280w.jpeg",
+        "size": 325129,
+        "format": "jpeg",
+        "width": 1280
+      },
+      {
+        "path": "optimized\\blend-bg-1280w.webp",
+        "size": 211460,
+        "format": "webp",
+        "width": 1280
+      },
+      {
+        "path": "optimized\\blend-bg-1280w.avif",
+        "size": 241520,
+        "format": "avif",
+        "width": 1280
+      }
+    ],
+    "type": "hero",
+    "processedAt": 1757338268632
+  },
+  "public\\5n1-180-for-Website-P3.jpg": {
+    "hash": "18820209e354e31d035d91dd46cfbfce",
+    "mtime": 1757204898500,
+    "generated": [
+      {
+        "path": "optimized\\5n1-180-for-Website-P3-300w.jpeg",
+        "size": 18441,
+        "format": "jpeg",
+        "width": 300
+      },
+      {
+        "path": "optimized\\5n1-180-for-Website-P3-300w.webp",
+        "size": 13520,
+        "format": "webp",
+        "width": 300
+      },
+      {
+        "path": "optimized\\5n1-180-for-Website-P3-600w.jpeg",
+        "size": 54826,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\5n1-180-for-Website-P3-600w.webp",
+        "size": 38198,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "product",
+    "processedAt": 1757338268961
+  },
+  "public\\5n1-500-for-health-.jpg": {
+    "hash": "44d81278eb9ebd9d66196523b1c19f57",
+    "mtime": 1757204493006,
+    "generated": [
+      {
+        "path": "optimized\\5n1-500-for-health--300w.jpeg",
+        "size": 21854,
+        "format": "jpeg",
+        "width": 300
+      },
+      {
+        "path": "optimized\\5n1-500-for-health--300w.webp",
+        "size": 15470,
+        "format": "webp",
+        "width": 300
+      },
+      {
+        "path": "optimized\\5n1-500-for-health--600w.jpeg",
+        "size": 62870,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\5n1-500-for-health--600w.webp",
+        "size": 41696,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "product",
+    "processedAt": 1757338268977
+  },
+  "public\\Agriko-Logo.png": {
+    "hash": "25285ce01369162e3967112451f6551a",
+    "mtime": 1757153429496,
+    "generated": [
+      {
+        "path": "optimized\\Agriko-Logo-300w.png",
+        "size": 16871,
+        "format": "png",
+        "width": 300
+      },
+      {
+        "path": "optimized\\Agriko-Logo-300w.webp",
+        "size": 14252,
+        "format": "webp",
+        "width": 300
+      },
+      {
+        "path": "optimized\\Agriko-Logo-512w.png",
+        "size": 27521,
+        "format": "png",
+        "width": 512
+      },
+      {
+        "path": "optimized\\Agriko-Logo-512w.webp",
+        "size": 21168,
+        "format": "webp",
+        "width": 512
+      }
+    ],
+    "type": "logo",
+    "processedAt": 1757338273152
+  },
+  "public\\images\\philippines-flag-background.jpg": {
+    "hash": "ed393d21c939490273bf2be9dfe0ae22",
+    "mtime": 1757219970156,
+    "generated": [
+      {
+        "path": "optimized\\images\\philippines-flag-background-600w.jpeg",
+        "size": 13698,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\philippines-flag-background-600w.webp",
+        "size": 9522,
+        "format": "webp",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\philippines-flag-background-1200w.jpeg",
+        "size": 65698,
+        "format": "jpeg",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\images\\philippines-flag-background-1200w.webp",
+        "size": 57294,
+        "format": "webp",
+        "width": 1200
+      }
+    ],
+    "type": "background",
+    "processedAt": 1757338273449
+  },
+  "public\\images\\puregold.png": {
+    "hash": "573fd56d24edfc2721a2d3a2d29a6f2d",
+    "mtime": 1757153229830,
+    "generated": [
+      {
+        "path": "optimized\\images\\puregold-280w.jpeg",
+        "size": 6604,
+        "format": "jpeg",
+        "width": 280
+      },
+      {
+        "path": "optimized\\images\\puregold-280w.webp",
+        "size": 4384,
+        "format": "webp",
+        "width": 280
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338273830
+  },
+  "public\\images\\puregold-supermarket-partner-logo.png": {
+    "hash": "573fd56d24edfc2721a2d3a2d29a6f2d",
+    "mtime": 1757220101476,
+    "generated": [
+      {
+        "path": "optimized\\images\\puregold-supermarket-partner-logo-280w.png",
+        "size": 4464,
+        "format": "png",
+        "width": 280
+      },
+      {
+        "path": "optimized\\images\\puregold-supermarket-partner-logo-280w.webp",
+        "size": 4384,
+        "format": "webp",
+        "width": 280
+      },
+      {
+        "path": "optimized\\images\\puregold-supermarket-partner-logo-280w.png",
+        "size": 4464,
+        "format": "png",
+        "width": 280
+      },
+      {
+        "path": "optimized\\images\\puregold-supermarket-partner-logo-280w.webp",
+        "size": 4384,
+        "format": "webp",
+        "width": 280
+      }
+    ],
+    "type": "logo",
+    "processedAt": 1757338274519
+  },
+  "public\\images\\gerry-paglinawan-family-agriko-founders.jpg": {
+    "hash": "d799a82037c3dad575ac53c6d52aa883",
+    "mtime": 1757219978894,
+    "generated": [
+      {
+        "path": "optimized\\images\\gerry-paglinawan-family-agriko-founders-600w.jpeg",
+        "size": 48384,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\gerry-paglinawan-family-agriko-founders-600w.webp",
+        "size": 40666,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338274670
+  },
+  "public\\images\\hero.png": {
+    "hash": "32b15ba0d2a0fa5564162b7f41cb37f7",
+    "mtime": 1757155474144,
+    "generated": [
+      {
+        "path": "optimized\\images\\hero-600w.jpeg",
+        "size": 39575,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\hero-600w.webp",
+        "size": 21208,
+        "format": "webp",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\hero-600w.avif",
+        "size": 25263,
+        "format": "avif",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\hero-1200w.jpeg",
+        "size": 117319,
+        "format": "jpeg",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\images\\hero-1200w.webp",
+        "size": 55322,
+        "format": "webp",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\images\\hero-1200w.avif",
+        "size": 61588,
+        "format": "avif",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\images\\hero-1408w.jpeg",
+        "size": 152410,
+        "format": "jpeg",
+        "width": 1408
+      },
+      {
+        "path": "optimized\\images\\hero-1408w.webp",
+        "size": 70978,
+        "format": "webp",
+        "width": 1408
+      },
+      {
+        "path": "optimized\\images\\hero-1408w.avif",
+        "size": 77402,
+        "format": "avif",
+        "width": 1408
+      }
+    ],
+    "type": "hero",
+    "processedAt": 1757338282859
+  },
+  "public\\images\\gaisano.png": {
+    "hash": "22c2bb720444963d41ddac68472713ba",
+    "mtime": 1757153213786,
+    "generated": [
+      {
+        "path": "optimized\\images\\gaisano-600w.jpeg",
+        "size": 37281,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\gaisano-600w.webp",
+        "size": 68114,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338286198
+  },
+  "public\\images\\find-us.png": {
+    "hash": "a903f7144a28e2cda9e5c265912ea3f8",
+    "mtime": 1757153306382,
+    "generated": [
+      {
+        "path": "optimized\\images\\find-us-600w.jpeg",
+        "size": 72114,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\find-us-600w.webp",
+        "size": 53212,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338286605
+  },
+  "public\\images\\footer-background.jpg": {
+    "hash": "df4663a280519c66c58d66c7c2e26caa",
+    "mtime": 1757153726007,
+    "generated": [
+      {
+        "path": "optimized\\images\\footer-background-600w.jpeg",
+        "size": 41762,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\footer-background-600w.webp",
+        "size": 40014,
+        "format": "webp",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\footer-background-1200w.jpeg",
+        "size": 148049,
+        "format": "jpeg",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\images\\footer-background-1200w.webp",
+        "size": 134880,
+        "format": "webp",
+        "width": 1200
+      }
+    ],
+    "type": "background",
+    "processedAt": 1757338286935
+  },
+  "public\\images\\gaisano-grand-mall-partner-logo.png": {
+    "hash": "22c2bb720444963d41ddac68472713ba",
+    "mtime": 1757220101444,
+    "generated": [
+      {
+        "path": "optimized\\images\\gaisano-grand-mall-partner-logo-300w.png",
+        "size": 13360,
+        "format": "png",
+        "width": 300
+      },
+      {
+        "path": "optimized\\images\\gaisano-grand-mall-partner-logo-300w.webp",
+        "size": 31712,
+        "format": "webp",
+        "width": 300
+      },
+      {
+        "path": "optimized\\images\\gaisano-grand-mall-partner-logo-600w.png",
+        "size": 27630,
+        "format": "png",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\gaisano-grand-mall-partner-logo-600w.webp",
+        "size": 68114,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "logo",
+    "processedAt": 1757338294951
+  },
+  "public\\images\\agriko-turmeric-5in1-blend-180g-organic.jpg": {
+    "hash": "18820209e354e31d035d91dd46cfbfce",
+    "mtime": 1757219962690,
+    "generated": [
+      {
+        "path": "optimized\\images\\agriko-turmeric-5in1-blend-180g-organic-600w.jpeg",
+        "size": 54826,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\agriko-turmeric-5in1-blend-180g-organic-600w.webp",
+        "size": 38198,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338295096
+  },
+  "public\\images\\agriko-turmeric-5in1-blend-500g-health-supplement.jpg": {
+    "hash": "44d81278eb9ebd9d66196523b1c19f57",
+    "mtime": 1757219962718,
+    "generated": [
+      {
+        "path": "optimized\\images\\agriko-turmeric-5in1-blend-500g-health-supplement-600w.jpeg",
+        "size": 62870,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\agriko-turmeric-5in1-blend-500g-health-supplement-600w.webp",
+        "size": 41696,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338295101
+  },
+  "public\\images\\agriko-turmeric-blend-background.png": {
+    "hash": "87c0e6f9d85176c5d1be23474c417201",
+    "mtime": 1757219962781,
+    "generated": [
+      {
+        "path": "optimized\\images\\agriko-turmeric-blend-background-600w.jpeg",
+        "size": 53488,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\agriko-turmeric-blend-background-600w.webp",
+        "size": 55912,
+        "format": "webp",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\agriko-turmeric-blend-background-1200w.jpeg",
+        "size": 187497,
+        "format": "jpeg",
+        "width": 1200
+      },
+      {
+        "path": "optimized\\images\\agriko-turmeric-blend-background-1200w.webp",
+        "size": 181916,
+        "format": "webp",
+        "width": 1200
+      }
+    ],
+    "type": "background",
+    "processedAt": 1757338295524
+  },
+  "public\\images\\agriko-pure-organic-honey-jar.jpg": {
+    "hash": "54f9887cecb3947403727087ba8dd9cc",
+    "mtime": 1757219970098,
+    "generated": [
+      {
+        "path": "optimized\\images\\agriko-pure-organic-honey-jar-300w.jpeg",
+        "size": 13325,
+        "format": "jpeg",
+        "width": 300
+      },
+      {
+        "path": "optimized\\images\\agriko-pure-organic-honey-jar-300w.webp",
+        "size": 8934,
+        "format": "webp",
+        "width": 300
+      },
+      {
+        "path": "optimized\\images\\agriko-pure-organic-honey-jar-600w.jpeg",
+        "size": 43494,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\agriko-pure-organic-honey-jar-600w.webp",
+        "size": 27206,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "product",
+    "processedAt": 1757338295699
+  },
+  "public\\images\\agriko-organic-farm-products-showcase.jpg": {
+    "hash": "10778d0196caf0bd3730ea14188213ae",
+    "mtime": 1757219962752,
+    "generated": [
+      {
+        "path": "optimized\\images\\agriko-organic-farm-products-showcase-300w.jpeg",
+        "size": 11296,
+        "format": "jpeg",
+        "width": 300
+      },
+      {
+        "path": "optimized\\images\\agriko-organic-farm-products-showcase-300w.webp",
+        "size": 6868,
+        "format": "webp",
+        "width": 300
+      },
+      {
+        "path": "optimized\\images\\agriko-organic-farm-products-showcase-600w.jpeg",
+        "size": 32362,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\agriko-organic-farm-products-showcase-600w.webp",
+        "size": 16806,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "product",
+    "processedAt": 1757338295701
+  },
+  "public\\images\\agriko-pure-salabat-ginger-tea-100g.jpg": {
+    "hash": "df34df1450fa8a13505e98147f530f5d",
+    "mtime": 1757219970127,
+    "generated": [
+      {
+        "path": "optimized\\images\\agriko-pure-salabat-ginger-tea-100g-300w.jpeg",
+        "size": 13845,
+        "format": "jpeg",
+        "width": 300
+      },
+      {
+        "path": "optimized\\images\\agriko-pure-salabat-ginger-tea-100g-300w.webp",
+        "size": 9366,
+        "format": "webp",
+        "width": 300
+      },
+      {
+        "path": "optimized\\images\\agriko-pure-salabat-ginger-tea-100g-600w.jpeg",
+        "size": 45366,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\agriko-pure-salabat-ginger-tea-100g-600w.webp",
+        "size": 29056,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "product",
+    "processedAt": 1757338295708
+  },
+  "public\\images\\agriko-organic-farm-landscape-fields.jpg": {
+    "hash": "76c207c01ae65798616efe6f7ce7f940",
+    "mtime": 1757219970069,
+    "generated": [
+      {
+        "path": "optimized\\images\\agriko-organic-farm-landscape-fields-600w.jpeg",
+        "size": 98100,
+        "format": "jpeg",
+        "width": 600
+      },
+      {
+        "path": "optimized\\images\\agriko-organic-farm-landscape-fields-600w.webp",
+        "size": 93832,
+        "format": "webp",
+        "width": 600
+      }
+    ],
+    "type": "regular",
+    "processedAt": 1757338296060
+  },
+  "public\\images\\Agriko-Logo.png": {
+    "hash": "25285ce01369162e3967112451f6551a",
+    "mtime": 1757153429496,
+    "generated": [
+      {
+        "path": "optimized\\images\\Agriko-Logo-300w.png",
+        "size": 16871,
+        "format": "png",
+        "width": 300
+      },
+      {
+        "path": "optimized\\images\\Agriko-Logo-300w.webp",
+        "size": 14252,
+        "format": "webp",
+        "width": 300
+      },
+      {
+        "path": "optimized\\images\\Agriko-Logo-512w.png",
+        "size": 27521,
+        "format": "png",
+        "width": 512
+      },
+      {
+        "path": "optimized\\images\\Agriko-Logo-512w.webp",
+        "size": 21168,
+        "format": "webp",
+        "width": 512
+      }
+    ],
+    "type": "logo",
+    "processedAt": 1757338299884
+  }
+}

@@ -10,13 +10,32 @@ import HeroSection from '@/components/HeroSection';
 export default function CartPage() {
   const { state, updateQuantity, removeItem } = useCart();
 
-  // Handle quantity change
-  const handleQuantityChange = (productId: number, newQuantity: number, variationId?: number) => {
+  // Handle quantity change with validation
+  const handleQuantityChange = (productId: number, newQuantity: number, variationId?: number, maxStock?: number) => {
+    // Validate minimum quantity
     if (newQuantity <= 0) {
       removeItem(productId, variationId);
-    } else {
-      updateQuantity(productId, newQuantity, variationId);
+      return;
     }
+    
+    // Validate maximum quantity against stock
+    if (maxStock && newQuantity > maxStock) {
+      newQuantity = maxStock;
+    }
+    
+    // Ensure quantity is a positive integer
+    const validQuantity = Math.max(1, Math.floor(newQuantity));
+    updateQuantity(productId, validQuantity, variationId);
+  };
+
+  // Handle quantity input change with validation
+  const handleQuantityInputChange = (productId: number, inputValue: string, variationId?: number, maxStock?: number) => {
+    const parsedValue = parseInt(inputValue);
+    if (isNaN(parsedValue) || parsedValue < 1) {
+      // Don't update if invalid, let user correct
+      return;
+    }
+    handleQuantityChange(productId, parsedValue, variationId, maxStock);
   };
 
   if (state.items.length === 0) {
@@ -31,20 +50,50 @@ export default function CartPage() {
           showButtons={false}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            <svg className="mx-auto h-24 w-24 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m4.5-5a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z" />
-            </svg>
-            <h1 className="text-3xl font-bold text-gray-900 mt-4 mb-2">Your cart is empty</h1>
-            <p className="text-lg text-gray-600 mb-8">
-              Start shopping to fill your cart with great products.
+          <div className="text-center max-w-md mx-auto">
+            {/* Enhanced empty cart illustration */}
+            <div className="relative">
+              <svg className="mx-auto h-32 w-32 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m4.5-5a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z" />
+              </svg>
+              {/* Floating organic elements */}
+              <div className="absolute -top-2 -right-4 w-8 h-8 bg-accent-100 rounded-full opacity-60 animate-pulse"></div>
+              <div className="absolute -bottom-3 -left-2 w-6 h-6 bg-primary-100 rounded-full opacity-40 animate-pulse delay-75"></div>
+            </div>
+            
+            <h1 className="text-heading-1 text-neutral-900 mt-6 mb-3">Your cart is empty</h1>
+            <p className="text-lg text-neutral-600 mb-8 leading-relaxed">
+              Discover our premium organic products from Agriko Farm. Fresh rice varieties, herbal powders, and natural health blends await you!
             </p>
-            <Link
-              href="/"
-              className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
-            >
-              Continue Shopping
-            </Link>
+            
+            {/* Featured categories */}
+            <div className="grid grid-cols-2 gap-4 mb-8 text-sm">
+              <div className="bg-accent-50 rounded-lg p-4 text-center">
+                <div className="text-accent-700 font-medium">🌾 Organic Rice</div>
+                <div className="text-neutral-600 mt-1">Black, Brown, Red, White</div>
+              </div>
+              <div className="bg-primary-50 rounded-lg p-4 text-center">
+                <div className="text-primary-700 font-medium">🌿 Herbal Powders</div>
+                <div className="text-neutral-600 mt-1">Turmeric, Ginger, Moringa</div>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <Link
+                href="/"
+                className="inline-block bg-primary-700 text-white px-8 py-4 rounded-lg font-semibold hover:bg-primary-800 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 duration-200"
+              >
+                Explore Our Products
+              </Link>
+              
+              {/* Cart persistence notice */}
+              <p className="text-xs text-neutral-500 flex items-center justify-center mt-4">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                Items you add will be saved for your next visit
+              </p>
+            </div>
           </div>
         </div>
       </>
@@ -62,8 +111,8 @@ export default function CartPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-heading-1 text-neutral-900">Shopping Cart</h1>
+        <p className="text-neutral-600 mt-2">
           {state.itemCount} {state.itemCount === 1 ? 'item' : 'items'} in your cart
         </p>
       </div>
@@ -71,9 +120,9 @@ export default function CartPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
             {/* Desktop Header */}
-            <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
+            <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-neutral-50 border-b border-neutral-200 text-sm font-medium text-neutral-700">
               <div className="col-span-6">Product</div>
               <div className="col-span-2 text-center">Price</div>
               <div className="col-span-2 text-center">Quantity</div>
@@ -105,13 +154,13 @@ export default function CartPage() {
                         <div className="flex-1 min-w-0">
                           <Link 
                             href={`/product/${item.product.slug}`}
-                            className="text-lg font-medium text-gray-900 hover:text-primary-600 transition-colors line-clamp-2"
+                            className="text-lg font-medium text-neutral-900 hover:text-primary-600 transition-colors line-clamp-2"
                           >
                             {item.product.name}
                           </Link>
                           
                           {item.variation && (
-                            <div className="text-sm text-gray-500 mt-1">
+                            <div className="text-sm text-neutral-500 mt-1">
                               {Object.entries(item.variation.attributes).map(([key, value]) => (
                                 <span key={key} className="mr-3">
                                   {key}: {value}
@@ -121,7 +170,7 @@ export default function CartPage() {
                           )}
 
                           {item.product.sku && (
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-neutral-500 mt-1">
                               SKU: {item.product.sku}
                             </p>
                           )}
@@ -138,8 +187,8 @@ export default function CartPage() {
                       {/* Price */}
                       <div className="col-span-1 md:col-span-2 md:text-center">
                         <div className="flex items-center justify-between md:justify-center">
-                          <span className="text-sm text-gray-500 md:hidden">Price:</span>
-                          <span className="font-medium text-gray-900">
+                          <span className="text-sm text-neutral-500 md:hidden">Price:</span>
+                          <span className="font-medium text-neutral-900">
                             {formatPrice(item.product.price)}
                           </span>
                         </div>
@@ -148,12 +197,13 @@ export default function CartPage() {
                       {/* Quantity */}
                       <div className="col-span-1 md:col-span-2">
                         <div className="flex items-center justify-between md:justify-center">
-                          <span className="text-sm text-gray-500 md:hidden">Quantity:</span>
-                          <div className="flex items-center border border-gray-300 rounded-lg">
+                          <span className="text-sm text-neutral-500 md:hidden">Quantity:</span>
+                          <div className="flex items-center border border-neutral-300 rounded-lg">
                             <button
-                              onClick={() => handleQuantityChange(item.product.id, item.quantity - 1, item.variation?.id)}
-                              className="p-2 hover:bg-gray-100 transition-colors"
+                              onClick={() => handleQuantityChange(item.product.id, item.quantity - 1, item.variation?.id, item.product.stock_quantity ?? undefined)}
+                              className="p-2 hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               aria-label="Decrease quantity"
+                              disabled={item.quantity <= 1}
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -162,14 +212,17 @@ export default function CartPage() {
                             <input
                               type="number"
                               min="1"
+                              max={item.product.stock_quantity || 999}
                               value={item.quantity}
-                              onChange={(e) => handleQuantityChange(item.product.id, parseInt(e.target.value) || 1, item.variation?.id)}
-                              className="w-16 p-2 text-center border-0 focus:ring-0"
+                              onChange={(e) => handleQuantityInputChange(item.product.id, e.target.value, item.variation?.id, item.product.stock_quantity ?? undefined)}
+                              className="w-16 p-2 text-center border-0 focus:ring-0 focus:outline-none"
+                              aria-label={`Quantity for ${item.product.name}`}
                             />
                             <button
-                              onClick={() => handleQuantityChange(item.product.id, item.quantity + 1, item.variation?.id)}
-                              className="p-2 hover:bg-gray-100 transition-colors"
+                              onClick={() => handleQuantityChange(item.product.id, item.quantity + 1, item.variation?.id, item.product.stock_quantity ?? undefined)}
+                              className="p-2 hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               aria-label="Increase quantity"
+                              disabled={item.product.stock_quantity ? item.quantity >= item.product.stock_quantity : false}
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -182,9 +235,9 @@ export default function CartPage() {
                       {/* Total */}
                       <div className="col-span-1 md:col-span-2">
                         <div className="flex items-center justify-between md:justify-center">
-                          <span className="text-sm text-gray-500 md:hidden">Total:</span>
+                          <span className="text-sm text-neutral-500 md:hidden">Total:</span>
                           <div className="text-right md:text-center">
-                            <span className="font-semibold text-gray-900">
+                            <span className="font-semibold text-neutral-900">
                               {formatPrice(itemTotal)}
                             </span>
                             <button
@@ -219,34 +272,69 @@ export default function CartPage() {
 
         {/* Order Summary */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Order Summary</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-6 sticky top-6">
+            <h2 className="text-heading-2 text-neutral-900 mb-6">Order Summary</h2>
             
             <div className="space-y-4">
+              {/* Items breakdown */}
+              <div className="space-y-2 pb-2">
+                {state.items.slice(0, 3).map((item, index) => {
+                  const itemKey = `${item.product.id}-${item.variation?.id || 'no-variation'}`;
+                  const itemTotal = parseFloat(item.product.price) * item.quantity;
+                  return (
+                    <div key={itemKey} className="flex justify-between text-sm">
+                      <span className="text-neutral-600 truncate mr-2">
+                        {item.product.name.length > 25 
+                          ? `${item.product.name.substring(0, 25)}...`
+                          : item.product.name
+                        } ({item.quantity}×)
+                      </span>
+                      <span className="font-medium text-neutral-800">{formatPrice(itemTotal)}</span>
+                    </div>
+                  );
+                })}
+                {state.items.length > 3 && (
+                  <div className="flex justify-between text-sm text-neutral-500">
+                    <span>+ {state.items.length - 3} more items</span>
+                    <span>...</span>
+                  </div>
+                )}
+              </div>
+
+              <hr className="border-neutral-200" />
+
               {/* Subtotal */}
               <div className="flex justify-between">
-                <span className="text-gray-600">Subtotal ({state.itemCount} items)</span>
-                <span className="font-medium">{formatPrice(state.total)}</span>
+                <span className="text-neutral-600">Subtotal ({state.itemCount} items)</span>
+                <span className="font-semibold text-neutral-900">{formatPrice(state.total)}</span>
               </div>
 
               {/* Shipping */}
               <div className="flex justify-between">
-                <span className="text-gray-600">Shipping</span>
-                <span className="font-medium">Calculated at checkout</span>
+                <span className="text-neutral-600">Shipping</span>
+                <span className="font-medium text-primary-600">Free delivery*</span>
               </div>
 
               {/* Tax */}
               <div className="flex justify-between">
-                <span className="text-gray-600">Tax</span>
+                <span className="text-neutral-600">Tax</span>
                 <span className="font-medium">Calculated at checkout</span>
               </div>
 
-              <hr className="border-gray-200" />
+              <hr className="border-neutral-200" />
 
               {/* Total */}
               <div className="flex justify-between">
-                <span className="text-lg font-semibold text-gray-900">Total</span>
-                <span className="text-lg font-bold text-gray-900">{formatPrice(state.total)}</span>
+                <span className="text-lg font-semibold text-neutral-900">Total</span>
+                <span className="text-xl font-bold text-primary-700">{formatPrice(state.total)}</span>
+              </div>
+
+              {/* Savings indicator */}
+              <div className="text-center text-sm text-primary-600 bg-primary-50 rounded-lg p-2">
+                <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
+                You&apos;re saving on shipping costs!
               </div>
             </div>
 
@@ -259,7 +347,7 @@ export default function CartPage() {
             </Link>
 
             {/* Secure Checkout Notice */}
-            <div className="flex items-center justify-center mt-4 text-sm text-gray-500">
+            <div className="flex items-center justify-center mt-4 text-sm text-neutral-500">
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>

@@ -14,6 +14,7 @@ import AddToCartButton from './AddToCartButton';
 import ProductGallery from './ProductGallery';
 import RelatedProducts from './RelatedProducts';
 import Link from 'next/link';
+import Breadcrumb from '@/components/Breadcrumb';
 
 interface ProductPageProps {
   params: Promise<{
@@ -158,49 +159,19 @@ async function ProductContent({ slug }: { slug: string }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       
+      {/* Breadcrumbs */}
+      <Breadcrumb 
+        items={[
+          { name: 'Products', href: '/' },
+          ...(product.categories && product.categories.length > 0 
+            ? [{ name: product.categories[0].name }] 
+            : []
+          ),
+          { name: product.name }
+        ]}
+      />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumbs */}
-        <nav className="flex mb-8" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-3">
-            <li className="inline-flex items-center">
-              <Link href="/" className="text-gray-700 hover:text-primary-600">
-                Home
-              </Link>
-            </li>
-            <li>
-              <div className="flex items-center">
-                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                </svg>
-                <Link href="/products" className="ml-1 text-gray-700 hover:text-primary-600 md:ml-2">
-                  Products
-                </Link>
-              </div>
-            </li>
-            {product.categories && product.categories.length > 0 && (
-              <li>
-                <div className="flex items-center">
-                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                  <span className="ml-1 text-gray-700 md:ml-2">
-                    {product.categories[0].name}
-                  </span>
-                </div>
-              </li>
-            )}
-            <li aria-current="page">
-              <div className="flex items-center">
-                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                </svg>
-                <span className="ml-1 text-gray-500 md:ml-2 truncate">
-                  {product.name}
-                </span>
-              </div>
-            </li>
-          </ol>
-        </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
@@ -211,7 +182,7 @@ async function ProductContent({ slug }: { slug: string }) {
           {/* Product Information */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-heading-1 text-gray-900 mb-2">
                 {product.name}
               </h1>
               
@@ -278,7 +249,7 @@ async function ProductContent({ slug }: { slug: string }) {
             {/* Product Categories */}
             {product.categories && product.categories.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-2">Categories:</h3>
+                <h3 className="text-heading-3 text-gray-900 mb-2">Categories:</h3>
                 <div className="flex flex-wrap gap-2">
                   {product.categories.map((category) => (
                     <span
@@ -295,7 +266,7 @@ async function ProductContent({ slug }: { slug: string }) {
             {/* Product Tags */}
             {product.tags && product.tags.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-2">Tags:</h3>
+                <h3 className="text-heading-3 text-gray-900 mb-2">Tags:</h3>
                 <div className="flex flex-wrap gap-2">
                   {product.tags.map((tag) => (
                     <span
@@ -314,7 +285,7 @@ async function ProductContent({ slug }: { slug: string }) {
         {/* Product Description */}
         {product.description && (
           <div className="mt-16 border-t border-gray-200 pt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Product Details</h2>
+            <h2 className="text-heading-2 text-gray-900 mb-6">Product Details</h2>
             <div 
               className="prose prose-lg max-w-none"
               dangerouslySetInnerHTML={{ __html: product.description }}

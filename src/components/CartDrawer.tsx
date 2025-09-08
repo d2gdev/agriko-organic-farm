@@ -24,7 +24,7 @@ export default function CartDrawer() {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-heading-2 text-gray-900">
               Shopping Cart ({state.itemCount})
             </h2>
             <button
@@ -44,7 +44,7 @@ export default function CartDrawer() {
                 <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m4.5-5a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Your cart is empty</h3>
+                <h3 className="text-heading-3 text-gray-900 mb-2">Your cart is empty</h3>
                 <p className="text-gray-500 mb-6">Start shopping to fill your cart with great products.</p>
                 <Link
                   href="/"
