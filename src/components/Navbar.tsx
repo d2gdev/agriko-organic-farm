@@ -74,6 +74,7 @@ export default function Navbar({
     { name: 'Find Us', href: '/find-us', icon: '📍' },
     { name: 'FAQ', href: '/faq', icon: '❓' },
     { name: 'Contact', href: '/contact', icon: '📞' },
+    { name: 'Cart', href: '/cart', icon: '🛒' },
     { name: 'Visit Farm', href: 'https://www.booking.com/hotel/ph/paglinawan-organic-eco-farm.en-gb.html', icon: '🚜', external: true },
   ];
 
