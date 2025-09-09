@@ -33,7 +33,9 @@
       "WebFetch(domain:medium.com)",
       "Bash(rd:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "mcp__github-official__list_workflow_runs",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
