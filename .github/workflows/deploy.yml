@@ -1,248 +1,44 @@
-name: Deploy Agriko to Production
+name: Deploy to Server
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Deployment environment'
-        required: true
-        default: 'production'
-        type: choice
-        options:
-          - production
-          - staging
-
-env:
-  NODE_VERSION: '18'
-  BUILD_PATH: 'out'
 
 jobs:
-  # Quality checks job
-  quality-checks:
-    name: Quality Checks
+  deploy:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+      
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ env.NODE_VERSION }}
+        node-version: '22'
         cache: 'npm'
-    
+        
     - name: Install dependencies
-      run: npm ci --production=false
-    
-    - name: Run linting
-      run: npm run lint
-    
-    - name: Run type checking
-      run: npm run type-check
-    
-    - name: Cache quality checks
-      uses: actions/cache@v3
-      with:
-        path: |
-          .next/cache
-          node_modules/.cache
-        key: ${{ runner.os }}-quality-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-quality-
-
-  # Build job
-  build:
-    name: Build Application
-    runs-on: ubuntu-latest
-    needs: quality-checks
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-    
-    - name: Cache Next.js build
-      uses: actions/cache@v4
-      with:
-        # See here for caching with `yarn`, `bun` or other package managers https://github.com/actions/cache/blob/main/examples.md or you can leverage caching with actions/setup-node https://github.com/actions/setup-node
-        path: |
-          ~/.npm
-          ${{ github.workspace }}/.next/cache
-        # Generate a new cache whenever packages or source files change.
-        key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
-        # If source files changed but packages didn't, rebuild from a prior cache.
-        restore-keys: |
-          ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
-    
-    - name: Install dependencies
-      run: npm ci --production=false
-    
+      run: npm ci
+      
     - name: Build application
-      run: npm run build:export
+      run: npm run build
       env:
-        NODE_ENV: production
-        NEXT_PUBLIC_WC_API_URL: ${{ secrets.WC_API_URL }}
+        NEXT_PUBLIC_WC_API_URL: ${{ secrets.NEXT_PUBLIC_WC_API_URL }}
         WC_CONSUMER_KEY: ${{ secrets.WC_CONSUMER_KEY }}
         WC_CONSUMER_SECRET: ${{ secrets.WC_CONSUMER_SECRET }}
-    
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-files
-        path: ${{ env.BUILD_PATH }}
-        retention-days: 1
-    
-    - name: Generate deployment summary
-      run: |
-        echo "## 🚀 Build Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- **Build Path:** \`${{ env.BUILD_PATH }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "- **Node Version:** \`${{ env.NODE_VERSION }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "- **Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "- **Build Time:** $(date)" >> $GITHUB_STEP_SUMMARY
         
-        # Count files
-        if [ -d "${{ env.BUILD_PATH }}" ]; then
-          FILE_COUNT=$(find ${{ env.BUILD_PATH }} -type f | wc -l)
-          DIR_SIZE=$(du -sh ${{ env.BUILD_PATH }} | cut -f1)
-          echo "- **Files Generated:** $FILE_COUNT" >> $GITHUB_STEP_SUMMARY
-          echo "- **Total Size:** $DIR_SIZE" >> $GITHUB_STEP_SUMMARY
-        fi
-
-  # Security scan job
-  security-scan:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    needs: quality-checks
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.2.0
       with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-    
-    - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      continue-on-error: true
-      with:
-        sarif_file: 'trivy-results.sarif'
-
-  # Deploy job
-  deploy:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [build, security-scan]
-    if: github.ref == 'refs/heads/main' && needs.build.result == 'success'
-    
-    environment:
-      name: production
-      url: https://shop.agrikoph.com
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: build-files
-        path: ${{ env.BUILD_PATH }}
-    
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GH_TOKEN }}
-        publish_dir: ${{ env.BUILD_PATH }}
-        publish_branch: gh-pages
-        force_orphan: true
-    
-    - name: Verify deployment
-      run: |
-        # Wait for GitHub Pages to be ready
-        sleep 10
-        
-        # Get the repository info
-        REPO_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
-        
-        echo "Checking deployment at: $REPO_URL"
-        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $REPO_URL || echo "000")
-        
-        if [ "$HTTP_STATUS" = "200" ]; then
-          echo "✅ Deployment successful! Site is live at $REPO_URL"
-        else
-          echo "⚠️  Warning: Site returned HTTP $HTTP_STATUS"
-          echo "GitHub Pages may still be processing the deployment"
-        fi
-    
-    - name: Create deployment summary
-      if: always()
-      run: |
-        REPO_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
-        
-        echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- **Environment:** GitHub Pages" >> $GITHUB_STEP_SUMMARY
-        echo "- **URL:** $REPO_URL" >> $GITHUB_STEP_SUMMARY
-        echo "- **Deployment Time:** $(date)" >> $GITHUB_STEP_SUMMARY
-        echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "- **Actor:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-        
-        # Check final status
-        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $REPO_URL || echo "000")
-        if [ "$HTTP_STATUS" = "200" ]; then
-          echo "- **Status:** ✅ Live" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "- **Status:** ⏳ Processing" >> $GITHUB_STEP_SUMMARY
-        fi
-    
-    - name: Notify on failure
-      if: failure()
-      uses: actions/github-script@v7
-      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          const issue = await github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: '🚨 Deployment Failed',
-            body: `Deployment to production failed for commit \`${context.sha}\`\n\nWorkflow: ${context.workflow}\nActor: @${context.actor}\nTime: ${new Date().toISOString()}`,
-            labels: ['deployment', 'bug']
-          });
-
-  # Performance monitoring job (runs after deployment)
-  performance-check:
-    name: Performance Check
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Lighthouse CI
-      uses: treosh/lighthouse-ci-action@v10
-      with:
-        urls: |
-          https://shop.agrikoph.com
-          https://shop.agrikoph.com/about
-          https://shop.agrikoph.com/cart
-        uploadArtifacts: true
-        temporaryPublicStorage: true
-        
-    - name: Comment performance results
-      uses: actions/github-script@v7
-      if: github.event_name == 'pull_request'
-      with:
-        script: |
-          // Performance results will be automatically commented by Lighthouse CI
+          cd ${{ secrets.DEPLOY_PATH }}
+          git pull origin main
+          npm ci --omit=dev
+          npm run build
+          pm2 restart agriko || pm2 start npm --name 'agriko' -- start
+          pm2 save
