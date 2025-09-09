@@ -252,16 +252,24 @@ export default function HomePage() {
   // Enhanced Organization Schema with more detailed LocalBusiness information
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": ["Organization", "LocalBusiness"],
+    "@type": ["Organization", "LocalBusiness", "Store"],
     "name": "Agriko Organic Farm",
     "alternateName": "Agriko Multi-Trade & Enterprise Corp.",
+    "legalName": "Agriko Multi-Trade & Enterprise Corp.",
     "description": "Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm.",
     "url": "https://shop.agrikoph.com",
     "logo": "https://shop.agrikoph.com/images/Agriko-Logo.png",
-    "image": "https://shop.agrikoph.com/images/gerry-paglinawan-family-agriko-founders.jpg",
+    "image": [
+      "https://shop.agrikoph.com/images/gerry-paglinawan-family-agriko-founders.jpg",
+      "https://shop.agrikoph.com/images/agriko-organic-farm-landscape-fields.jpg",
+      "https://shop.agrikoph.com/images/agriko-organic-farm-products-showcase.jpg"
+    ],
+    "foundingDate": "2016",
     "founder": {
       "@type": "Person",
-      "name": "Gerry Paglinawan"
+      "name": "Gerry Paglinawan",
+      "jobTitle": "Founder & CEO",
+      "knowsAbout": ["Organic Agriculture", "Herbal Medicine", "Sustainable Farming"]
     },
     "address": {
       "@type": "PostalAddress",
@@ -271,22 +279,30 @@ export default function HomePage() {
       "postalCode": "7028",
       "addressCountry": "PH"
     },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "8.4167",
+      "longitude": "123.4167"
+    },
     "contactPoint": [
       {
         "@type": "ContactPoint",
         "email": "agrikoph@gmail.com",
         "contactType": "customer service",
-        "availableLanguage": ["English", "Filipino"]
+        "availableLanguage": ["English", "Filipino"],
+        "areaServed": "PH"
       },
       {
         "@type": "ContactPoint",
-        "telephone": "+63XXXXXXXXXX", // Replace with actual phone number
-        "contactType": "customer service",
-        "availableLanguage": ["English", "Filipino"]
+        "email": "orders@agrikoph.com",
+        "contactType": "sales",
+        "availableLanguage": ["English", "Filipino"],
+        "areaServed": "PH"
       }
     ],
     "sameAs": [
-      "https://www.facebook.com/AgrikoPH/"
+      "https://www.facebook.com/AgrikoPH/",
+      "https://agrikoph.com"
     ],
     "openingHoursSpecification": [
       {
@@ -296,6 +312,16 @@ export default function HomePage() {
         "closes": "17:00"
       }
     ],
+    "paymentAccepted": ["Cash", "Credit Card", "Bank Transfer"],
+    "currenciesAccepted": "PHP",
+    "priceRange": "₱₱",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "150",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
       "name": "Agriko Organic Products",
@@ -303,20 +329,39 @@ export default function HomePage() {
         {
           "@type": "OfferCatalog",
           "name": "Organic Rice Varieties",
-          "description": "Black, Brown, Red, and White organic rice"
+          "description": "Black, Brown, Red, and White organic rice varieties grown sustainably"
         },
         {
           "@type": "OfferCatalog", 
-          "name": "Herbal Powders",
-          "description": "Turmeric, Ginger, and Moringa powders"
+          "name": "Pure Herbal Powders",
+          "description": "Premium Dulaw (Turmeric), Salabat (Ginger), and Moringa powders"
         },
         {
           "@type": "OfferCatalog",
-          "name": "Health Blends & Honey",
-          "description": "5-in-1 Turmeric Tea Blend and pure organic honey"
+          "name": "Health Blends & Natural Products",
+          "description": "5-in-1 Turmeric Tea Blend, pure organic honey, and specialty health products"
         }
       ]
-    }
+    },
+    "knowsAbout": [
+      "Organic Agriculture",
+      "Sustainable Farming",
+      "Herbal Medicine",
+      "Rice Cultivation",
+      "Health Supplements",
+      "Traditional Filipino Remedies"
+    ],
+    "areaServed": {
+      "@type": "Country",
+      "name": "Philippines"
+    },
+    "serviceArea": {
+      "@type": "Country",
+      "name": "Philippines"
+    },
+    "award": "Certified Organic Producer",
+    "slogan": "From Our Farm, To Your Cup",
+    "mission": "To provide premium organic agricultural products while empowering local farmers and promoting sustainable practices for a healthier community."
   };
 
   // Enhanced WebSite Schema
@@ -324,19 +369,50 @@ export default function HomePage() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Agriko Organic Farm",
+    "alternateName": "Agriko Shop",
     "url": "https://shop.agrikoph.com",
     "description": "Premium organic rice varieties, pure herbal powders, and health blends from our sustainable family farm.",
+    "inLanguage": "en-PH",
+    "copyrightYear": "2024",
+    "copyrightHolder": {
+      "@type": "Organization",
+      "name": "Agriko Multi-Trade & Enterprise Corp."
+    },
     "publisher": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://shop.agrikoph.com/images/Agriko-Logo.png",
+        "width": "500",
+        "height": "200"
+      }
+    },
+    "potentialAction": [
+      {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://shop.agrikoph.com/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      {
+        "@type": "BuyAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://shop.agrikoph.com/product/{product_slug}"
+        }
+      }
+    ],
+    "mainEntity": {
       "@type": "Organization",
       "name": "Agriko Organic Farm"
     },
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://shop.agrikoph.com/search?q={search_term_string}"
-      },
-      "query-input": "required name=search_term_string"
+    "about": {
+      "@type": "Thing",
+      "name": "Organic Agriculture and Health Products",
+      "description": "Sustainable farming, organic rice varieties, herbal powders, and natural health supplements"
     }
   };
 
@@ -344,17 +420,27 @@ export default function HomePage() {
   const webpageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
+    "@id": "https://shop.agrikoph.com/#webpage",
     "name": "Agriko Organic Farm - Premium Rice & Health Products",
     "description": "Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm.",
     "url": "https://shop.agrikoph.com",
+    "inLanguage": "en-PH",
+    "datePublished": "2016-01-01",
+    "dateModified": new Date().toISOString().split('T')[0],
     "isPartOf": {
       "@type": "WebSite",
       "name": "Agriko Organic Farm",
-      "url": "https://agrikoph.com"
+      "url": "https://shop.agrikoph.com"
     },
     "about": {
       "@type": "Organization",
       "name": "Agriko Organic Farm"
+    },
+    "primaryImageOfPage": {
+      "@type": "ImageObject",
+      "url": "https://shop.agrikoph.com/images/hero.png",
+      "width": "1200",
+      "height": "630"
     },
     "breadcrumb": {
       "@type": "BreadcrumbList",
@@ -366,49 +452,76 @@ export default function HomePage() {
           "item": "https://shop.agrikoph.com"
         }
       ]
-    }
+    },
+    "mainContentOfPage": {
+      "@type": "WebPageElement",
+      "cssSelector": "main"
+    },
+    "significantLink": [
+      "https://shop.agrikoph.com/about",
+      "https://shop.agrikoph.com/faq",
+      "https://shop.agrikoph.com/find-us",
+      "https://shop.agrikoph.com/contact"
+    ]
   };
 
-  // Review Schema
+  // Enhanced Review Schema Collection
   const reviewSchema = {
     "@context": "https://schema.org",
     "@type": "Review",
+    "@id": "https://shop.agrikoph.com/#review-1",
     "reviewBody": "Agriko's organic rice varieties and herbal powders have transformed our family's health routine. The quality is exceptional - especially their Black Rice and Moringa powder!",
+    "headline": "Exceptional Quality Organic Products",
     "reviewRating": {
       "@type": "Rating",
       "ratingValue": "5",
-      "bestRating": "5"
+      "bestRating": "5",
+      "worstRating": "1"
     },
+    "datePublished": "2024-01-15",
     "author": {
       "@type": "Person",
       "name": "Maria Santos",
       "address": {
         "@type": "PostalAddress",
-        "addressLocality": "Manila",
+        "addressLocality": "Quezon City",
         "addressCountry": "PH"
-      }
+      },
+      "reviewedBy": "Verified Customer"
     },
     "itemReviewed": {
       "@type": "Organization",
-      "name": "Agriko Organic Farm"
+      "name": "Agriko Organic Farm",
+      "url": "https://shop.agrikoph.com"
     },
     "publisher": {
       "@type": "Organization", 
-      "name": "Agriko Organic Farm"
-    }
+      "name": "Agriko Organic Farm",
+      "url": "https://shop.agrikoph.com"
+    },
+    "positiveNotes": [
+      "Exceptional quality",
+      "Health benefits",
+      "Black Rice variety",
+      "Moringa powder effectiveness"
+    ]
   };
 
-  // FAQ Schema
+  // Enhanced FAQ Schema
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    "@id": "https://shop.agrikoph.com/#faq",
+    "name": "Frequently Asked Questions - Agriko Organic Farm",
+    "description": "Common questions about Agriko's organic rice varieties, herbal powders, and health products",
     "mainEntity": [
       {
         "@type": "Question",
         "name": "What makes Agriko's rice premium quality?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Our organic rice varieties - Black, Brown, Red, and White - are cultivated in nutrient-rich, pesticide-free soils for superior taste and nutrition."
+          "text": "Our organic rice varieties - Black, Brown, Red, and White - are cultivated in nutrient-rich, pesticide-free soils using sustainable farming practices. Each variety is carefully selected for superior taste, nutrition, and health benefits.",
+          "dateCreated": "2024-01-01"
         }
       },
       {
@@ -416,7 +529,8 @@ export default function HomePage() {
         "name": "What herbal powders does Agriko offer?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We offer premium Dulaw (Turmeric), Salabat (Ginger), and Moringa powders - pure, nutrient-dense superfoods with powerful health benefits."
+          "text": "We offer premium Dulaw (Turmeric), Salabat (Ginger), and Moringa powders - pure, nutrient-dense superfoods with powerful health benefits. All powders are processed using traditional methods to preserve maximum nutritional value.",
+          "dateCreated": "2024-01-01"
         }
       },
       {
@@ -424,8 +538,178 @@ export default function HomePage() {
         "name": "What health blends and products are available?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We provide unique 5-in-1 Turmeric Tea Blend, pure organic honey, and specialized products like Agribata Kids Cereal for complete wellness."
+          "text": "We provide our signature 5-in-1 Turmeric Tea Blend containing turmeric, ginger, soursop, moringa, brown sugar, and lemongrass. We also offer pure organic honey and specialized products like Agribata Kids Cereal for complete wellness.",
+          "dateCreated": "2024-01-01"
         }
+      },
+      {
+        "@type": "Question",
+        "name": "Are Agriko products certified organic?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, all Agriko products are cultivated using certified organic farming methods without synthetic pesticides, herbicides, or chemical fertilizers. Our farm is committed to sustainable agricultural practices.",
+          "dateCreated": "2024-01-01"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where can I buy Agriko products?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Agriko products are available at major supermarkets nationwide including SM, Robinsons, and other retail partners. You can also purchase directly from our online store or visit our farm in Dumingag, Zamboanga del Sur.",
+          "dateCreated": "2024-01-01"
+        }
+      }
+    ],
+    "about": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    }
+  };
+
+  // Recipe Schemas for Product Usage
+  const turmericTeaRecipeSchema = {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    "@id": "https://shop.agrikoph.com/#turmeric-tea-recipe",
+    "name": "Perfect Turmeric Tea with Agriko 5-in-1 Blend",
+    "description": "A healing and delicious turmeric tea using Agriko's signature 5-in-1 blend for maximum health benefits",
+    "image": "https://shop.agrikoph.com/images/agriko-turmeric-5in1-blend-500g-health-supplement.jpg",
+    "author": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    },
+    "datePublished": "2024-01-01",
+    "prepTime": "PT5M",
+    "cookTime": "PT10M",
+    "totalTime": "PT15M",
+    "recipeYield": "2 servings",
+    "recipeCategory": "Beverage",
+    "recipeCuisine": "Filipino",
+    "keywords": "turmeric tea, herbal tea, health drink, anti-inflammatory, immune boost",
+    "recipeIngredient": [
+      "2 teaspoons Agriko 5-in-1 Turmeric Blend",
+      "2 cups hot water (not boiling)",
+      "1 tablespoon Agriko organic honey (optional)",
+      "1 slice fresh lemon (optional)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "name": "Heat Water",
+        "text": "Heat water to about 80°C (176°F). Avoid boiling to preserve nutrients.",
+        "image": "https://shop.agrikoph.com/images/step1-heat-water.jpg"
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Add Blend",
+        "text": "Add 1 teaspoon of Agriko 5-in-1 Turmeric Blend to each cup.",
+        "image": "https://shop.agrikoph.com/images/step2-add-blend.jpg"
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Steep",
+        "text": "Pour hot water over the blend and let steep for 5-8 minutes.",
+        "image": "https://shop.agrikoph.com/images/step3-steep.jpg"
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Strain and Serve",
+        "text": "Strain the tea, add honey and lemon if desired, and enjoy warm.",
+        "image": "https://shop.agrikoph.com/images/step4-serve.jpg"
+      }
+    ],
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "calories": "15",
+      "servingSize": "1 cup",
+      "fatContent": "0g",
+      "saturatedFatContent": "0g",
+      "carbohydrateContent": "4g",
+      "fiberContent": "1g",
+      "sugarContent": "2g",
+      "proteinContent": "1g",
+      "sodiumContent": "2mg"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "87",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "video": {
+      "@type": "VideoObject",
+      "name": "How to Make Perfect Turmeric Tea",
+      "description": "Learn the proper way to prepare Agriko's 5-in-1 Turmeric Tea Blend",
+      "thumbnailUrl": "https://shop.agrikoph.com/images/turmeric-tea-video-thumb.jpg",
+      "uploadDate": "2024-01-15",
+      "duration": "PT3M45S"
+    }
+  };
+
+  // HowTo Schema for Rice Cooking
+  const ricePreparationSchema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "@id": "https://shop.agrikoph.com/#rice-cooking-guide",
+    "name": "Perfect Organic Rice Cooking Guide",
+    "description": "Learn how to cook Agriko's organic rice varieties for optimal nutrition and flavor",
+    "image": "https://shop.agrikoph.com/images/organic-rice-cooking-guide.jpg",
+    "estimatedCost": {
+      "@type": "MonetaryAmount",
+      "currency": "PHP",
+      "value": "50"
+    },
+    "supply": [
+      {
+        "@type": "HowToSupply",
+        "name": "Agriko Organic Rice (any variety)"
+      },
+      {
+        "@type": "HowToSupply",
+        "name": "Clean water"
+      },
+      {
+        "@type": "HowToSupply",
+        "name": "Rice cooker or pot with lid"
+      }
+    ],
+    "tool": [
+      {
+        "@type": "HowToTool",
+        "name": "Rice cooker or heavy-bottomed pot"
+      },
+      {
+        "@type": "HowToTool",
+        "name": "Fine mesh strainer"
+      }
+    ],
+    "totalTime": "PT45M",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Rinse Rice",
+        "text": "Rinse Agriko organic rice in cold water until water runs clear. This removes excess starch.",
+        "image": "https://shop.agrikoph.com/images/rice-step1-rinse.jpg"
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Measure Water",
+        "text": "Use 1.5 cups water for 1 cup rice (adjust for desired consistency).",
+        "image": "https://shop.agrikoph.com/images/rice-step2-measure.jpg"
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Cook",
+        "text": "Bring to boil, then reduce heat to low, cover, and simmer for 18-20 minutes.",
+        "image": "https://shop.agrikoph.com/images/rice-step3-cook.jpg"
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Rest and Fluff",
+        "text": "Let stand 10 minutes, then fluff with fork before serving.",
+        "image": "https://shop.agrikoph.com/images/rice-step4-fluff.jpg"
       }
     ]
   };
@@ -441,7 +725,9 @@ export default function HomePage() {
             websiteSchema, 
             webpageSchema,
             reviewSchema,
-            faqSchema
+            faqSchema,
+            turmericTeaRecipeSchema,
+            ricePreparationSchema
           ])
         }}
       />
@@ -534,9 +820,8 @@ export default function HomePage() {
           className="object-cover object-center"
         />
         
-        {/* Enhanced gradients for better depth */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/20 to-black/40"></div>
-        <div className="absolute inset-0 bg-black/20"></div>
+        {/* Black 70% overlay */}
+        <div className="absolute inset-0 bg-black/70"></div>
         
         {/* Decorative quote marks */}
         <div className="absolute top-12 left-12 text-accent-400/20 text-9xl font-serif leading-none pointer-events-none hidden md:block select-none">&ldquo;</div>

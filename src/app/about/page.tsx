@@ -49,19 +49,33 @@ export async function generateViewport() {
 }
 
 export default function AboutPage() {
-  // Organization Schema for About Page
+  // Enhanced Organization Schema for About Page
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": ["Organization", "LocalBusiness"],
+    "@type": ["Organization", "LocalBusiness", "Store"],
     "name": "Agriko Organic Farm",
     "alternateName": "Agriko Multi-Trade & Enterprise Corp.",
-    "description": "Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm.",
-    "url": "https://agrikoph.com",
-    "logo": "https://agrikoph.com/Agriko-Logo.png",
+    "legalName": "Agriko Multi-Trade & Enterprise Corp.",
+    "description": "Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm. Founded in 2016 by Gerry Paglinawan, we are committed to providing premium organic agricultural products while empowering local farmers.",
+    "url": "https://shop.agrikoph.com",
+    "mainEntityOfPage": "https://shop.agrikoph.com/about",
+    "logo": "https://shop.agrikoph.com/images/Agriko-Logo.png",
+    "image": [
+      "https://shop.agrikoph.com/images/gerry-paglinawan-family-agriko-founders.jpg",
+      "https://shop.agrikoph.com/images/agriko-organic-farm-landscape-fields.jpg",
+      "https://shop.agrikoph.com/images/agriko-organic-farm-products-showcase.jpg"
+    ],
     "foundingDate": "2016",
     "founder": {
       "@type": "Person",
-      "name": "Gerry Paglinawan"
+      "name": "Gerry Paglinawan",
+      "jobTitle": "Founder & CEO",
+      "description": "Organic agriculturist and founder of Agriko, passionate about natural healing and sustainable farming practices.",
+      "knowsAbout": ["Organic Agriculture", "Herbal Medicine", "Sustainable Farming", "Turmeric Cultivation"],
+      "memberOf": {
+        "@type": "Organization",
+        "name": "Agriko Multi-Trade & Enterprise Corp."
+      }
     },
     "address": {
       "@type": "PostalAddress",
@@ -71,20 +85,80 @@ export default function AboutPage() {
       "postalCode": "7028",
       "addressCountry": "PH"
     },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "8.4167",
+      "longitude": "123.4167"
+    },
     "contactPoint": [
       {
         "@type": "ContactPoint",
         "email": "agrikoph@gmail.com",
         "contactType": "customer service",
-        "availableLanguage": ["English", "Filipino"]
+        "availableLanguage": ["English", "Filipino"],
+        "areaServed": "PH"
+      },
+      {
+        "@type": "ContactPoint",
+        "email": "orders@agrikoph.com",
+        "contactType": "sales",
+        "availableLanguage": ["English", "Filipino"],
+        "areaServed": "PH"
       }
     ],
     "sameAs": [
-      "https://www.facebook.com/AgrikoPH/"
-    ]
+      "https://www.facebook.com/AgrikoPH/",
+      "https://agrikoph.com"
+    ],
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Agriko Organic Products",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Product",
+            "name": "5-in-1 Turmeric Tea Blend",
+            "description": "Premium health blend containing turmeric, ginger, soursop, moringa, brown sugar, and lemongrass"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Product",
+            "name": "Organic Rice Varieties",
+            "description": "Black, Brown, Red, and White organic rice varieties"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Product",
+            "name": "Pure Herbal Powders",
+            "description": "Dulaw (Turmeric), Salabat (Ginger), and Moringa powders"
+          }
+        }
+      ]
+    },
+    "knowsAbout": [
+      "Organic Agriculture",
+      "Sustainable Farming",
+      "Herbal Medicine",
+      "Rice Cultivation",
+      "Health Supplements",
+      "Traditional Filipino Remedies",
+      "5-in-1 Turmeric Blend"
+    ],
+    "areaServed": {
+      "@type": "Country",
+      "name": "Philippines"
+    },
+    "award": "Certified Organic Producer",
+    "slogan": "From Our Farm, To Your Cup - Agree ka? Agriko!",
+    "mission": "To provide premium organic agricultural products while empowering local farmers and promoting sustainable practices for a healthier community."
   };
 
-  // Breadcrumb Schema for About Page
+  // Enhanced Breadcrumb Schema for About Page
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -93,15 +167,74 @@ export default function AboutPage() {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://agrikoph.com"
+        "item": "https://shop.agrikoph.com"
       },
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "About",
-        "item": "https://agrikoph.com/about"
+        "name": "About Us",
+        "item": "https://shop.agrikoph.com/about"
       }
     ]
+  };
+
+  // About Page WebPage Schema
+  const aboutPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "@id": "https://shop.agrikoph.com/about#webpage",
+    "name": "About Agriko Organic Farm - Our Story and Mission",
+    "description": "Learn about Agriko Organic Farm's journey from a personal health challenge to a mission of providing premium organic products and empowering local farmers.",
+    "url": "https://shop.agrikoph.com/about",
+    "inLanguage": "en-PH",
+    "datePublished": "2016-01-01",
+    "dateModified": new Date().toISOString().split('T')[0],
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Agriko Organic Farm",
+      "url": "https://shop.agrikoph.com"
+    },
+    "about": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    },
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    },
+    "primaryImageOfPage": {
+      "@type": "ImageObject",
+      "url": "https://shop.agrikoph.com/images/Agriko-Logo.png",
+      "width": "500",
+      "height": "200"
+    }
+  };
+
+  // Story Schema - highlighting the founder's journey
+  const storySchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "The Agriko Story: From Health Challenge to Wellness Mission",
+    "description": "Discover how founder Gerry Paglinawan transformed his health challenge in 2013 into a mission to provide premium organic products and empower local farmers.",
+    "author": {
+      "@type": "Person",
+      "name": "Gerry Paglinawan",
+      "jobTitle": "Founder & CEO"
+    },
+    "datePublished": "2016-01-01",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://shop.agrikoph.com/images/Agriko-Logo.png"
+      }
+    },
+    "mainEntityOfPage": "https://shop.agrikoph.com/about",
+    "about": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    }
   };
 
   return (
@@ -110,7 +243,7 @@ export default function AboutPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([organizationSchema, breadcrumbSchema])
+          __html: JSON.stringify([organizationSchema, breadcrumbSchema, aboutPageSchema, storySchema])
         }}
       />
       

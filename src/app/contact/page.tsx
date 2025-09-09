@@ -3,35 +3,51 @@ import Link from 'next/link';
 import Breadcrumb from '@/components/Breadcrumb';
 
 export default function ContactPage() {
-  // Organization Schema for Contact Page
+  // Enhanced Organization Schema for Contact Page
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": ["Organization", "LocalBusiness"],
+    "@type": ["Organization", "LocalBusiness", "Store"],
     "name": "Agriko Organic Farm",
     "alternateName": "Agriko Multi-Trade & Enterprise Corp.",
+    "legalName": "Agriko Multi-Trade & Enterprise Corp.",
     "description": "Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm.",
-    "url": "https://agrikoph.com",
-    "logo": "https://agrikoph.com/images/Agriko-Logo.png",
+    "url": "https://shop.agrikoph.com",
+    "logo": "https://shop.agrikoph.com/images/Agriko-Logo.png",
     "founder": {
       "@type": "Person",
-      "name": "Gerry Paglinawan"
+      "name": "Gerry Paglinawan",
+      "jobTitle": "Founder & CEO"
     },
     "address": [
       {
         "@type": "PostalAddress",
+        "@id": "https://shop.agrikoph.com/contact#cebu-office",
+        "name": "Visayas Office",
         "streetAddress": "GF G&A Arcade, Wilson St., Lahug",
         "addressLocality": "Cebu City",
-        "addressRegion": "Visayas",
+        "addressRegion": "Central Visayas",
         "postalCode": "6000",
-        "addressCountry": "PH"
+        "addressCountry": "PH",
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "10.3157",
+          "longitude": "123.8854"
+        }
       },
       {
         "@type": "PostalAddress",
+        "@id": "https://shop.agrikoph.com/contact#farm-location",
+        "name": "Paglinawan Organic Eco Farm",
         "streetAddress": "Paglinawan Organic Eco Farm, Purok 6, Libertad",
         "addressLocality": "Dumingag",
         "addressRegion": "Zamboanga Del Sur",
         "postalCode": "7028",
-        "addressCountry": "PH"
+        "addressCountry": "PH",
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "8.4167",
+          "longitude": "123.4167"
+        }
       }
     ],
     "contactPoint": [
@@ -39,15 +55,136 @@ export default function ContactPage() {
         "@type": "ContactPoint",
         "email": "agrikoph@gmail.com",
         "contactType": "customer service",
-        "availableLanguage": ["English", "Filipino"]
+        "availableLanguage": ["English", "Filipino"],
+        "areaServed": "PH",
+        "hoursAvailable": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "08:00",
+          "closes": "17:00"
+        }
+      },
+      {
+        "@type": "ContactPoint",
+        "email": "orders@agrikoph.com",
+        "contactType": "sales",
+        "availableLanguage": ["English", "Filipino"],
+        "areaServed": "PH"
+      },
+      {
+        "@type": "ContactPoint",
+        "email": "farm@agrikoph.com",
+        "contactType": "customer service",
+        "availableLanguage": ["English", "Filipino"],
+        "areaServed": "PH",
+        "description": "Farm visits and agricultural inquiries"
       }
     ],
     "sameAs": [
-      "https://www.facebook.com/AgrikoPH/"
+      "https://www.facebook.com/AgrikoPH/",
+      "https://agrikoph.com"
+    ],
+    "hasMap": [
+      "https://maps.google.com/?q=Paglinawan+Organic+Eco+Farm+Dumingag+Zamboanga+Del+Sur",
+      "https://maps.google.com/?q=GF+G%26A+Arcade+Wilson+St+Lahug+Cebu+City"
     ]
   };
 
-  // Breadcrumb Schema for Contact Page
+  // Contact Page Schema
+  const contactPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "@id": "https://shop.agrikoph.com/contact#contactpage",
+    "name": "Contact Agriko Organic Farm",
+    "description": "Get in touch with Agriko Organic Farm for inquiries about our premium organic products, farm visits, or business partnerships.",
+    "url": "https://shop.agrikoph.com/contact",
+    "inLanguage": "en-PH",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Agriko Organic Farm",
+      "url": "https://shop.agrikoph.com"
+    },
+    "about": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    },
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    }
+  };
+
+  // Place Schemas for Locations
+  const cebuOfficeSchema = {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    "@id": "https://shop.agrikoph.com/contact#cebu-office",
+    "name": "Agriko Visayas Office",
+    "description": "Agriko's main office in Cebu City serving the Visayas region",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "GF G&A Arcade, Wilson St., Lahug",
+      "addressLocality": "Cebu City",
+      "addressRegion": "Central Visayas",
+      "postalCode": "6000",
+      "addressCountry": "PH"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "10.3157",
+      "longitude": "123.8854"
+    },
+    "containedInPlace": {
+      "@type": "City",
+      "name": "Cebu City"
+    }
+  };
+
+  const farmLocationSchema = {
+    "@context": "https://schema.org",
+    "@type": ["Place", "TouristAttraction"],
+    "@id": "https://shop.agrikoph.com/contact#farm-location",
+    "name": "Paglinawan Organic Eco Farm",
+    "description": "Visit our organic farm where all Agriko products are grown using sustainable farming practices",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Paglinawan Organic Eco Farm, Purok 6, Libertad",
+      "addressLocality": "Dumingag",
+      "addressRegion": "Zamboanga Del Sur",
+      "postalCode": "7028",
+      "addressCountry": "PH"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "8.4167",
+      "longitude": "123.4167"
+    },
+    "containedInPlace": {
+      "@type": "City",
+      "name": "Dumingag"
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "opens": "08:00",
+        "closes": "17:00"
+      }
+    ],
+    "potentialAction": {
+      "@type": "ReserveAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "mailto:agrikoph@gmail.com?subject=Farm Visit Request"
+      },
+      "result": {
+        "@type": "Reservation",
+        "name": "Farm Tour"
+      }
+    }
+  };
+
+  // Enhanced Breadcrumb Schema for Contact Page
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -56,13 +193,13 @@ export default function ContactPage() {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://agrikoph.com"
+        "item": "https://shop.agrikoph.com"
       },
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "Contact",
-        "item": "https://agrikoph.com/contact"
+        "name": "Contact Us",
+        "item": "https://shop.agrikoph.com/contact"
       }
     ]
   };
@@ -73,7 +210,7 @@ export default function ContactPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([organizationSchema, breadcrumbSchema])
+          __html: JSON.stringify([organizationSchema, contactPageSchema, breadcrumbSchema, cebuOfficeSchema, farmLocationSchema])
         }}
       />
       

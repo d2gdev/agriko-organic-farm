@@ -171,7 +171,7 @@ async function ProductContent({ slug }: { slug: string }) {
 
   const inStock = isProductInStock(product);
 
-  // JSON-LD structured data for SEO
+  // Enhanced JSON-LD structured data for SEO
   const jsonLd = {
     '@context': 'https://schema.org/',
     '@type': 'Product',
@@ -179,22 +179,91 @@ async function ProductContent({ slug }: { slug: string }) {
     image: product.images?.map(img => img.src) || [],
     description: stripHtml(product.description || product.short_description || ''),
     sku: product.sku,
+    gtin: product.sku,
+    mpn: product.sku,
     brand: {
       '@type': 'Brand',
-      name: 'Agriko'
+      name: 'Agriko Organic Farm',
+      url: 'https://shop.agrikoph.com',
+      logo: 'https://shop.agrikoph.com/images/Agriko-Logo.png'
     },
+    manufacturer: {
+      '@type': 'Organization',
+      name: 'Agriko Multi-Trade & Enterprise Corp.',
+      url: 'https://shop.agrikoph.com'
+    },
+    category: product.categories?.[0]?.name || 'Organic Products',
+    keywords: product.tags?.map(tag => tag.name).join(', ') || '',
     offers: {
       '@type': 'Offer',
-      priceCurrency: 'USD',
+      priceCurrency: 'PHP',
       price: product.price,
+      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      url: `/product/${product.slug}`
+      itemCondition: 'https://schema.org/NewCondition',
+      url: `https://shop.agrikoph.com/product/${product.slug}`,
+      seller: {
+        '@type': 'Organization',
+        name: 'Agriko Organic Farm',
+        url: 'https://shop.agrikoph.com'
+      },
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: '0',
+          currency: 'PHP'
+        },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          handlingTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 1,
+            maxValue: 2,
+            unitCode: 'DAY'
+          },
+          transitTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 3,
+            maxValue: 7,
+            unitCode: 'DAY'
+          }
+        }
+      },
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'PH',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 30,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        returnFees: 'https://schema.org/FreeReturn'
+      }
     },
     aggregateRating: product.average_rating && String(product.average_rating) !== '0' ? {
       '@type': 'AggregateRating',
       ratingValue: String(product.average_rating),
-      reviewCount: product.rating_count || 0
+      reviewCount: product.rating_count || 0,
+      bestRating: '5',
+      worstRating: '1'
     } : undefined,
+    additionalProperty: product.tags?.map(tag => ({
+      '@type': 'PropertyValue',
+      name: 'Product Tag',
+      value: tag.name
+    })) || [],
+    isRelatedTo: product.categories?.map(category => ({
+      '@type': 'Thing',
+      name: category.name,
+      url: `https://shop.agrikoph.com/category/${category.slug}`
+    })) || [],
+    potentialAction: {
+      '@type': 'BuyAction',
+      target: `https://shop.agrikoph.com/product/${product.slug}`,
+      object: {
+        '@type': 'Product',
+        name: product.name
+      }
+    }
   };
 
   return (

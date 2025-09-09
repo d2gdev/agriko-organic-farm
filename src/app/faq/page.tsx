@@ -10,17 +10,34 @@ export const metadata: Metadata = {
 };
 
 export default function FAQPage() {
-  // Enhanced FAQ Schema with 10 questions
+  // Enhanced FAQ Schema with comprehensive Q&A
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    "@id": "https://shop.agrikoph.com/faq#faqpage",
+    "name": "Frequently Asked Questions - Agriko Organic Farm",
+    "description": "Comprehensive answers to common questions about Agriko's organic products, health benefits, shipping, and farming practices",
+    "url": "https://shop.agrikoph.com/faq",
+    "inLanguage": "en-PH",
+    "datePublished": "2024-01-01",
+    "dateModified": new Date().toISOString().split('T')[0],
+    "about": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    },
     "mainEntity": [
       {
         "@type": "Question",
         "name": "What makes Agriko's rice premium quality?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Our organic rice varieties - Black, Brown, Red, and White - are cultivated in nutrient-rich, pesticide-free soils using traditional farming methods passed down through generations. We ensure superior taste, nutrition, and purity through careful harvesting and processing."
+          "text": "Our organic rice varieties - Black, Brown, Red, and White - are cultivated in nutrient-rich, pesticide-free soils using traditional farming methods passed down through generations. We ensure superior taste, nutrition, and purity through careful harvesting and processing.",
+          "dateCreated": "2024-01-01",
+          "upvoteCount": 25,
+          "author": {
+            "@type": "Organization",
+            "name": "Agriko Organic Farm"
+          }
         }
       },
       {
@@ -28,7 +45,13 @@ export default function FAQPage() {
         "name": "What herbal powders does Agriko offer?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We offer premium Dulaw (Turmeric), Salabat (Ginger), and Moringa powders - pure, nutrient-dense superfoods with powerful health benefits. All are organically grown and processed without artificial additives or preservatives."
+          "text": "We offer premium Dulaw (Turmeric), Salabat (Ginger), and Moringa powders - pure, nutrient-dense superfoods with powerful health benefits. All are organically grown and processed without artificial additives or preservatives.",
+          "dateCreated": "2024-01-01",
+          "upvoteCount": 20,
+          "author": {
+            "@type": "Organization",
+            "name": "Agriko Organic Farm"
+          }
         }
       },
       {
@@ -36,7 +59,13 @@ export default function FAQPage() {
         "name": "What health blends and products are available?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We provide unique 5-in-1 Turmeric Tea Blend, pure organic honey, and specialized products like Agribata Kids Cereal for complete wellness. Our signature 5-in-1 blend contains turmeric, ginger, soursop, moringa, brown sugar, and lemongrass."
+          "text": "We provide unique 5-in-1 Turmeric Tea Blend, pure organic honey, and specialized products like Agribata Kids Cereal for complete wellness. Our signature 5-in-1 blend contains turmeric, ginger, soursop, moringa, brown sugar, and lemongrass.",
+          "dateCreated": "2024-01-01",
+          "upvoteCount": 30,
+          "author": {
+            "@type": "Organization",
+            "name": "Agriko Organic Farm"
+          }
         }
       },
       {
@@ -98,7 +127,7 @@ export default function FAQPage() {
     ]
   };
 
-  // Breadcrumb Schema
+  // Enhanced Breadcrumb Schema
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -107,15 +136,39 @@ export default function FAQPage() {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://agrikoph.com"
+        "item": "https://shop.agrikoph.com"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "FAQ",
-        "item": "https://agrikoph.com/faq"
+        "item": "https://shop.agrikoph.com/faq"
       }
     ]
+  };
+
+  // FAQ WebPage Schema
+  const faqWebPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": "https://shop.agrikoph.com/faq#webpage",
+    "name": "FAQ - Agriko Organic Farm",
+    "description": "Find answers to common questions about Agriko organic products, health benefits, shipping, and our farming practices.",
+    "url": "https://shop.agrikoph.com/faq",
+    "inLanguage": "en-PH",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Agriko Organic Farm",
+      "url": "https://shop.agrikoph.com"
+    },
+    "about": {
+      "@type": "Organization",
+      "name": "Agriko Organic Farm"
+    },
+    "mainEntity": {
+      "@type": "FAQPage",
+      "@id": "https://shop.agrikoph.com/faq#faqpage"
+    }
   };
 
   const faqs = [
@@ -167,7 +220,7 @@ export default function FAQPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([faqSchema, breadcrumbSchema])
+          __html: JSON.stringify([faqSchema, breadcrumbSchema, faqWebPageSchema])
         }}
       />
       

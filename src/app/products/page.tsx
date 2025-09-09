@@ -157,13 +157,17 @@ export const metadata: Metadata = {
 };
 
 export default function ProductsPage() {
-  // Structured data for the products page
-  const pageSchema = {
+  // Enhanced Collection Page Schema
+  const collectionPageSchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
+    "@id": "https://shop.agrikoph.com/products#collectionpage",
     "name": "Shop All Products - Agriko Organic Farm",
     "description": "Browse our complete collection of organic rice varieties, herbal powders, and health blends.",
     "url": "https://shop.agrikoph.com/products",
+    "inLanguage": "en-PH",
+    "datePublished": "2016-01-01",
+    "dateModified": new Date().toISOString().split('T')[0],
     "isPartOf": {
       "@type": "WebSite",
       "name": "Agriko Organic Farm",
@@ -181,12 +185,116 @@ export default function ProductsPage() {
         {
           "@type": "ListItem",
           "position": 2,
-          "name": "Shop",
+          "name": "Shop All Products",
           "item": "https://shop.agrikoph.com/products"
+        }
+      ]
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": "Agriko Product Categories",
+      "numberOfItems": 3,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "ProductGroup",
+            "name": "Organic Rice Varieties",
+            "description": "Premium organic black, brown, red, and white rice varieties",
+            "url": "https://shop.agrikoph.com/products?category=rice",
+            "hasVariant": [
+              {"@type": "Product", "name": "Black Rice"},
+              {"@type": "Product", "name": "Brown Rice"},
+              {"@type": "Product", "name": "Red Rice"},
+              {"@type": "Product", "name": "White Rice"}
+            ]
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "ProductGroup",
+            "name": "Pure Herbal Powders",
+            "description": "Pure, nutrient-dense superfoods with powerful health benefits",
+            "url": "https://shop.agrikoph.com/products?category=herbs",
+            "hasVariant": [
+              {"@type": "Product", "name": "Turmeric Powder"},
+              {"@type": "Product", "name": "Ginger Powder"},
+              {"@type": "Product", "name": "Moringa Powder"}
+            ]
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "ProductGroup",
+            "name": "Health Blends & Natural Products",
+            "description": "Specially crafted blends and organic honey for complete wellness",
+            "url": "https://shop.agrikoph.com/products?category=blends",
+            "hasVariant": [
+              {"@type": "Product", "name": "5-in-1 Turmeric Tea Blend"},
+              {"@type": "Product", "name": "Pure Organic Honey"},
+              {"@type": "Product", "name": "Agribata Kids Cereal"}
+            ]
+          }
         }
       ]
     }
   };
+
+  // Product Category Schemas
+  const categorySchemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "ProductGroup",
+      "@id": "https://shop.agrikoph.com/products#rice-category",
+      "name": "Organic Rice Varieties",
+      "description": "Premium organic rice varieties cultivated using sustainable farming practices",
+      "brand": {
+        "@type": "Brand",
+        "name": "Agriko Organic Farm"
+      },
+      "category": "Food & Beverage > Grains & Rice",
+      "productGroupID": "rice-varieties",
+      "hasVariant": [
+        {"@type": "Product", "name": "Organic Black Rice", "description": "Rich in antioxidants and nutrients"},
+        {"@type": "Product", "name": "Organic Brown Rice", "description": "High fiber whole grain rice"},
+        {"@type": "Product", "name": "Organic Red Rice", "description": "Traditional colored rice variety"},
+        {"@type": "Product", "name": "Organic White Rice", "description": "Classic premium quality rice"}
+      ],
+      "additionalProperty": [
+        {"@type": "PropertyValue", "name": "Organic Certified", "value": "Yes"},
+        {"@type": "PropertyValue", "name": "Gluten Free", "value": "Yes"},
+        {"@type": "PropertyValue", "name": "Non-GMO", "value": "Yes"}
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "ProductGroup",
+      "@id": "https://shop.agrikoph.com/products#herbs-category",
+      "name": "Pure Herbal Powders",
+      "description": "Premium herbal powders with exceptional health benefits and nutritional value",
+      "brand": {
+        "@type": "Brand",
+        "name": "Agriko Organic Farm"
+      },
+      "category": "Health & Beauty > Health Supplements",
+      "productGroupID": "herbal-powders",
+      "hasVariant": [
+        {"@type": "Product", "name": "Pure Dulaw (Turmeric) Powder", "description": "Anti-inflammatory superfood powder"},
+        {"@type": "Product", "name": "Pure Salabat (Ginger) Powder", "description": "Digestive health and pain relief"},
+        {"@type": "Product", "name": "Pure Moringa Powder", "description": "Complete superfood with essential nutrients"}
+      ],
+      "additionalProperty": [
+        {"@type": "PropertyValue", "name": "Organic", "value": "Yes"},
+        {"@type": "PropertyValue", "name": "Raw", "value": "Yes"},
+        {"@type": "PropertyValue", "name": "No Additives", "value": "Yes"}
+      ]
+    }
+  ];
 
   return (
     <>
@@ -194,7 +302,7 @@ export default function ProductsPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(pageSchema)
+          __html: JSON.stringify([collectionPageSchema, ...categorySchemas])
         }}
       />
 
