@@ -22,12 +22,14 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
+    - name: Create .env.local
+      run: |
+        echo "NEXT_PUBLIC_WC_API_URL=${{ secrets.NEXT_PUBLIC_WC_API_URL }}" > .env.local
+        echo "WC_CONSUMER_KEY=${{ secrets.WC_CONSUMER_KEY }}" >> .env.local
+        echo "WC_CONSUMER_SECRET=${{ secrets.WC_CONSUMER_SECRET }}" >> .env.local
+        
     - name: Build application
       run: npm run build
-      env:
-        NEXT_PUBLIC_WC_API_URL: ${{ secrets.NEXT_PUBLIC_WC_API_URL }}
-        WC_CONSUMER_KEY: ${{ secrets.WC_CONSUMER_KEY }}
-        WC_CONSUMER_SECRET: ${{ secrets.WC_CONSUMER_SECRET }}
         
     - name: Deploy to server
       uses: appleboy/ssh-action@v1.2.0
@@ -38,6 +40,9 @@ jobs:
         script: |
           cd ${{ secrets.DEPLOY_PATH }}
           git pull origin main
+          echo "NEXT_PUBLIC_WC_API_URL=${{ secrets.NEXT_PUBLIC_WC_API_URL }}" > .env.local
+          echo "WC_CONSUMER_KEY=${{ secrets.WC_CONSUMER_KEY }}" >> .env.local
+          echo "WC_CONSUMER_SECRET=${{ secrets.WC_CONSUMER_SECRET }}" >> .env.local
           npm ci --omit=dev
           npm run build
           pm2 restart agriko || pm2 start npm --name 'agriko' -- start
