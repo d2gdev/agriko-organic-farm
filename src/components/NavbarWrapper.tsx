@@ -24,15 +24,20 @@ export default function NavbarWrapper() {
   });
 
   useEffect(() => {
-    // Fetch products for search functionality via secure API route
+    // Fetch products for search functionality with fallback for static export
     const loadProducts = async () => {
       try {
+        // Try API route first (works in development and server deployment)
         const response = await fetch('/api/products?per_page=100&status=publish');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.ok) {
+          const data = await response.json();
+          setProducts(Array.isArray(data) ? data : []);
+          return;
         }
-        const data = await response.json();
-        setProducts(Array.isArray(data) ? data : []);
+        
+        // Fallback for static export builds - skip product loading
+        console.log('API routes not available in static export, skipping product preload');
+        setProducts([]);
       } catch (error) {
         console.error('Error fetching products for search:', error);
         // Set empty array on error to prevent UI issues

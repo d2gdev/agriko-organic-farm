@@ -113,9 +113,9 @@ export default function ProductCard({
         }}
       />
       
-      <article className={`group relative ${className} animate-fadeInUp`} role="article" aria-labelledby={`product-${product.id}-name`}>
+      <article className={`group relative ${className} animate-fadeInUp w-full`} role="article" aria-labelledby={`product-${product.id}-name`}>
         {/* Card Container */}
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 hover:shadow-xl hover:border-primary-200 transition-all duration-500 ease-out overflow-hidden hover:-translate-y-2 h-full flex flex-col relative">
+        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 hover:shadow-xl hover:border-primary-200 transition-all duration-500 ease-out overflow-hidden hover:-translate-y-2 h-full flex flex-col relative min-h-[480px]">
           
           {/* Premium Badge for featured products */}
           {product.featured && (
@@ -180,18 +180,18 @@ export default function ProductCard({
           {/* Product Information */}
           <div className="p-6 flex-1 flex flex-col">
             {/* Category Tags */}
-            {product.categories && product.categories.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {product.categories.slice(0, 1).map((category) => (
+            <div className="flex flex-wrap gap-2 mb-3 min-h-[2rem]">
+              {product.categories && product.categories.length > 0 && 
+                product.categories.slice(0, 1).map((category) => (
                   <span
                     key={category.id}
                     className="inline-block bg-green-50 text-green-700 text-xs font-medium px-2 py-1 rounded-full border border-green-100"
                   >
                     {category.name}
                   </span>
-                ))}
-              </div>
-            )}
+                ))
+              }
+            </div>
 
             <Link 
               href={`/product/${product.slug}`} 
@@ -201,20 +201,22 @@ export default function ProductCard({
               {/* Product Name */}
               <h3 
                 id={`product-${product.id}-name`}
-                className="text-lg font-semibold text-neutral-900 mb-3 line-clamp-2 leading-tight group-hover:text-primary-700 transition-colors duration-200"
+                className="text-lg font-semibold text-neutral-900 mb-3 line-clamp-2 leading-tight group-hover:text-primary-700 transition-colors duration-200 min-h-[3.5rem]"
               >
                 {product.name}
               </h3>
               
               {/* Description */}
-              {shortDescription && (
-                <p 
-                  id={`product-${product.id}-description`}
-                  className="text-neutral-600 text-sm mb-4 line-clamp-3 leading-relaxed"
-                >
-                  {shortDescription}
-                </p>
-              )}
+              <div className="min-h-[4.5rem] mb-4">
+                {shortDescription && (
+                  <p 
+                    id={`product-${product.id}-description`}
+                    className="text-neutral-600 text-sm line-clamp-3 leading-relaxed"
+                  >
+                    {shortDescription}
+                  </p>
+                )}
+              </div>
             </Link>
 
             {/* Price Section */}

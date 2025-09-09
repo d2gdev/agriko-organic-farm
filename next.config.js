@@ -4,6 +4,21 @@ const nextConfig = {
   output: 'export',
   trailingSlash: true,
   
+  // Skip API routes during static export
+  exportPathMap: async function (
+    defaultPathMap,
+    { dev, dir, outDir, distDir, buildId }
+  ) {
+    // Remove API routes from static export
+    const pathMap = {};
+    for (const [path, page] of Object.entries(defaultPathMap)) {
+      if (!path.startsWith('/api/')) {
+        pathMap[path] = page;
+      }
+    }
+    return pathMap;
+  },
+  
   images: {
     // Required for static export
     unoptimized: true,

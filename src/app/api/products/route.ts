@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Required for static export builds
+export const dynamic = 'force-dynamic';
+export const revalidate = 300; // 5 minutes
+
 const WC_API_URL = process.env.NEXT_PUBLIC_WC_API_URL;
 const WC_CONSUMER_KEY = process.env.WC_CONSUMER_KEY;
 const WC_CONSUMER_SECRET = process.env.WC_CONSUMER_SECRET;
