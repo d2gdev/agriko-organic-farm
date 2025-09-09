@@ -22,7 +22,7 @@ fi
 
 # Define secrets
 declare -A S=(
-  [SSH_PRIVATE_KEY]="$(cat ~/.ssh/id_ed25519)"
+  [SSH_PRIVATE_KEY]=""
   [SERVER_HOST]="shop.agrikoph.com"
   [SERVER_USER]="root"
   [DEPLOY_PATH]="/var/www/shop"
@@ -72,7 +72,7 @@ echo "Next steps:"
 echo "1. Add the following SSH public key as a deploy key to your GitHub repository:"
 echo "   Repository Settings > Deploy keys > Add deploy key"
 echo ""
-cat ~/.ssh/id_ed25519.pub
+cat ~/.ssh/id_ed25519_deploy.pub
 echo ""
 echo "2. Make sure to check 'Allow write access' when adding the deploy key"
 echo "3. Push this workflow file to your repository:"
