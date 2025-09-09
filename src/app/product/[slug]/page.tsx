@@ -27,12 +27,30 @@ interface ProductPageProps {
 export async function generateStaticParams() {
   try {
     const slugs = await getStaticProductSlugs();
+    
+    // If no slugs (API unavailable during build), provide fallback slugs
+    if (slugs.length === 0) {
+      console.warn('No product slugs available, using fallback slugs for static export');
+      return [
+        { slug: 'honey' },
+        { slug: 'black-rice' },
+        { slug: '5n1-turmeric-tea-blend-180g' },
+        { slug: 'placeholder-product' }
+      ];
+    }
+    
     return slugs.map((slug) => ({
       slug: slug,
     }));
   } catch (error) {
     console.error('Error generating static params:', error);
-    return [];
+    // Provide fallback slugs to prevent build failure
+    return [
+      { slug: 'honey' },
+      { slug: 'black-rice' },
+      { slug: '5n1-turmeric-tea-blend-180g' },
+      { slug: 'placeholder-product' }
+    ];
   }
 }
 
