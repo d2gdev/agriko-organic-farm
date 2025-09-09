@@ -22,21 +22,27 @@ export default function EnhancedHeroSection({
   secondaryButtonHref = "/about",
   showButtons = true
 }: EnhancedHeroSectionProps) {
+  const cacheKey = Date.now();
+  
   return (
-    <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden" data-cache={cacheKey}>
       {/* Background Image with Parallax */}
-      <div className="absolute inset-0">
+      <div 
+        className="absolute inset-0" 
+        style={{ 
+          background: 'transparent',
+          '--no-overlay': cacheKey 
+        } as React.CSSProperties & { '--no-overlay': number }}
+      >
         <Image
-          src="/images/hero.png"
+          src={`/images/hero.png?v=${Date.now()}`}
           alt="Agriko Organic Farm - Lush green fields and sustainable farming"
           fill
           className="object-cover scale-110"
           priority
           quality={90}
         />
-        {/* Enhanced Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-primary-900/30 via-transparent to-transparent"></div>
+        {/* No overlay - show background image clearly */}
       </div>
 
       {/* Floating Elements */}

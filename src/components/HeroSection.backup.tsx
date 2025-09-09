@@ -27,7 +27,7 @@ export default function HeroSection({
       {/* Background Image with Parallax */}
       <div className="absolute inset-0">
         <Image
-          src="/images/hero.png"
+          src={`/images/hero.png?v=${Date.now()}`}
           alt="Agriko Organic Farm - Lush green fields and sustainable farming"
           fill
           className="object-cover scale-110"

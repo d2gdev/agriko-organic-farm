@@ -527,7 +527,7 @@ export default function HomePage() {
       {/* Enhanced Testimonial Section */}
       <section className="py-24 relative overflow-hidden min-h-[600px] flex items-center">
         <Image
-          src="/images/philippines-flag-background.jpg"
+          src={`/images/philippines-flag-background.jpg?v=${Date.now()}`}
           alt="Philippines Flag Background - Representing Agriko's Proud Filipino Heritage and Local Organic Farming Tradition"
           title="Philippines Flag - Agriko's Filipino Heritage"
           fill
@@ -535,7 +535,7 @@ export default function HomePage() {
         />
         
         {/* Enhanced gradients for better depth */}
-        <div className="absolute inset-0 bg-gradient-to-br from-red-600/60 via-red-900/80 to-black/90"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/20 to-black/40"></div>
         <div className="absolute inset-0 bg-black/20"></div>
         
         {/* Decorative quote marks */}

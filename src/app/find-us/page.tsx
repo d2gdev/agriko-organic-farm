@@ -146,7 +146,7 @@ export default function FindUsPage() {
               <div className="bg-gray-50 p-8 pt-12 flex items-center justify-center h-48">
                 <div className="flex items-center justify-center w-full h-full">
                   <Image
-                    src="/images/gaisano-grand-mall-partner-logo.png"
+                    src={`/images/gaisano-grand-mall-partner-logo.png?v=${Date.now()}`}
                     alt="Gaisano Grand Mall Partner Logo - Authorized Retailer of Agriko Organic Farm Products Across Philippines"
                     title="Gaisano Grand Mall - Agriko Partner"
                     width={200}
@@ -199,7 +199,7 @@ export default function FindUsPage() {
               <div className="bg-gray-50 p-8 pt-12 flex items-center justify-center h-48">
                 <div className="flex items-center justify-center w-full h-full">
                   <Image
-                    src="/images/puregold-supermarket-partner-logo.png"
+                    src={`/images/puregold-supermarket-partner-logo.png?v=${Date.now()}`}
                     alt="PureGold Supermarket Partner Logo - Official Retailer of Agriko Organic Products in Visayas Region"
                     title="PureGold Supermarket - Agriko Partner"
                     width={200}
@@ -226,7 +226,7 @@ export default function FindUsPage() {
           {/* Contact Information */}
           <div className="relative bg-primary-700 text-white rounded-xl p-8 text-center overflow-hidden">
             <Image
-              src="/images/gerry-paglinawan-family-agriko-founders.jpg"
+              src={`/images/gerry-paglinawan-family-agriko-founders.jpg?v=${Date.now()}`}
               alt="Gerry Paglinawan Family - Agriko Organic Farm Founders and Owners, Pioneering Organic Agriculture in Philippines"
               title="Paglinawan Family - Agriko Founders"
               fill

@@ -118,9 +118,15 @@ export default function AboutPage() {
       <Breadcrumb items={[{ name: 'About' }]} />
       
       {/* Hero Section with AGRIKO branding */}
-      <div className="relative bg-gradient-to-br from-green-600 to-green-800 overflow-hidden">
+      <div 
+        className="relative overflow-hidden" 
+        style={{ 
+          backgroundColor: '#f5f5f5',
+          '--cache-key': Date.now()
+        } as React.CSSProperties & { '--cache-key': number }}
+      >
         <Image
-          src="/hero.png"
+          src={`/images/hero.png?v=${Date.now()}`}
           alt="Hero background"
           fill
           className="object-cover object-center opacity-90"
@@ -136,7 +142,7 @@ export default function AboutPage() {
             {/* Agriko Logo */}
             <div className="flex justify-center">
               <Image 
-                src="/Agriko-Logo.png" 
+                src={`/images/Agriko-Logo.png?v=${Date.now()}`} 
                 alt="Agriko Organic Farm Logo - Premium Philippine Organic Agriculture Products and Health Supplements" 
                 title="Agriko - Agriculture Keeps Organic" 
                 width={500}
@@ -216,7 +222,7 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
               <div className="relative space-y-4 p-6 rounded-lg overflow-hidden">
                 <Image
-                  src="/Agriko-Website-Imagery-2.jpg"
+                  src={`/images/agriko-organic-farm-products-showcase.jpg?v=${Date.now()}`}
                   alt="Agriko Organic Farm Products Showcase - Premium Rice Varieties, Herbal Powders and Health Supplements"
                   title="Agriko Product Showcase"
                   fill
@@ -300,7 +306,7 @@ export default function AboutPage() {
               {/* Green info box */}
               <div className="relative text-gray-800 p-6 rounded-lg overflow-hidden">
                 <Image
-                  src="/eco-farm-scaled.jpg"
+                  src={`/images/agriko-organic-farm-landscape-fields.jpg?v=${Date.now()}`}
                   alt="Agriko Organic Farm Landscape - Sustainable Agriculture Fields and Eco-Friendly Farming Practices in Philippines"
                   title="Agriko Organic Farm - Sustainable Agriculture"
                   fill
@@ -326,7 +332,7 @@ export default function AboutPage() {
             {/* Blend Section */}
             <div className="relative rounded-lg p-8 text-white mb-12 overflow-hidden">
               <Image
-                src="/blend-bg.png"
+                src={`/images/agriko-turmeric-blend-background.png?v=${Date.now()}`}
                 alt="Agriko Turmeric Blend Background - 5-in-1 Organic Health Supplement Manufacturing Process"
                 title="Agriko 5-in-1 Turmeric Blend Process"
                 fill
@@ -357,7 +363,7 @@ export default function AboutPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <div className="aspect-square rounded-lg overflow-hidden">
                 <Image 
-                  src="/5n1-500-for-health-.jpg" 
+                  src={`/images/agriko-turmeric-5in1-blend-500g-health-supplement.jpg?v=${Date.now()}`} 
                   alt="Agriko 5-in-1 Turmeric Blend 500g - Premium Health Supplement with Natural Wellness Benefits" 
                   title="Agriko 5-in-1 Health Benefits - 500g"
                   width={300}
@@ -367,7 +373,7 @@ export default function AboutPage() {
               </div>
               <div className="aspect-square rounded-lg overflow-hidden">
                 <Image 
-                  src="/5n1-180-for-Website-P3.jpg" 
+                  src={`/images/agriko-turmeric-5in1-blend-180g-organic.jpg?v=${Date.now()}`} 
                   alt="Agriko 5-in-1 Turmeric Blend 180g - Organic Health Supplement with Nutrition Facts and Benefits" 
                   title="Agriko 5-in-1 Nutrition Facts - 180g"
                   width={300}
@@ -377,7 +383,7 @@ export default function AboutPage() {
               </div>
               <div className="aspect-square rounded-lg overflow-hidden">
                 <Image 
-                  src="/Pure-Salabat-100g-with-Background.jpg" 
+                  src={`/images/agriko-pure-salabat-ginger-tea-100g.jpg?v=${Date.now()}`} 
                   alt="Agriko Pure Salabat 100g - Traditional Filipino Ginger Tea with Natural Healing Properties" 
                   title="Agriko Pure Salabat - Traditional Ginger Tea"
                   width={300}
@@ -387,7 +393,7 @@ export default function AboutPage() {
               </div>
               <div className="aspect-square rounded-lg overflow-hidden">
                 <Image 
-                  src="/Honey-with-Background.jpg" 
+                  src={`/images/agriko-pure-organic-honey-jar.jpg?v=${Date.now()}`} 
                   alt="Agriko Pure Organic Honey - Raw Natural Honey from Philippine Organic Farms with Health Benefits" 
                   title="Agriko Pure Organic Honey - Raw Natural"
                   width={300}

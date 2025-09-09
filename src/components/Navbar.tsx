@@ -96,7 +96,7 @@ export default function Navbar({
             <Link href="/" className="flex items-center space-x-2">
               <div className="relative">
                 <Image
-                  src="/images/Agriko-Logo.png"
+                  src={`/images/Agriko-Logo.png?v=${Date.now()}`}
                   alt="Agriko Organic Farm"
                   width={120}
                   height={60}

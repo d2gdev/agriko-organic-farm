@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en-US" >
+<head>
+<meta charset="UTF-8">
+<title>Page not found &#124; Agriko</title>
+
+
+<!-- SEO by Squirrly SEO 12.4.12 - https://plugin.squirrly.co/ -->
+
+<meta name="robots" content="noindex,nofollow">
+<meta name="googlebot" content="noindex,nofollow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+<meta name="bingbot" content="noindex,nofollow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+
+<meta name="description" content="This page could not be found on our website." />
+<link rel="alternate" type="application/rss+xml" href="https://agrikoph.com/sitemap.xml" />
+<!-- /SEO by Squirrly SEO - WordPress SEO Plugin -->
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- WP_HEAD() START -->
+
+			<script type='text/javascript' src='//ajax.googleapis.com/ajax/libs/webfont/1/webfont.js'></script>
+			<script type="text/javascript">
+			WebFont.load({
+				google: {
+					families: ["Open Sans:100,200,300,400,500,600,700,800,900","Open Sans:100,200,300,400,500,600,700,800,900","Open Sans:100,200,300,400,500,600,700,800,900","Merriweather:100,200,300,400,500,600,700,800,900"]
+				}
+			});
+			</script>
+				<style>img:is([sizes="auto" i], [sizes^="auto," i]) { contain-intrinsic-size: 3000px 1500px }</style>
+	
+<link rel='dns-prefetch' href='//unpkg.com' />
+<link rel="alternate" type="application/rss+xml" title="Agriko &raquo; Feed" href="https://agrikoph.com/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Agriko &raquo; Comments Feed" href="https://agrikoph.com/comments/feed/" />
+<style id='wp-block-library-inline-css'>
+:root{--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,161;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px;--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color)}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}.has-text-align-center{text-align:center}.has-text-align-left{text-align:left}.has-text-align-right{text-align:right}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-wrap:normal!important}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style*=border-top-color]){border-top-style:solid}html :where([style*=border-right-color]){border-right-style:solid}html :where([style*=border-bottom-color]){border-bottom-style:solid}html :where([style*=border-left-color]){border-left-style:solid}html :where([style*=border-width]){border-style:solid}html :where([style*=border-top-width]){border-top-style:solid}html :where([style*=border-right-width]){border-right-style:solid}html :where([style*=border-bottom-width]){border-bottom-style:solid}html :where([style*=border-left-width]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+</style>
+<style id='classic-theme-styles-inline-css'>
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+</style>
+<style id='global-styles-inline-css'>
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--color--base: #f9f9f9;--wp--preset--color--base-2: #ffffff;--wp--preset--color--contrast: #111111;--wp--preset--color--contrast-2: #636363;--wp--preset--color--contrast-3: #A4A4A4;--wp--preset--color--accent: #cfcabe;--wp--preset--color--accent-2: #c2a990;--wp--preset--color--accent-3: #d8613c;--wp--preset--color--accent-4: #b1c5a4;--wp--preset--color--accent-5: #b5bdbc;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgba(252,185,0,1) 0%,rgba(255,105,0,1) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgba(255,105,0,1) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--gradient--gradient-1: linear-gradient(to bottom, #cfcabe 0%, #F9F9F9 100%);--wp--preset--gradient--gradient-2: linear-gradient(to bottom, #C2A990 0%, #F9F9F9 100%);--wp--preset--gradient--gradient-3: linear-gradient(to bottom, #D8613C 0%, #F9F9F9 100%);--wp--preset--gradient--gradient-4: linear-gradient(to bottom, #B1C5A4 0%, #F9F9F9 100%);--wp--preset--gradient--gradient-5: linear-gradient(to bottom, #B5BDBC 0%, #F9F9F9 100%);--wp--preset--gradient--gradient-6: linear-gradient(to bottom, #A4A4A4 0%, #F9F9F9 100%);--wp--preset--gradient--gradient-7: linear-gradient(to bottom, #cfcabe 50%, #F9F9F9 50%);--wp--preset--gradient--gradient-8: linear-gradient(to bottom, #C2A990 50%, #F9F9F9 50%);--wp--preset--gradient--gradient-9: linear-gradient(to bottom, #D8613C 50%, #F9F9F9 50%);--wp--preset--gradient--gradient-10: linear-gradient(to bottom, #B1C5A4 50%, #F9F9F9 50%);--wp--preset--gradient--gradient-11: linear-gradient(to bottom, #B5BDBC 50%, #F9F9F9 50%);--wp--preset--gradient--gradient-12: linear-gradient(to bottom, #A4A4A4 50%, #F9F9F9 50%);--wp--preset--font-size--small: 0.9rem;--wp--preset--font-size--medium: 1.05rem;--wp--preset--font-size--large: clamp(1.39rem, 1.39rem + ((1vw - 0.2rem) * 0.767), 1.85rem);--wp--preset--font-size--x-large: clamp(1.85rem, 1.85rem + ((1vw - 0.2rem) * 1.083), 2.5rem);--wp--preset--font-size--xx-large: clamp(2.5rem, 2.5rem + ((1vw - 0.2rem) * 1.283), 3.27rem);--wp--preset--font-family--body: "Inter", sans-serif;--wp--preset--font-family--heading: Cardo;--wp--preset--font-family--system-sans-serif: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;--wp--preset--font-family--system-serif: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;--wp--preset--spacing--20: min(1.5rem, 2vw);--wp--preset--spacing--30: min(2.5rem, 3vw);--wp--preset--spacing--40: min(4rem, 5vw);--wp--preset--spacing--50: min(6.5rem, 8vw);--wp--preset--spacing--60: min(10.5rem, 13vw);--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--spacing--10: 1rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgba(255, 255, 255, 1), 6px 6px rgba(0, 0, 0, 1);--wp--preset--shadow--crisp: 6px 6px 0px rgba(0, 0, 0, 1);}:root :where(.is-layout-flow) > :first-child{margin-block-start: 0;}:root :where(.is-layout-flow) > :last-child{margin-block-end: 0;}:root :where(.is-layout-flow) > *{margin-block-start: 1.2rem;margin-block-end: 0;}:root :where(.is-layout-constrained) > :first-child{margin-block-start: 0;}:root :where(.is-layout-constrained) > :last-child{margin-block-end: 0;}:root :where(.is-layout-constrained) > *{margin-block-start: 1.2rem;margin-block-end: 0;}:root :where(.is-layout-flex){gap: 1.2rem;}:root :where(.is-layout-grid){gap: 1.2rem;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}:where(.wp-site-blocks *:focus){outline-width:2px;outline-style:solid}
+</style>
+<link rel='stylesheet' id='oxygen-css' href='https://agrikoph.com/wp-content/plugins/oxygen/component-framework/oxygen.css?ver=4.5' media='all' />
+<link rel='stylesheet' id='woocommerce-layout-css' href='https://agrikoph.com/wp-content/plugins/woocommerce/assets/css/woocommerce-layout.css?ver=9.1.4' media='all' />
+<link rel='stylesheet' id='woocommerce-smallscreen-css' href='https://agrikoph.com/wp-content/plugins/woocommerce/assets/css/woocommerce-smallscreen.css?ver=9.1.4' media='only screen and (max-width: 768px)' />
+<link rel='stylesheet' id='woocommerce-general-css' href='https://agrikoph.com/wp-content/plugins/woocommerce/assets/css/woocommerce.css?ver=9.1.4' media='all' />
+<link rel='stylesheet' id='woocommerce-blocktheme-css' href='https://agrikoph.com/wp-content/plugins/woocommerce/assets/css/woocommerce-blocktheme.css?ver=9.1.4' media='all' />
+<style id='woocommerce-inline-inline-css'>
+.woocommerce form .form-row .required { visibility: visible; }
+</style>
+<link rel='stylesheet' id='photoswipe-css' href='https://agrikoph.com/wp-content/plugins/woocommerce/assets/css/photoswipe/photoswipe.min.css?ver=9.1.4' media='all' />
+<link rel='stylesheet' id='photoswipe-default-skin-css' href='https://agrikoph.com/wp-content/plugins/woocommerce/assets/css/photoswipe/default-skin/default-skin.min.css?ver=9.1.4' media='all' />
+<link rel='stylesheet' id='xendit_pg_style-css' href='https://agrikoph.com/wp-content/plugins/woo-xendit-virtual-accounts/assets/css/xendit-pg-style.css?ver=1.0.1' media='all' />
+<link rel='stylesheet' id='hint-css' href='https://agrikoph.com/wp-content/plugins/woo-fly-cart/assets/hint/hint.min.css?ver=6.8.2' media='all' />
+<link rel='stylesheet' id='perfect-scrollbar-css' href='https://agrikoph.com/wp-content/plugins/woo-fly-cart/assets/perfect-scrollbar/css/perfect-scrollbar.min.css?ver=6.8.2' media='all' />
+<link rel='stylesheet' id='perfect-scrollbar-wpc-css' href='https://agrikoph.com/wp-content/plugins/woo-fly-cart/assets/perfect-scrollbar/css/custom-theme.css?ver=6.8.2' media='all' />
+<link rel='stylesheet' id='woofc-fonts-css' href='https://agrikoph.com/wp-content/plugins/woo-fly-cart/assets/css/fonts.css?ver=6.8.2' media='all' />
+<link rel='stylesheet' id='woofc-frontend-css' href='https://agrikoph.com/wp-content/plugins/woo-fly-cart/assets/css/frontend.css?ver=5.9.5' media='all' />
+<style id='woofc-frontend-inline-css'>
+.woofc-area.woofc-style-01 .woofc-inner, .woofc-area.woofc-style-03 .woofc-inner, .woofc-area.woofc-style-02 .woofc-area-bot .woofc-action .woofc-action-inner > div a:hover, .woofc-area.woofc-style-04 .woofc-area-bot .woofc-action .woofc-action-inner > div a:hover {
+                            background-color: #dd0000;
+                        }
+
+                        .woofc-area.woofc-style-01 .woofc-area-bot .woofc-action .woofc-action-inner > div a, .woofc-area.woofc-style-02 .woofc-area-bot .woofc-action .woofc-action-inner > div a, .woofc-area.woofc-style-03 .woofc-area-bot .woofc-action .woofc-action-inner > div a, .woofc-area.woofc-style-04 .woofc-area-bot .woofc-action .woofc-action-inner > div a {
+                            outline: none;
+                            color: #dd0000;
+                        }
+
+                        .woofc-area.woofc-style-02 .woofc-area-bot .woofc-action .woofc-action-inner > div a, .woofc-area.woofc-style-04 .woofc-area-bot .woofc-action .woofc-action-inner > div a {
+                            border-color: #dd0000;
+                        }
+
+                        .woofc-area.woofc-style-05 .woofc-inner{
+                            background-color: #dd0000;
+                            background-image: url('https://agrikoph.com/wp-content/uploads/2024/01/Hero-Slider-P3.png');
+                            background-size: cover;
+                            background-position: center;
+                            background-repeat: no-repeat;
+                        }
+                        
+                        .woofc-count span {
+                            background-color: #dd0000;
+                        }
+</style>
+<link rel='stylesheet' id='um_modal-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/css/um-modal.min.css?ver=2.10.5' media='all' />
+<link rel='stylesheet' id='um_ui-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/jquery-ui/jquery-ui.min.css?ver=1.13.2' media='all' />
+<link rel='stylesheet' id='um_tipsy-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/tipsy/tipsy.min.css?ver=1.0.0a' media='all' />
+<link rel='stylesheet' id='um_raty-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/raty/um-raty.min.css?ver=2.6.0' media='all' />
+<link rel='stylesheet' id='select2-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/select2/select2.min.css?ver=4.0.13' media='all' />
+<link rel='stylesheet' id='um_fileupload-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/css/um-fileupload.min.css?ver=2.10.5' media='all' />
+<link rel='stylesheet' id='um_confirm-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/um-confirm/um-confirm.min.css?ver=1.0' media='all' />
+<link rel='stylesheet' id='um_datetime-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/pickadate/default.min.css?ver=3.6.2' media='all' />
+<link rel='stylesheet' id='um_datetime_date-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/pickadate/default.date.min.css?ver=3.6.2' media='all' />
+<link rel='stylesheet' id='um_datetime_time-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/pickadate/default.time.min.css?ver=3.6.2' media='all' />
+<link rel='stylesheet' id='um_fonticons_ii-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/legacy/fonticons/fonticons-ii.min.css?ver=2.10.5' media='all' />
+<link rel='stylesheet' id='um_fonticons_fa-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/legacy/fonticons/fonticons-fa.min.css?ver=2.10.5' media='all' />
+<link rel='stylesheet' id='um_fontawesome-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/css/um-fontawesome.min.css?ver=6.5.2' media='all' />
+<link rel='stylesheet' id='um_common-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/css/common.min.css?ver=2.10.5' media='all' />
+<link rel='stylesheet' id='um_responsive-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/css/um-responsive.min.css?ver=2.10.5' media='all' />
+<link rel='stylesheet' id='um_styles-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/css/um-styles.min.css?ver=2.10.5' media='all' />
+<link rel='stylesheet' id='um_crop-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/cropper/cropper.min.css?ver=1.6.1' media='all' />
+<link rel='stylesheet' id='um_profile-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/css/um-profile.min.css?ver=2.10.5' media='all' />
+<link rel='stylesheet' id='um_account-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/css/um-account.min.css?ver=2.10.5' media='all' />
+<link rel='stylesheet' id='um_misc-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/css/um-misc.min.css?ver=2.10.5' media='all' />
+<link rel='stylesheet' id='um_default_css-css' href='https://agrikoph.com/wp-content/plugins/ultimate-member/assets/css/um-old-default.min.css?ver=2.10.5' media='all' />
+<script src="https://agrikoph.com/wp-includes/js/jquery/jquery.min.js?ver=3.7.1" id="jquery-core-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/jquery-blockui/jquery.blockUI.min.js?ver=2.7.0-wc.9.1.4" id="jquery-blockui-js" defer data-wp-strategy="defer"></script>
+<script id="wc-add-to-cart-js-extra">
+var wc_add_to_cart_params = {"ajax_url":"\/wp-admin\/admin-ajax.php","wc_ajax_url":"\/?wc-ajax=%%endpoint%%","i18n_view_cart":"View cart","cart_url":"https:\/\/agrikoph.com\/cart\/","is_cart":"","cart_redirect_after_add":"no"};
+</script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/frontend/add-to-cart.min.js?ver=9.1.4" id="wc-add-to-cart-js" defer data-wp-strategy="defer"></script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/js-cookie/js.cookie.min.js?ver=2.1.4-wc.9.1.4" id="js-cookie-js" data-wp-strategy="defer"></script>
+<script id="woocommerce-js-extra">
+var woocommerce_params = {"ajax_url":"\/wp-admin\/admin-ajax.php","wc_ajax_url":"\/?wc-ajax=%%endpoint%%"};
+</script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/frontend/woocommerce.min.js?ver=9.1.4" id="woocommerce-js" defer data-wp-strategy="defer"></script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/zoom/jquery.zoom.min.js?ver=1.7.21-wc.9.1.4" id="zoom-js" defer data-wp-strategy="defer"></script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/flexslider/jquery.flexslider.min.js?ver=2.7.2-wc.9.1.4" id="flexslider-js" defer data-wp-strategy="defer"></script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/photoswipe/photoswipe.min.js?ver=4.1.1-wc.9.1.4" id="photoswipe-js" defer data-wp-strategy="defer"></script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/photoswipe/photoswipe-ui-default.min.js?ver=4.1.1-wc.9.1.4" id="photoswipe-ui-default-js" defer data-wp-strategy="defer"></script>
+<script id="wc-single-product-js-extra">
+var wc_single_product_params = {"i18n_required_rating_text":"Please select a rating","review_rating_required":"yes","flexslider":{"rtl":false,"animation":"slide","smoothHeight":true,"directionNav":false,"controlNav":"thumbnails","slideshow":false,"animationSpeed":500,"animationLoop":false,"allowOneSlide":false},"zoom_enabled":"1","zoom_options":[],"photoswipe_enabled":"1","photoswipe_options":{"shareEl":false,"closeOnScroll":false,"history":false,"hideAnimationDuration":0,"showAnimationDuration":0},"flexslider_enabled":"1"};
+</script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/frontend/single-product.min.js?ver=9.1.4" id="wc-single-product-js" defer data-wp-strategy="defer"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/js/um-gdpr.min.js?ver=2.10.5" id="um-gdpr-js"></script>
+<link rel="https://api.w.org/" href="https://agrikoph.com/wp-json/" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://agrikoph.com/xmlrpc.php?rsd" />
+<meta name="generator" content="WordPress 6.8.2" />
+<meta name="generator" content="WooCommerce 9.1.4" />
+	<noscript><style>.woocommerce-product-gallery{ opacity: 1 !important; }</style></noscript>
+	<style class='wp-fonts-local'>
+@font-face{font-family:Inter;font-style:normal;font-weight:300 900;font-display:fallback;src:url('https://agrikoph.com/wp-content/themes/oxygen-is-not-a-theme/assets/fonts/inter/Inter-VariableFont_slnt,wght.woff2') format('woff2');font-stretch:normal;}
+@font-face{font-family:Cardo;font-style:normal;font-weight:400;font-display:fallback;src:url('https://agrikoph.com/wp-content/themes/oxygen-is-not-a-theme/assets/fonts/cardo/cardo_normal_400.woff2') format('woff2');}
+@font-face{font-family:Cardo;font-style:italic;font-weight:400;font-display:fallback;src:url('https://agrikoph.com/wp-content/themes/oxygen-is-not-a-theme/assets/fonts/cardo/cardo_italic_400.woff2') format('woff2');}
+@font-face{font-family:Cardo;font-style:normal;font-weight:700;font-display:fallback;src:url('https://agrikoph.com/wp-content/themes/oxygen-is-not-a-theme/assets/fonts/cardo/cardo_normal_700.woff2') format('woff2');}
+</style>
+<link rel="icon" href="https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-32x32.png" sizes="32x32" />
+<link rel="icon" href="https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-180x180.png" />
+<meta name="msapplication-TileImage" content="https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-270x270.png" />
+<link rel='stylesheet' id='oxygen-cache-289-css' href='//agrikoph.com/wp-content/uploads/oxygen/css/289.css?cache=1755471023&#038;ver=6.8.2' media='all' />
+<link rel='stylesheet' id='oxygen-universal-styles-css' href='//agrikoph.com/wp-content/uploads/oxygen/css/universal.css?cache=1755471023&#038;ver=6.8.2' media='all' />
+<!-- END OF WP_HEAD() -->
+</head>
+<body class="error404 wp-embed-responsive wp-theme-oxygen-is-not-a-theme  theme-oxygen-is-not-a-theme oxygen-body woocommerce-cart woocommerce-page woocommerce-uses-block-theme woocommerce-block-theme-has-button-styles woocommerce-no-js" >
+
+
+
+
+						<header id="_header-2-289" class="oxy-header-wrapper oxy-sticky-header  oxy-header" ><div id="_header_row-3-289" class="oxygen-hide-in-sticky oxy-header-row" ><div class="oxy-header-container"><div id="_header_left-4-289" class="oxy-header-left" ><div id="_social_icons-5-289" class="oxy-social-icons" ><a href='https://www.facebook.com/AgrikoPH/' target='_blank' class='oxy-social-icons-facebook'><svg><use xlink:href='#oxy-social-icons-icon-facebook'></use></svg></a><a href='https://www.instagram.com/agrikoph/' target='_blank' class='oxy-social-icons-instagram'><svg><use xlink:href='#oxy-social-icons-icon-instagram'></use></svg></a><a href='https://www.youtube.com/@agrikoph' target='_blank' class='oxy-social-icons-youtube'><svg><use xlink:href='#oxy-social-icons-icon-youtube'></use></svg></a></div></div><div id="_header_center-6-289" class="oxy-header-center" ></div><div id="_header_right-7-289" class="oxy-header-right" ><div id="div_block-330-289" class="ct-div-block" ><div id="div_block-331-289" class="ct-div-block" ><div id="fancy_icon-379-289" class="ct-fancy-icon" ><svg id="svg-fancy_icon-379-289"><use xlink:href="#Lineariconsicon-user"></use></svg></div><a id="link_text-333-289" class="ct-link-text" href="http://"   >Login/Register</a></div></div></div></div></div><div id="_header_row-15-289" class="oxygen-hide-in-overlay oxy-header-row" ><div class="oxy-header-container"><div id="_header_left-16-289" class="oxy-header-left" ><a id="link-17-289" class="ct-link" href="/" target="_self"  ><img  id="image-18-289" alt="" src="https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo.png" class="ct-image"/></a></div><div id="_header_center-19-289" class="oxy-header-center" ></div><div id="_header_right-20-289" class="oxy-header-right" ><div id="div_block-21-289" class="ct-div-block" ><nav id="_nav_menu-423-289" class="oxy-nav-menu oxy-nav-menu-dropdowns oxy-nav-menu-dropdown-arrow" ><div class='oxy-menu-toggle'><div class='oxy-nav-menu-hamburger-wrap'><div class='oxy-nav-menu-hamburger'><div class='oxy-nav-menu-hamburger-line'></div><div class='oxy-nav-menu-hamburger-line'></div><div class='oxy-nav-menu-hamburger-line'></div></div></div></div><div class="menu-header-menu-container"><ul id="menu-header-menu" class="oxy-nav-menu-list"><li id="menu-item-130" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home menu-item-130"><a href="https://agrikoph.com/">Home</a></li>
+<li id="menu-item-188" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-188"><a href="https://agrikoph.com/agriko_products/">Our Products</a></li>
+<li id="menu-item-281" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-281"><a href="https://agrikoph.com/agriko-brand/">About Us</a></li>
+<li id="menu-item-343" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-343"><a href="https://agrikoph.com/find-us/">Find Us</a></li>
+<li id="menu-item-195" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-195"><a href="https://agrikoph.com/contact-agriko/">Contact Agriko</a></li>
+<li class="menu-item woofc-menu-item menu-item-type-woofc"><a href="https://agrikoph.com/cart/"><span class="woofc-menu-item-inner" data-count="0"><i class="woofc-icon-cart7"></i> <span class="woofc-menu-item-inner-subtotal"><span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#8369;</span>0.00</bdi></span></span></span></a></li></ul></div></nav></div></div></div></div></header>
+				<script type="text/javascript">
+			jQuery(document).ready(function() {
+				var selector = "#_header-2-289",
+					scrollval = parseInt("300");
+				if (!scrollval || scrollval < 1) {
+										if (jQuery(window).width() >= 1121){
+											jQuery("body").css("margin-top", jQuery(selector).outerHeight());
+						jQuery(selector).addClass("oxy-sticky-header-active");
+										}
+									}
+				else {
+					var scrollTopOld = 0;
+					jQuery(window).scroll(function() {
+						if (!jQuery('body').hasClass('oxy-nav-menu-prevent-overflow')) {
+							if (jQuery(this).scrollTop() > scrollval 
+																) {
+								if (
+																		jQuery(window).width() >= 1121 && 
+																		!jQuery(selector).hasClass("oxy-sticky-header-active")) {
+									if (jQuery(selector).css('position')!='absolute') {
+										jQuery("body").css("margin-top", jQuery(selector).outerHeight());
+									}
+									jQuery(selector)
+										.addClass("oxy-sticky-header-active")
+																	}
+							}
+							else {
+								jQuery(selector)
+									.removeClass("oxy-sticky-header-fade-in")
+									.removeClass("oxy-sticky-header-active");
+								if (jQuery(selector).css('position')!='absolute') {
+									jQuery("body").css("margin-top", "");
+								}
+							}
+							scrollTopOld = jQuery(this).scrollTop();
+						}
+					})
+				}
+			});
+		</script><div id='inner_content-75-289' class='ct-inner-content'></div><footer id="section-180-289" class=" ct-section" ><div class="ct-section-inner-wrap"><div id="new_columns-284-289" class="ct-new-columns" ><div id="div_block-285-289" class="ct-div-block" ><div id="text_block-197-289" class="ct-text-block" >Phone Number:&nbsp;<br>Email: <b><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5f3e382d3634302f371f38323e3633713c3032">[email&#160;protected]</a></b><br>Visayas Address: <b>GF G&amp;A Arcade, Wilson St., Lahug, Cebu City 6000</b><br>Mindanao Address: <b>Paglinawan Organic Eco Farm, Purok 6, Libertad, Dumingag, Zamboanga Del Sur 7028</b></div><div id="_social_icons-204-289" class="oxy-social-icons" ><a href='https://www.facebook.com/AgrikoPH/' target='_blank' class='oxy-social-icons-facebook'><svg><use xlink:href='#oxy-social-icons-icon-facebook'></use></svg></a><a href='https://www.instagram.com/agrikoph/' target='_blank' class='oxy-social-icons-instagram'><svg><use xlink:href='#oxy-social-icons-icon-instagram'></use></svg></a><a href='https://www.youtube.com/@agrikoph' target='_blank' class='oxy-social-icons-youtube'><svg><use xlink:href='#oxy-social-icons-icon-youtube'></use></svg></a></div></div><div id="div_block-286-289" class="ct-div-block" ><h1 id="headline-296-289" class="ct-headline">Prevention is better than cure!</h1><div id="text_block-299-289" class="ct-text-block " ><span style="font-weight: normal;">Take a look at how our products can help you.</span></div><a id="link_text-329-289" class="ct-link-text winery-outline-button" href="http://" target="_self"  >LEARN MORE</a></div></div><div id="div_block-192-289" class="ct-div-block" ><div id="text_block-193-289" class="ct-text-block dentist-footer-text" >Copyright © <a href="http://soflyy.com"><span id="span-194-289" class="ct-span" >Agriko 2024</span></a><br></div></div></div></footer>            <div tabindex="-1" class="oxy-modal-backdrop  "
+                style="background-color: rgba(0,0,0,0.5);"
+                data-trigger="user_clicks_element"                data-trigger-selector="#link_text-333-289"                data-trigger-time="5"                data-trigger-time-unit="seconds"                data-close-automatically="no"                data-close-after-time="10"                data-close-after-time-unit="seconds"                data-trigger_scroll_amount="50"                data-trigger_scroll_direction="down"	            data-scroll_to_selector=""	            data-time_inactive="60"	            data-time-inactive-unit="seconds"	            data-number_of_clicks="3"	            data-close_on_esc="on"	            data-number_of_page_views="3"                data-close-after-form-submit="no"                data-open-again="always_show"                data-open-again-after-days="3"            >
+
+                <div id="modal-344-289" class="ct-modal" ><section id="section-345-289" class=" ct-section" ><div class="ct-section-inner-wrap"><div id="_tabs-352-289" class="oxy-tabs-wrapper oxy-tabs" data-oxy-tabs-active-tab-class='tabs-4192-tab-active' data-oxy-tabs-contents-wrapper='_tabs_contents-359-289' ><div id="_tab-353-289" class="oxy-tab tabs-4192-tab tabs-4192-tab-active" ><div id="text_block-356-289" class="ct-text-block" >Login</div></div><div id="_tab-354-289" class="oxy-tab tabs-4192-tab tabs-4192-tab-active" ><div id="text_block-357-289" class="ct-text-block" >Register</div></div></div><div id="_tabs_contents-359-289" class="oxy-tabs-contents-wrapper oxy-tabs-contents" ><div id="_tab_content-360-289" class="oxy-tab-content tabs-contents-4192-tab  oxy-tabs-contents-content-hidden" ><div id="new_columns-369-289" class="ct-new-columns" ><div id="div_block-370-289" class="ct-div-block" >
+                <div id="_login_form-372-289" class="oxy-login-form" >
+                <form name="loginform" id="loginform" action="https://agrikoph.com/wp-login.php" method="post"><p class="login-username">
+				<label for="user_login">Username or Email Address</label>
+				<input type="text" name="log" id="user_login" autocomplete="username" class="input" value="" size="20" />
+			</p><p class="login-password">
+				<label for="user_pass">Password</label>
+				<input type="password" name="pwd" id="user_pass" autocomplete="current-password" spellcheck="false" class="input" value="" size="20" />
+			</p><p class="login-remember"><label><input name="rememberme" type="checkbox" id="rememberme" value="forever" /> Remember Me</label></p><p class="login-submit">
+				<input type="submit" name="wp-submit" id="wp-submit" class="button button-primary" value="Log In" />
+				<input type="hidden" name="redirect_to" value="https://agrikoph.com/wp-content/uploads/2023/11/Agriko-Logo.png" />
+			</p></form>                </div>
+        
+        </div><div id="div_block-371-289" class="ct-div-block" ><img  id="image-373-289" alt="" src="https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo.png" class="ct-image" srcset="https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo.png 512w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-300x300.png 300w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-150x150.png 150w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-270x270.png 270w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-192x192.png 192w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-180x180.png 180w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-32x32.png 32w" sizes="(max-width: 512px) 100vw, 512px" /></div></div></div><div id="_tab_content-361-289" class="oxy-tab-content tabs-contents-4192-tab  oxy-tabs-contents-content-hidden" ><div id="new_columns-374-289" class="ct-new-columns" ><div id="div_block-375-289" class="ct-div-block" ><div id="shortcode-378-289" class="ct-shortcode" >
+<div class="um um-register um-462">
+	<div class="um-form" data-mode="register">
+		<form method="post" action="">
+			<div class="um-row _um_row_1 " style="margin: 0 0 30px 0;"><div class="um-col-121"><div  id="um_field_462_user_login" class="um-field um-field-text  um-field-user_login um-field-text um-field-type_text" data-key="user_login"><div class="um-field-label"><label for="user_login-462">Username</label><div class="um-clear"></div></div><div class="um-field-area"><input  autocomplete="off" class="um-form-field valid " type="text" name="user_login-462" id="user_login-462" value="" placeholder="" data-validate="unique_username" data-key="user_login"  aria-invalid="false" />
+
+						</div></div><div  id="um_field_462_user_email" class="um-field um-field-text  um-field-user_email um-field-text um-field-type_text" data-key="user_email"><div class="um-field-label"><label for="user_email-462">E-mail Address</label><div class="um-clear"></div></div><div class="um-field-area"><input  autocomplete="off" class="um-form-field valid " type="text" name="user_email-462" id="user_email-462" value="" placeholder="" data-validate="unique_email" data-key="user_email"  aria-invalid="false" />
+
+						</div></div><div  id="um_field_462_user_password" class="um-field um-field-password  um-field-user_password um-field-password um-field-type_password" data-key="user_password"><div class="um-field-label"><label for="user_password-462">Password</label><div class="um-clear"></div></div><div class="um-field-area"><div class="um-field-area-password">
+									<input class="um-form-field valid " type="password" name="user_password-462" id="user_password-462" value="" placeholder="" data-validate="" data-key="user_password"  aria-invalid="false" />
+									<span class="um-toggle-password"><i class="um-icon-eye"></i></span>
+								</div>
+							</div></div><div  id="um_field_462_confirm_user_password" class="um-field um-field-password  um-field-user_password um-field-password um-field-type_password" data-key="confirm_user_password"><div class="um-field-label"><label for="confirm_user_password-462">Confirm Password</label><div class="um-clear"></div></div><div class="um-field-area"><div class="um-field-area-password"><input class="um-form-field valid " type="password" name="confirm_user_password-462" id="confirm_user_password-462" value="" placeholder="Confirm Password" data-validate="" data-key="confirm_user_password"  aria-invalid="false" /><span class="um-toggle-password"><i class="um-icon-eye"></i></span></div></div></div></div><div class="um-col-122"><div  id="um_field_462_first_name" class="um-field um-field-text  um-field-first_name um-field-text um-field-type_text" data-key="first_name"><div class="um-field-label"><label for="first_name-462">First Name</label><div class="um-clear"></div></div><div class="um-field-area"><input  autocomplete="off" class="um-form-field valid " type="text" name="first_name-462" id="first_name-462" value="" placeholder="" data-validate="" data-key="first_name"  aria-invalid="false" />
+
+						</div></div><div  id="um_field_462_last_name" class="um-field um-field-text  um-field-last_name um-field-text um-field-type_text" data-key="last_name"><div class="um-field-label"><label for="last_name-462">Last Name</label><div class="um-clear"></div></div><div class="um-field-area"><input  autocomplete="off" class="um-form-field valid " type="text" name="last_name-462" id="last_name-462" value="" placeholder="" data-validate="" data-key="last_name"  aria-invalid="false" />
+
+						</div></div></div><div class="um-clear"></div></div>	<input type="hidden" name="form_id" id="form_id_462" value="462" />
+		<p class="um_request_name">
+		<label for="um_request_462">Only fill in if you are not human</label>
+		<input type="hidden" name="um_request" id="um_request_462" class="input" value="" size="25" autocomplete="off" />
+	</p>
+	<input type="hidden" id="_wpnonce" name="_wpnonce" value="e8d8a9b70e" /><input type="hidden" name="_wp_http_referer" value="/wp-content/uploads/2023/11/Agriko-Logo.png" />
+	<div class="um-col-alt">
+
+		
+			<div class="um-center">
+				<input type="submit" value="Register" class="um-button" id="um-submit-btn" />
+			</div>
+
+		
+		<div class="um-clear"></div>
+
+	</div>
+
+			</form>
+	</div>
+</div>
+<style>
+			.um-462.um {
+			max-width: 800px;
+		}
+		</style>
+</div></div><div id="div_block-376-289" class="ct-div-block" ><img  id="image-377-289" alt="" src="https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo.png" class="ct-image" srcset="https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo.png 512w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-300x300.png 300w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-150x150.png 150w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-270x270.png 270w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-192x192.png 192w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-180x180.png 180w, https://agrikoph.com/wp-content/uploads/2024/01/cropped-Agriko-Logo-32x32.png 32w" sizes="(max-width: 512px) 100vw, 512px" /></div></div></div><div id="_tab_content-362-289" class="oxy-tab-content tabs-contents-4192-tab  oxy-tabs-contents-content-hidden" ><div id="text_block-365-289" class="ct-text-block" >Tab Content #3</div></div></div><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="text/javascript">var firstTab = document.querySelector('#_tabs_contents-359-289 > .oxy-tabs-contents-content-hidden:first-child'); if(firstTab && firstTab.classList){firstTab.classList.remove("oxy-tabs-contents-content-hidden")};</script></div></section></div>
+            </div>
+                    <div tabindex="-1" class="oxy-modal-backdrop  "
+                style="background-color: rgba(0,0,0,0.5);"
+                data-trigger="user_clicks_element"                data-trigger-selector="#div_block-337-289"                data-trigger-time="5"                data-trigger-time-unit="seconds"                data-close-automatically="no"                data-close-after-time="10"                data-close-after-time-unit="seconds"                data-trigger_scroll_amount="50"                data-trigger_scroll_direction="down"	            data-scroll_to_selector=""	            data-time_inactive="60"	            data-time-inactive-unit="seconds"	            data-number_of_clicks="3"	            data-close_on_esc="on"	            data-number_of_page_views="3"                data-close-after-form-submit="no"                data-open-again="always_show"                data-open-again-after-days="3"            >
+
+                <div id="modal-386-289" class="ct-modal" ><section id="section-387-289" class=" ct-section" ><div class="ct-section-inner-wrap"><h1 id="headline-389-289" class="ct-headline">Cart</h1>
+		<div id="-woo-cart-388-289" class="oxy-woo-cart oxy-woo-element" ><div class="woocommerce"><div class="woocommerce-notices-wrapper"></div><div class="wc-empty-cart-message">
+	<div class="wc-block-components-notice-banner is-info" role="alert">
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+			<path d="M12 3.2c-4.8 0-8.8 3.9-8.8 8.8 0 4.8 3.9 8.8 8.8 8.8 4.8 0 8.8-3.9 8.8-8.8 0-4.8-4-8.8-8.8-8.8zm0 16c-4 0-7.2-3.3-7.2-7.2C4.8 8 8 4.8 12 4.8s7.2 3.3 7.2 7.2c0 4-3.2 7.2-7.2 7.2zM11 17h2v-6h-2v6zm0-8h2V7h-2v2z"></path>
+		</svg>
+		<div class="wc-block-components-notice-banner__content">
+			Your cart is currently empty.		</div>
+	</div>
+</div>	<p class="return-to-shop">
+		<a class="button wc-backward" href="https://agrikoph.com/shop/">
+			Return to shop		</a>
+	</p>
+</div></div>
+
+		</div></section></div>
+            </div>
+        	<!-- WP_FOOTER -->
+
+<div id="um_upload_single" style="display:none;"></div>
+
+<div id="um_view_photo" style="display:none;">
+	<a href="javascript:void(0);" data-action="um_remove_modal" class="um-modal-close" aria-label="Close view photo modal">
+		<i class="um-faicon-times"></i>
+	</a>
+
+	<div class="um-modal-body photo">
+		<div class="um-modal-photo"></div>
+	</div>
+</div>
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"\/*"},{"not":{"href_matches":["\/wp-*.php","\/wp-admin\/*","\/wp-content\/uploads\/*","\/wp-content\/*","\/wp-content\/plugins\/*","\/wp-content\/themes\/twentytwentyfour\/*","\/wp-content\/themes\/oxygen-is-not-a-theme\/*","\/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1"><defs><symbol id="Lineariconsicon-user" viewBox="0 0 20 20"><path class="path1" d="M9.5 11c-3.033 0-5.5-2.467-5.5-5.5s2.467-5.5 5.5-5.5 5.5 2.467 5.5 5.5-2.467 5.5-5.5 5.5zM9.5 1c-2.481 0-4.5 2.019-4.5 4.5s2.019 4.5 4.5 4.5c2.481 0 4.5-2.019 4.5-4.5s-2.019-4.5-4.5-4.5z"/><path class="path2" d="M17.5 20h-16c-0.827 0-1.5-0.673-1.5-1.5 0-0.068 0.014-1.685 1.225-3.3 0.705-0.94 1.67-1.687 2.869-2.219 1.464-0.651 3.283-0.981 5.406-0.981s3.942 0.33 5.406 0.981c1.199 0.533 2.164 1.279 2.869 2.219 1.211 1.615 1.225 3.232 1.225 3.3 0 0.827-0.673 1.5-1.5 1.5zM9.5 13c-3.487 0-6.060 0.953-7.441 2.756-1.035 1.351-1.058 2.732-1.059 2.746 0 0.274 0.224 0.498 0.5 0.498h16c0.276 0 0.5-0.224 0.5-0.5-0-0.012-0.023-1.393-1.059-2.744-1.382-1.803-3.955-2.756-7.441-2.756z"/></symbol></defs></svg><div id="woofc-area" class="woofc-area woofc-position-01 woofc-effect-01 woofc-slide-yes woofc-rounded-no woofc-style-01"><div class="woofc-inner woofc-cart-area" data-nonce="fc763c78b3"><div class="woofc-area-top"><span class="woofc-area-heading">Shopping cart<span class="woofc-area-count">0</span></span><div class="woofc-close hint--left" aria-label="Close"><i class="woofc-icon-icon10"></i></div></div><!-- woofc-area-top --><div class="woofc-area-mid woofc-items"><div class="woofc-no-item">There are no products in the cart!</div></div><!-- woofc-area-mid --><div class="woofc-area-bot"><div class="woofc-continue"><span class="woofc-continue-url" data-url="">Continue shopping</span></div></div><!-- woofc-area-bot --></div></div><div id="woofc-count" class="woofc-count woofc-count-0 woofc-count-bottom-left" data-count="0"><i class="woofc-icon-cart7"></i><span id="woofc-count-number" class="woofc-count-number">0</span></div><div class="woofc-overlay"></div>
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="pswp__bg"></div>
+	<div class="pswp__scroll-wrap">
+		<div class="pswp__container">
+			<div class="pswp__item"></div>
+			<div class="pswp__item"></div>
+			<div class="pswp__item"></div>
+		</div>
+		<div class="pswp__ui pswp__ui--hidden">
+			<div class="pswp__top-bar">
+				<div class="pswp__counter"></div>
+				<button class="pswp__button pswp__button--close" aria-label="Close (Esc)"></button>
+				<button class="pswp__button pswp__button--share" aria-label="Share"></button>
+				<button class="pswp__button pswp__button--fs" aria-label="Toggle fullscreen"></button>
+				<button class="pswp__button pswp__button--zoom" aria-label="Zoom in/out"></button>
+				<div class="pswp__preloader">
+					<div class="pswp__preloader__icn">
+						<div class="pswp__preloader__cut">
+							<div class="pswp__preloader__donut"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+				<div class="pswp__share-tooltip"></div>
+			</div>
+			<button class="pswp__button pswp__button--arrow--left" aria-label="Previous (arrow left)"></button>
+			<button class="pswp__button pswp__button--arrow--right" aria-label="Next (arrow right)"></button>
+			<div class="pswp__caption">
+				<div class="pswp__caption__center"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+		<svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+		   <defs>
+		      <symbol id="oxy-social-icons-icon-linkedin" viewBox="0 0 32 32">
+		         
+		         <path d="M12 12h5.535v2.837h0.079c0.77-1.381 2.655-2.837 5.464-2.837 5.842 0 6.922 3.637 6.922 8.367v9.633h-5.769v-8.54c0-2.037-0.042-4.657-3.001-4.657-3.005 0-3.463 2.218-3.463 4.509v8.688h-5.767v-18z"></path>
+		         <path d="M2 12h6v18h-6v-18z"></path>
+		         <path d="M8 7c0 1.657-1.343 3-3 3s-3-1.343-3-3c0-1.657 1.343-3 3-3s3 1.343 3 3z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-facebook" viewBox="0 0 32 32">
+		         
+		         <path d="M19 6h5v-6h-5c-3.86 0-7 3.14-7 7v3h-4v6h4v16h6v-16h5l1-6h-6v-3c0-0.542 0.458-1 1-1z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-pinterest" viewBox="0 0 32 32">
+		         
+		         <path d="M16 2.138c-7.656 0-13.863 6.206-13.863 13.863 0 5.875 3.656 10.887 8.813 12.906-0.119-1.094-0.231-2.781 0.050-3.975 0.25-1.081 1.625-6.887 1.625-6.887s-0.412-0.831-0.412-2.056c0-1.925 1.119-3.369 2.506-3.369 1.181 0 1.756 0.887 1.756 1.95 0 1.188-0.756 2.969-1.15 4.613-0.331 1.381 0.688 2.506 2.050 2.506 2.462 0 4.356-2.6 4.356-6.35 0-3.319-2.387-5.638-5.787-5.638-3.944 0-6.256 2.956-6.256 6.019 0 1.194 0.456 2.469 1.031 3.163 0.113 0.137 0.131 0.256 0.094 0.4-0.106 0.438-0.338 1.381-0.387 1.575-0.063 0.256-0.2 0.306-0.463 0.188-1.731-0.806-2.813-3.337-2.813-5.369 0-4.375 3.175-8.387 9.156-8.387 4.806 0 8.544 3.425 8.544 8.006 0 4.775-3.012 8.625-7.194 8.625-1.406 0-2.725-0.731-3.175-1.594 0 0-0.694 2.644-0.863 3.294-0.313 1.206-1.156 2.712-1.725 3.631 1.3 0.4 2.675 0.619 4.106 0.619 7.656 0 13.863-6.206 13.863-13.863 0-7.662-6.206-13.869-13.863-13.869z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-youtube" viewBox="0 0 32 32">
+		         
+		         <path d="M31.681 9.6c0 0-0.313-2.206-1.275-3.175-1.219-1.275-2.581-1.281-3.206-1.356-4.475-0.325-11.194-0.325-11.194-0.325h-0.012c0 0-6.719 0-11.194 0.325-0.625 0.075-1.987 0.081-3.206 1.356-0.963 0.969-1.269 3.175-1.269 3.175s-0.319 2.588-0.319 5.181v2.425c0 2.587 0.319 5.181 0.319 5.181s0.313 2.206 1.269 3.175c1.219 1.275 2.819 1.231 3.531 1.369 2.563 0.244 10.881 0.319 10.881 0.319s6.725-0.012 11.2-0.331c0.625-0.075 1.988-0.081 3.206-1.356 0.962-0.969 1.275-3.175 1.275-3.175s0.319-2.587 0.319-5.181v-2.425c-0.006-2.588-0.325-5.181-0.325-5.181zM12.694 20.15v-8.994l8.644 4.513-8.644 4.481z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-rss" viewBox="0 0 32 32">
+		         
+		         <path d="M4.259 23.467c-2.35 0-4.259 1.917-4.259 4.252 0 2.349 1.909 4.244 4.259 4.244 2.358 0 4.265-1.895 4.265-4.244-0-2.336-1.907-4.252-4.265-4.252zM0.005 10.873v6.133c3.993 0 7.749 1.562 10.577 4.391 2.825 2.822 4.384 6.595 4.384 10.603h6.16c-0-11.651-9.478-21.127-21.121-21.127zM0.012 0v6.136c14.243 0 25.836 11.604 25.836 25.864h6.152c0-17.64-14.352-32-31.988-32z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-twitter" viewBox="0 0 32 32">
+		         
+		         <path d="M32 7.075c-1.175 0.525-2.444 0.875-3.769 1.031 1.356-0.813 2.394-2.1 2.887-3.631-1.269 0.75-2.675 1.3-4.169 1.594-1.2-1.275-2.906-2.069-4.794-2.069-3.625 0-6.563 2.938-6.563 6.563 0 0.512 0.056 1.012 0.169 1.494-5.456-0.275-10.294-2.888-13.531-6.862-0.563 0.969-0.887 2.1-0.887 3.3 0 2.275 1.156 4.287 2.919 5.463-1.075-0.031-2.087-0.331-2.975-0.819 0 0.025 0 0.056 0 0.081 0 3.181 2.263 5.838 5.269 6.437-0.55 0.15-1.131 0.231-1.731 0.231-0.425 0-0.831-0.044-1.237-0.119 0.838 2.606 3.263 4.506 6.131 4.563-2.25 1.762-5.075 2.813-8.156 2.813-0.531 0-1.050-0.031-1.569-0.094 2.913 1.869 6.362 2.95 10.069 2.95 12.075 0 18.681-10.006 18.681-18.681 0-0.287-0.006-0.569-0.019-0.85 1.281-0.919 2.394-2.075 3.275-3.394z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-instagram" viewBox="0 0 32 32">
+		         
+		         <path d="M16 2.881c4.275 0 4.781 0.019 6.462 0.094 1.563 0.069 2.406 0.331 2.969 0.55 0.744 0.288 1.281 0.638 1.837 1.194 0.563 0.563 0.906 1.094 1.2 1.838 0.219 0.563 0.481 1.412 0.55 2.969 0.075 1.688 0.094 2.194 0.094 6.463s-0.019 4.781-0.094 6.463c-0.069 1.563-0.331 2.406-0.55 2.969-0.288 0.744-0.637 1.281-1.194 1.837-0.563 0.563-1.094 0.906-1.837 1.2-0.563 0.219-1.413 0.481-2.969 0.55-1.688 0.075-2.194 0.094-6.463 0.094s-4.781-0.019-6.463-0.094c-1.563-0.069-2.406-0.331-2.969-0.55-0.744-0.288-1.281-0.637-1.838-1.194-0.563-0.563-0.906-1.094-1.2-1.837-0.219-0.563-0.481-1.413-0.55-2.969-0.075-1.688-0.094-2.194-0.094-6.463s0.019-4.781 0.094-6.463c0.069-1.563 0.331-2.406 0.55-2.969 0.288-0.744 0.638-1.281 1.194-1.838 0.563-0.563 1.094-0.906 1.838-1.2 0.563-0.219 1.412-0.481 2.969-0.55 1.681-0.075 2.188-0.094 6.463-0.094zM16 0c-4.344 0-4.887 0.019-6.594 0.094-1.7 0.075-2.869 0.35-3.881 0.744-1.056 0.412-1.95 0.956-2.837 1.85-0.894 0.888-1.438 1.781-1.85 2.831-0.394 1.019-0.669 2.181-0.744 3.881-0.075 1.713-0.094 2.256-0.094 6.6s0.019 4.887 0.094 6.594c0.075 1.7 0.35 2.869 0.744 3.881 0.413 1.056 0.956 1.95 1.85 2.837 0.887 0.887 1.781 1.438 2.831 1.844 1.019 0.394 2.181 0.669 3.881 0.744 1.706 0.075 2.25 0.094 6.594 0.094s4.888-0.019 6.594-0.094c1.7-0.075 2.869-0.35 3.881-0.744 1.050-0.406 1.944-0.956 2.831-1.844s1.438-1.781 1.844-2.831c0.394-1.019 0.669-2.181 0.744-3.881 0.075-1.706 0.094-2.25 0.094-6.594s-0.019-4.887-0.094-6.594c-0.075-1.7-0.35-2.869-0.744-3.881-0.394-1.063-0.938-1.956-1.831-2.844-0.887-0.887-1.781-1.438-2.831-1.844-1.019-0.394-2.181-0.669-3.881-0.744-1.712-0.081-2.256-0.1-6.6-0.1v0z"></path>
+		         <path d="M16 7.781c-4.537 0-8.219 3.681-8.219 8.219s3.681 8.219 8.219 8.219 8.219-3.681 8.219-8.219c0-4.537-3.681-8.219-8.219-8.219zM16 21.331c-2.944 0-5.331-2.387-5.331-5.331s2.387-5.331 5.331-5.331c2.944 0 5.331 2.387 5.331 5.331s-2.387 5.331-5.331 5.331z"></path>
+		         <path d="M26.462 7.456c0 1.060-0.859 1.919-1.919 1.919s-1.919-0.859-1.919-1.919c0-1.060 0.859-1.919 1.919-1.919s1.919 0.859 1.919 1.919z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-facebook-blank" viewBox="0 0 32 32">
+		         
+		         <path d="M29 0h-26c-1.65 0-3 1.35-3 3v26c0 1.65 1.35 3 3 3h13v-14h-4v-4h4v-2c0-3.306 2.694-6 6-6h4v4h-4c-1.1 0-2 0.9-2 2v2h6l-1 4h-5v14h9c1.65 0 3-1.35 3-3v-26c0-1.65-1.35-3-3-3z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-rss-blank" viewBox="0 0 32 32">
+		         
+		         <path d="M29 0h-26c-1.65 0-3 1.35-3 3v26c0 1.65 1.35 3 3 3h26c1.65 0 3-1.35 3-3v-26c0-1.65-1.35-3-3-3zM8.719 25.975c-1.5 0-2.719-1.206-2.719-2.706 0-1.488 1.219-2.712 2.719-2.712 1.506 0 2.719 1.225 2.719 2.712 0 1.5-1.219 2.706-2.719 2.706zM15.544 26c0-2.556-0.994-4.962-2.794-6.762-1.806-1.806-4.2-2.8-6.75-2.8v-3.912c7.425 0 13.475 6.044 13.475 13.475h-3.931zM22.488 26c0-9.094-7.394-16.5-16.481-16.5v-3.912c11.25 0 20.406 9.162 20.406 20.413h-3.925z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-linkedin-blank" viewBox="0 0 32 32">
+		         
+		         <path d="M29 0h-26c-1.65 0-3 1.35-3 3v26c0 1.65 1.35 3 3 3h26c1.65 0 3-1.35 3-3v-26c0-1.65-1.35-3-3-3zM12 26h-4v-14h4v14zM10 10c-1.106 0-2-0.894-2-2s0.894-2 2-2c1.106 0 2 0.894 2 2s-0.894 2-2 2zM26 26h-4v-8c0-1.106-0.894-2-2-2s-2 0.894-2 2v8h-4v-14h4v2.481c0.825-1.131 2.087-2.481 3.5-2.481 2.488 0 4.5 2.238 4.5 5v9z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-pinterest-blank" viewBox="0 0 32 32">
+		         
+		         <path d="M16 2.138c-7.656 0-13.863 6.206-13.863 13.863 0 5.875 3.656 10.887 8.813 12.906-0.119-1.094-0.231-2.781 0.050-3.975 0.25-1.081 1.625-6.887 1.625-6.887s-0.412-0.831-0.412-2.056c0-1.925 1.119-3.369 2.506-3.369 1.181 0 1.756 0.887 1.756 1.95 0 1.188-0.756 2.969-1.15 4.613-0.331 1.381 0.688 2.506 2.050 2.506 2.462 0 4.356-2.6 4.356-6.35 0-3.319-2.387-5.638-5.787-5.638-3.944 0-6.256 2.956-6.256 6.019 0 1.194 0.456 2.469 1.031 3.163 0.113 0.137 0.131 0.256 0.094 0.4-0.106 0.438-0.338 1.381-0.387 1.575-0.063 0.256-0.2 0.306-0.463 0.188-1.731-0.806-2.813-3.337-2.813-5.369 0-4.375 3.175-8.387 9.156-8.387 4.806 0 8.544 3.425 8.544 8.006 0 4.775-3.012 8.625-7.194 8.625-1.406 0-2.725-0.731-3.175-1.594 0 0-0.694 2.644-0.863 3.294-0.313 1.206-1.156 2.712-1.725 3.631 1.3 0.4 2.675 0.619 4.106 0.619 7.656 0 13.863-6.206 13.863-13.863 0-7.662-6.206-13.869-13.863-13.869z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-youtube-blank" viewBox="0 0 32 32">
+		         
+		         <path d="M31.681 9.6c0 0-0.313-2.206-1.275-3.175-1.219-1.275-2.581-1.281-3.206-1.356-4.475-0.325-11.194-0.325-11.194-0.325h-0.012c0 0-6.719 0-11.194 0.325-0.625 0.075-1.987 0.081-3.206 1.356-0.963 0.969-1.269 3.175-1.269 3.175s-0.319 2.588-0.319 5.181v2.425c0 2.587 0.319 5.181 0.319 5.181s0.313 2.206 1.269 3.175c1.219 1.275 2.819 1.231 3.531 1.369 2.563 0.244 10.881 0.319 10.881 0.319s6.725-0.012 11.2-0.331c0.625-0.075 1.988-0.081 3.206-1.356 0.962-0.969 1.275-3.175 1.275-3.175s0.319-2.587 0.319-5.181v-2.425c-0.006-2.588-0.325-5.181-0.325-5.181zM12.694 20.15v-8.994l8.644 4.513-8.644 4.481z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-twitter-blank" viewBox="0 0 32 32">
+		         
+		         <path d="M32 7.075c-1.175 0.525-2.444 0.875-3.769 1.031 1.356-0.813 2.394-2.1 2.887-3.631-1.269 0.75-2.675 1.3-4.169 1.594-1.2-1.275-2.906-2.069-4.794-2.069-3.625 0-6.563 2.938-6.563 6.563 0 0.512 0.056 1.012 0.169 1.494-5.456-0.275-10.294-2.888-13.531-6.862-0.563 0.969-0.887 2.1-0.887 3.3 0 2.275 1.156 4.287 2.919 5.463-1.075-0.031-2.087-0.331-2.975-0.819 0 0.025 0 0.056 0 0.081 0 3.181 2.263 5.838 5.269 6.437-0.55 0.15-1.131 0.231-1.731 0.231-0.425 0-0.831-0.044-1.237-0.119 0.838 2.606 3.263 4.506 6.131 4.563-2.25 1.762-5.075 2.813-8.156 2.813-0.531 0-1.050-0.031-1.569-0.094 2.913 1.869 6.362 2.95 10.069 2.95 12.075 0 18.681-10.006 18.681-18.681 0-0.287-0.006-0.569-0.019-0.85 1.281-0.919 2.394-2.075 3.275-3.394z"></path>
+		      </symbol>
+		      <symbol id="oxy-social-icons-icon-instagram-blank" viewBox="0 0 32 32">
+		         
+		         <path d="M16 2.881c4.275 0 4.781 0.019 6.462 0.094 1.563 0.069 2.406 0.331 2.969 0.55 0.744 0.288 1.281 0.638 1.837 1.194 0.563 0.563 0.906 1.094 1.2 1.838 0.219 0.563 0.481 1.412 0.55 2.969 0.075 1.688 0.094 2.194 0.094 6.463s-0.019 4.781-0.094 6.463c-0.069 1.563-0.331 2.406-0.55 2.969-0.288 0.744-0.637 1.281-1.194 1.837-0.563 0.563-1.094 0.906-1.837 1.2-0.563 0.219-1.413 0.481-2.969 0.55-1.688 0.075-2.194 0.094-6.463 0.094s-4.781-0.019-6.463-0.094c-1.563-0.069-2.406-0.331-2.969-0.55-0.744-0.288-1.281-0.637-1.838-1.194-0.563-0.563-0.906-1.094-1.2-1.837-0.219-0.563-0.481-1.413-0.55-2.969-0.075-1.688-0.094-2.194-0.094-6.463s0.019-4.781 0.094-6.463c0.069-1.563 0.331-2.406 0.55-2.969 0.288-0.744 0.638-1.281 1.194-1.838 0.563-0.563 1.094-0.906 1.838-1.2 0.563-0.219 1.412-0.481 2.969-0.55 1.681-0.075 2.188-0.094 6.463-0.094zM16 0c-4.344 0-4.887 0.019-6.594 0.094-1.7 0.075-2.869 0.35-3.881 0.744-1.056 0.412-1.95 0.956-2.837 1.85-0.894 0.888-1.438 1.781-1.85 2.831-0.394 1.019-0.669 2.181-0.744 3.881-0.075 1.713-0.094 2.256-0.094 6.6s0.019 4.887 0.094 6.594c0.075 1.7 0.35 2.869 0.744 3.881 0.413 1.056 0.956 1.95 1.85 2.837 0.887 0.887 1.781 1.438 2.831 1.844 1.019 0.394 2.181 0.669 3.881 0.744 1.706 0.075 2.25 0.094 6.594 0.094s4.888-0.019 6.594-0.094c1.7-0.075 2.869-0.35 3.881-0.744 1.050-0.406 1.944-0.956 2.831-1.844s1.438-1.781 1.844-2.831c0.394-1.019 0.669-2.181 0.744-3.881 0.075-1.706 0.094-2.25 0.094-6.594s-0.019-4.887-0.094-6.594c-0.075-1.7-0.35-2.869-0.744-3.881-0.394-1.063-0.938-1.956-1.831-2.844-0.887-0.887-1.781-1.438-2.831-1.844-1.019-0.394-2.181-0.669-3.881-0.744-1.712-0.081-2.256-0.1-6.6-0.1v0z"></path>
+		         <path d="M16 7.781c-4.537 0-8.219 3.681-8.219 8.219s3.681 8.219 8.219 8.219 8.219-3.681 8.219-8.219c0-4.537-3.681-8.219-8.219-8.219zM16 21.331c-2.944 0-5.331-2.387-5.331-5.331s2.387-5.331 5.331-5.331c2.944 0 5.331 2.387 5.331 5.331s-2.387 5.331-5.331 5.331z"></path>
+		         <path d="M26.462 7.456c0 1.060-0.859 1.919-1.919 1.919s-1.919-0.859-1.919-1.919c0-1.060 0.859-1.919 1.919-1.919s1.919 0.859 1.919 1.919z"></path>
+		      </symbol>
+		   </defs>
+		</svg>
+	
+	
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
+				jQuery('body').on('click', '.oxy-menu-toggle', function() {
+					jQuery(this).parent('.oxy-nav-menu').toggleClass('oxy-nav-menu-open');
+					jQuery('body').toggleClass('oxy-nav-menu-prevent-overflow');
+					jQuery('html').toggleClass('oxy-nav-menu-prevent-overflow');
+				});
+				var selector = '.oxy-nav-menu-open .menu-item a[href*="#"]';
+				jQuery('body').on('click', selector, function(){
+					jQuery('.oxy-nav-menu-open').removeClass('oxy-nav-menu-open');
+					jQuery('body').removeClass('oxy-nav-menu-prevent-overflow');
+					jQuery('html').removeClass('oxy-nav-menu-prevent-overflow');
+					jQuery(this).click();
+				});
+			});
+		</script>
+
+	
+		<script type="text/javascript">
+
+            // Initialize Oxygen Modals
+            jQuery(document).ready(function() {
+
+                function showModal( modal ) {
+                    var $modal = jQuery( modal );
+                    $modal.addClass("live");
+                    var modalId = $modal[0].querySelector('.ct-modal').id;
+                    
+                    var focusable = modal.querySelector('a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input[type="text"]:not([disabled]), input[type="radio"]:not([disabled]), input[type="checkbox"]:not([disabled]), select:not([disabled])');
+
+                    if(focusable) {
+                        setTimeout(() => {
+                            focusable.focus();    
+                        }, 500);
+                    } else {
+                        setTimeout(() => {
+                        $modal.focus();
+                        }, 500)
+                    }
+
+                    // Check if this modal can be shown according to settings and last shown time
+                    // Current and last time in milliseconds
+                    var currentTime = new Date().getTime();
+                    var lastShownTime = localStorage && localStorage['oxy-' + modalId + '-last-shown-time'] ? JSON.parse( localStorage['oxy-' + modalId + '-last-shown-time'] ) : false;
+                    // manual triggers aren't affected by last shown time
+                    if( $modal.data( 'trigger' ) != 'user_clicks_element' ) {
+                        switch( $modal.data( 'open-again' ) ) {
+                            case 'never_show_again':
+                                // if it was shown at least once, don't show it again
+                                if( lastShownTime !== false ) return;
+                                break;
+                            case 'show_again_after':
+                                var settingDays = parseInt( $modal.data( 'open-again-after-days' ) );
+                                var actualDays = ( currentTime - lastShownTime ) / ( 60*60*24*1000 );
+                                if( actualDays < settingDays ) return;
+                                break;
+                            default:
+                                //always show
+                                break;
+                        }
+                    }
+
+                    // Body manipulation to prevent scrolling while modal is active, and maintain scroll position.
+                    document.querySelector('body').style.top = `-${window.scrollY}px`;
+                    document.querySelector('body').classList.add('oxy-modal-active');
+                    
+                    // save current time as last shown time
+                    if( localStorage ) localStorage['oxy-' + modalId + '-last-shown-time'] = JSON.stringify( currentTime );
+
+                    // trick to make jQuery fadeIn with flex
+                    $modal.css("display", "flex");
+                    $modal.hide();
+                    // trick to force AOS trigger on elements inside the modal
+                    $modal.find(".aos-animate").removeClass("aos-animate").addClass("aos-animate-disabled");
+
+                    // show the modal
+                    $modal.fadeIn(250, function(){
+                        // trick to force AOS trigger on elements inside the modal
+                        $modal.find(".aos-animate-disabled").removeClass("aos-animate-disabled").addClass("aos-animate");
+                    });
+
+
+                    if( $modal.data( 'close-automatically' ) == 'yes' ) {
+                        var time = parseInt( $modal.data( 'close-after-time' ) );
+                        if( $modal.data( 'close-after-time-unit' ) == 'seconds' ) {
+                            time = parseInt( parseFloat( $modal.data( 'close-after-time' ) ) * 1000 );
+                        }
+                        setTimeout( function(){
+                            hideModal(modal);
+                        }, time );
+                    }
+
+                    // close modal automatically after form submit (Non-AJAX)
+                    if( $modal.data( 'close-after-form-submit' ) == 'yes' && $modal.data("trigger") == "after_specified_time" ) {
+
+                        // WPForms
+                        // WPForms replaces the form with a confirmation message on page refresh
+                        if( $modal.find(".wpforms-confirmation-container-full").length > 0 ) {
+                            setTimeout(function () {
+                                hideModal(modal);
+                            }, 3000);
+                        }
+
+                        // Formidable Forms
+                        // Formidable Forms replaces the form with a confirmation message on page refresh
+                        if( $modal.find(".frm_message").length > 0 ) {
+                            setTimeout(function () {
+                                hideModal(modal);
+                            }, 3000);
+                        }
+
+                        // Caldera Forms
+                        // Caldera Forms replaces the form with a confirmation message on page refresh
+                        if( $modal.find(".caldera-grid .alert-success").length > 0 ) {
+                            setTimeout(function () {
+                                hideModal(modal);
+                            }, 3000);
+                        }
+
+                    }
+                }
+
+                window.oxyShowModal = showModal;
+
+                var hideModal = function ( modal ) {
+
+                    // Body manipulation for scroll prevention and maintaining scroll position
+                    var scrollY = document.querySelector('body').style.top;
+                    document.querySelector('body').classList.remove('oxy-modal-active');
+                    document.querySelector('body').style.top = '';
+                    window.scrollTo(0, parseInt(scrollY || '0') * -1);
+
+                    // The function may be called by third party code, without argument, so we must close the first visible modal
+                    if( typeof modal === 'undefined' ) {
+                        var openModals = jQuery(".oxy-modal-backdrop.live");
+                        if( openModals.length == 0 ) return;
+                        modal = openModals[0];
+                    }
+
+                    var $modal = jQuery( modal );
+                    // refresh any iframe so media embedded this way is stopped
+                    $modal.find( 'iframe').each(function(index){
+                        this.src = this.src;
+                    });
+                    // HTML5 videos can be stopped easily
+                    $modal.find( 'video' ).each(function(index){
+                        this.pause();
+                    });
+                    // If there are any forms in the modal, reset them
+                    $modal.find("form").each(function(index){
+                        this.reset();
+                    });
+
+                    $modal.find(".aos-animate").removeClass("aos-animate").addClass("aos-animate-disabled");
+
+                    $modal.fadeOut(400, function(){
+                        $modal.removeClass("live");
+                        $modal.find(".aos-animate-disabled").removeClass("aos-animate-disabled").addClass("aos-animate");
+                    });
+                };
+
+                window.oxyCloseModal = hideModal;
+
+                jQuery( ".oxy-modal-backdrop" ).each(function( index ) {
+
+                    var modal = this;
+
+                    (function( modal ){
+                        var $modal = jQuery( modal );
+						
+						var exitIntentFunction = function( e ){
+                            if( e.target.tagName == 'SELECT' ) { return; }
+							if( e.clientY <= 0 ) {
+								showModal( modal );
+								document.removeEventListener( "mouseleave", exitIntentFunction );
+								document.removeEventListener( "mouseout", exitIntentFunction );
+							}
+						}
+
+                        switch ( jQuery( modal ).data("trigger") ) {
+
+                            case "on_exit_intent":
+                                document.addEventListener( "mouseleave", exitIntentFunction, false);
+								document.addEventListener( "mouseout", exitIntentFunction, false);
+                                break;
+
+                            case "user_clicks_element":
+                                jQuery( jQuery( modal ).data( 'trigger-selector' ) ).click( function( event ) {
+                                    showModal( modal );
+                                    event.preventDefault();
+                                } );
+                                break;
+
+                            case "after_specified_time":
+                                var time = parseInt( jQuery( modal ).data( 'trigger-time' ) );
+                                if( jQuery( modal ).data( 'trigger-time-unit' ) == 'seconds' ) {
+                                    time = parseInt( parseFloat( jQuery( modal ).data( 'trigger-time' ) ) * 1000 );
+                                }
+                                setTimeout( function(){
+                                    showModal( modal );
+                                }, time );
+                                break;
+
+                            case "after_scrolled_amount":
+                                window.addEventListener("scroll", function scrollDetection(){
+                                    var winheight= window.innerHeight || (document.documentElement || document.body).clientHeight;
+                                    var docheight = jQuery(document).height();
+                                    var scrollTop = window.pageYOffset || (document.documentElement || document.body.parentNode || document.body).scrollTop;
+                                    var isScrollUp = false;
+                                    var oxyPreviousScrollTop = parseInt( jQuery( modal ).data( 'previous_scroll_top' ) );
+                                    if( !isNaN( oxyPreviousScrollTop ) ) {
+                                        if( oxyPreviousScrollTop > scrollTop) isScrollUp = true;
+                                    }
+                                    jQuery( modal ).data( 'previous_scroll_top', scrollTop );
+                                    var trackLength = docheight - winheight;
+                                    var pctScrolled = Math.floor(scrollTop/trackLength * 100);
+                                    if( isNaN( pctScrolled ) ) pctScrolled = 0;
+
+                                    if(
+                                        ( isScrollUp && jQuery( modal ).data( 'trigger_scroll_direction' ) == 'up' ) ||
+                                        ( !isScrollUp && jQuery( modal ).data( 'trigger_scroll_direction' ) == 'down' && pctScrolled >= parseInt( jQuery( modal ).data( 'trigger_scroll_amount' ) ) )
+                                    ) {
+                                        showModal( modal );
+                                        window.removeEventListener( "scroll", scrollDetection );
+                                    }
+                                }, false);
+                                break;
+                            case "on_scroll_to_element":
+                                window.addEventListener("scroll", function scrollDetection(){
+                                    var $element = jQuery( jQuery( modal ).data( 'scroll_to_selector' ) );
+                                    if( $element.length == 0 ) {
+                                        window.removeEventListener( "scroll", scrollDetection );
+                                        return;
+                                    }
+
+                                    var top_of_element = $element.offset().top;
+                                    var bottom_of_element = $element.offset().top + $element.outerHeight();
+                                    var bottom_of_screen = jQuery(window).scrollTop() + jQuery(window).innerHeight();
+                                    var top_of_screen = jQuery(window).scrollTop();
+
+                                    if ((bottom_of_screen > bottom_of_element - $element.outerHeight() /2 ) && (top_of_screen < top_of_element + $element.outerHeight() /2 )){
+                                        showModal( modal );
+                                        window.removeEventListener( "scroll", scrollDetection );
+                                    }
+                                }, false);
+                                break;
+                            case "after_number_of_clicks":
+                                document.addEventListener("click", function clickDetection(){
+                                    var number_of_clicks = parseInt( jQuery( modal ).data( 'number_of_clicks' ) );
+
+                                    var clicks_performed = isNaN( parseInt( jQuery( modal ).data( 'clicks_performed' ) ) ) ? 1 :  parseInt( jQuery( modal ).data( 'clicks_performed' ) ) + 1;
+
+                                    jQuery( modal ).data( 'clicks_performed', clicks_performed );
+
+                                    if ( clicks_performed == number_of_clicks ){
+                                        showModal( modal );
+                                        document.removeEventListener( "click", clickDetection );
+                                    }
+                                }, false);
+                                break;
+                            case "after_time_inactive":
+                                var time = parseInt( jQuery( modal ).data( 'time_inactive' ) );
+                                if( jQuery( modal ).data( 'time-inactive-unit' ) == 'seconds' ) {
+                                    time = parseInt( parseFloat( jQuery( modal ).data( 'time_inactive' ) ) * 1000 );
+                                }
+                                var activityDetected = function(){
+                                    jQuery( modal ).data( 'millis_idle', 0 );
+                                };
+                                document.addEventListener( "click", activityDetected);
+                                document.addEventListener( "mousemove", activityDetected);
+                                document.addEventListener( "keypress", activityDetected);
+                                document.addEventListener( "scroll", activityDetected);
+
+                                var idleInterval = setInterval(function(){
+                                    var millis_idle = isNaN( parseInt( jQuery( modal ).data( 'millis_idle' ) ) ) ? 100 :  parseInt( jQuery( modal ).data( 'millis_idle' ) ) + 100;
+                                    jQuery( modal ).data( 'millis_idle', millis_idle );
+                                    if( millis_idle > time ){
+                                        clearInterval( idleInterval );
+                                        document.removeEventListener( "click", activityDetected );
+                                        document.removeEventListener( "mousemove", activityDetected );
+                                        document.removeEventListener( "keypress", activityDetected );
+                                        document.removeEventListener( "scroll", activityDetected );
+                                        showModal( modal );
+                                    }
+                                }, 100);
+                                break;
+
+                            case "after_number_of_page_views":
+                                var modalId = modal.querySelector('.ct-modal').id;
+                                var pageViews = localStorage && localStorage['oxy-' + modalId + '-page-views'] ? parseInt( localStorage['oxy-' + modalId + '-page-views'] ) : 0;
+                                pageViews++;
+                                if( localStorage ) localStorage['oxy-' + modalId + '-page-views'] = pageViews;
+                                if( parseInt( jQuery( modal ).data( 'number_of_page_views' ) ) == pageViews ) {
+                                    if( localStorage ) localStorage['oxy-' + modalId + '-page-views'] = 0;
+                                    showModal( modal );
+                                }
+                                break;
+
+                        }
+
+                        // add event handler to close modal automatically after AJAX form submit
+                        if( $modal.data( 'close-after-form-submit' ) == 'yes' ) {
+
+                            // Contact Form 7
+                            if (typeof wpcf7 !== 'undefined') {
+                                $modal.find('div.wpcf7').each(function () {
+                                    var $form = jQuery(this).find('form');
+                                    this.addEventListener('wpcf7submit', function (event) {
+                                        if (event.detail.contactFormId == $form.attr("id")) {
+                                            setTimeout(function () {
+                                                hideModal(modal);
+                                            }, 3000);
+                                        }
+                                    }, false);
+                                });
+                            }
+
+                            // Caldera Forms
+                            document.addEventListener( "cf.submission", function(event){
+                                // Pending, Caldera AJAX form submissions aren't working since Oxygen 2.2, see: https://github.com/soflyy/oxygen/issues/1638
+                            });
+
+                            // Ninja Forms
+                            jQuery(document).on("nfFormSubmitResponse", function(event, response){
+                                // Only close the modal if the event was triggered from a Ninja Form inside the modal
+                                if( $modal.find("#nf-form-" + response.id + "-cont").length > 0 ) {
+                                    setTimeout(function () {
+                                        hideModal(modal);
+                                    }, 3000);
+                                }
+                            });
+
+                        }
+
+                    })( modal );
+
+                });
+
+                // handle clicks on modal backdrop and on .oxy-close-modal
+                jQuery("body").on('click touchend', '.oxy-modal-backdrop, .oxy-close-modal', function( event ) {
+
+                    var $this = jQuery( this );
+                    var $target = jQuery( event.target );
+
+                    // Click event in the modal div and it's children is propagated to the backdrop
+                    if( !$target.hasClass( 'oxy-modal-backdrop' ) && !$this.hasClass( 'oxy-close-modal' ) ) {
+                        //event.stopPropagation();
+                        return;
+                    }
+
+                    if( $target.hasClass( 'oxy-modal-backdrop' ) && $this.hasClass( 'oxy-not-closable' ) ) {
+                        return;
+                    }
+
+                    if( $this.hasClass( 'oxy-close-modal' ) ) event.preventDefault();
+
+                    var $modal = $this.hasClass( 'oxy-close-modal' ) ? $this.closest('.oxy-modal-backdrop') : $this;
+                    hideModal( $modal[0] );
+                });
+
+                jQuery(document).keyup( function(e){
+                    if( e.key == 'Escape' ){
+                        jQuery(".oxy-modal-backdrop:visible").each(function(index){
+                            if( jQuery(this).data("close_on_esc") == 'on' ) hideModal(this);
+                        });
+                    }
+                } );
+
+            });
+
+		</script>
+
+			
+		<script type="text/javascript">
+
+			function oxygenVSBInitTabs(element) {
+				if (element!==undefined) {
+					jQuery(element).find('.oxy-tabs-wrapper').addBack('.oxy-tabs-wrapper').each(function(index) {
+						jQuery(this).children('.oxy-tabs-wrapper > div').eq(0).trigger('click');
+					});
+				}
+				else {
+					jQuery('.oxy-tabs-wrapper').each(function(index) {
+						jQuery(this).children('.oxy-tabs-wrapper > div').eq(0).trigger('click');
+					});
+				}
+			}
+
+			jQuery(document).ready(function() {
+                let event = new Event('oxygenVSBInitTabsJs');
+                document.dispatchEvent(event);
+			});
+
+            document.addEventListener("oxygenVSBInitTabsJs",function(){
+                oxygenVSBInitTabs();
+            },false);
+  
+			// handle clicks on tabs  
+			jQuery("body").on('click', '.oxy-tabs-wrapper > div', function(e) {
+
+			    /* a tab or an element that is a child of a tab has been clicked. prevent any default behavior */
+			    //e.preventDefault();
+			    
+			    /* which tab has been clicked? (e.target might be a child of the tab.) */
+			    clicked_tab = jQuery(e.target).closest('.oxy-tabs-wrapper > div');
+			    index = clicked_tab.index();  
+			    
+			    /* which tabs-wrapper is this tab inside? */
+			    tabs_wrapper = jQuery(e.target).closest('.oxy-tabs-wrapper');
+
+			    /* what class dp we use to signify an active tob? */
+			    class_for_active_tab = tabs_wrapper.attr('data-oxy-tabs-active-tab-class');
+			    
+			    /* make all the other tabs in this tabs-wrapper inactive */
+			    jQuery(tabs_wrapper).children('.oxy-tabs-wrapper > div').removeClass(class_for_active_tab);
+
+			    /* make the clicked tab the active tab */    
+			    jQuery(tabs_wrapper).children('.oxy-tabs-wrapper > div').eq(index).addClass(class_for_active_tab);
+
+			    /* which tabs-contents-wrapper is used by these tabs? */
+			    tabs_contents_wrapper_id = tabs_wrapper.attr('data-oxy-tabs-contents-wrapper');
+
+			    /* try to grab the correct content wrapper, in case of duplicated ID's */
+                $content_wrapper = jQuery(tabs_wrapper).next();
+                if( $content_wrapper.attr("id") != tabs_contents_wrapper_id ) $content_wrapper = jQuery( '#' + tabs_contents_wrapper_id );
+
+                $content_tabs = $content_wrapper.children( "div" );
+
+                /* hide all of the content */
+                $content_tabs.addClass('oxy-tabs-contents-content-hidden');
+			    
+			    /* unhide the content corresponding to the active tab*/
+                $content_tabs.eq(index).removeClass('oxy-tabs-contents-content-hidden');
+			  
+			});                                 
+		
+		</script>
+
+		<script>
+		(function () {
+			var c = document.body.className;
+			c = c.replace(/woocommerce-no-js/, 'woocommerce-js');
+			document.body.className = c;
+		})();
+	</script>
+	<link rel='stylesheet' id='wc-blocks-style-css' href='https://agrikoph.com/wp-content/plugins/woocommerce/assets/client/blocks/wc-blocks.css?ver=wc-9.1.4' media='all' />
+<script src="https://unpkg.com/sweetalert@2.1.2/dist/sweetalert.min.js" id="sweetalert-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/sourcebuster/sourcebuster.min.js?ver=9.1.4" id="sourcebuster-js-js"></script>
+<script id="wc-order-attribution-js-extra">
+var wc_order_attribution = {"params":{"lifetime":1.0e-5,"session":30,"base64":false,"ajaxurl":"https:\/\/agrikoph.com\/wp-admin\/admin-ajax.php","prefix":"wc_order_attribution_","allowTracking":true},"fields":{"source_type":"current.typ","referrer":"current_add.rf","utm_campaign":"current.cmp","utm_source":"current.src","utm_medium":"current.mdm","utm_content":"current.cnt","utm_id":"current.id","utm_term":"current.trm","utm_source_platform":"current.plt","utm_creative_format":"current.fmt","utm_marketing_tactic":"current.tct","session_entry":"current_add.ep","session_start_time":"current_add.fd","session_pages":"session.pgs","session_count":"udata.vst","user_agent":"udata.uag"}};
+</script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/frontend/order-attribution.min.js?ver=9.1.4" id="wc-order-attribution-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/woo-fly-cart/assets/perfect-scrollbar/js/perfect-scrollbar.jquery.min.js?ver=5.9.5" id="perfect-scrollbar-js"></script>
+<script id="wc-cart-fragments-js-extra">
+var wc_cart_fragments_params = {"ajax_url":"\/wp-admin\/admin-ajax.php","wc_ajax_url":"\/?wc-ajax=%%endpoint%%","cart_hash_key":"wc_cart_hash_6a9563ef4619e7db1acadf8f044aae20","fragment_name":"wc_fragments_6a9563ef4619e7db1acadf8f044aae20","request_timeout":"5000"};
+</script>
+<script src="https://agrikoph.com/wp-content/plugins/woocommerce/assets/js/frontend/cart-fragments.min.js?ver=9.1.4" id="wc-cart-fragments-js" data-wp-strategy="defer"></script>
+<script id="woofc-frontend-js-extra">
+var woofc_vars = {"wc_ajax_url":"\/?wc-ajax=%%endpoint%%","nonce":"fc763c78b3","scrollbar":"yes","auto_show":"yes","auto_show_normal":"yes","show_cart":"no","show_checkout":"no","delay":"300","undo_remove":"yes","confirm_remove":"no","instant_checkout":"no","instant_checkout_open":"no","confirm_empty":"no","confirm_empty_text":"Do you want to empty the cart?","confirm_remove_text":"Do you want to remove this item?","undo_remove_text":"Undo?","removed_text":"%s was removed.","manual_show":"#fly-cart-btn","reload":"no","suggested_carousel":"1","save_for_later_carousel":"1","upsell_funnel_carousel":"1","slick_params":"{\"slidesToShow\":1,\"slidesToScroll\":1,\"dots\":true,\"arrows\":false,\"autoplay\":false,\"autoplaySpeed\":3000,\"rtl\":false}","is_cart":"","is_checkout":"","cart_url":"","hide_count_empty":"no","wc_checkout_js":"https:\/\/agrikoph.com\/wp-content\/plugins\/woocommerce\/assets\/js\/frontend\/checkout.js"};
+</script>
+<script src="https://agrikoph.com/wp-content/plugins/woo-fly-cart/assets/js/frontend.js?ver=5.9.5" id="woofc-frontend-js"></script>
+<script src="https://agrikoph.com/wp-includes/js/underscore.min.js?ver=1.13.7" id="underscore-js"></script>
+<script id="wp-util-js-extra">
+var _wpUtilSettings = {"ajax":{"url":"\/wp-admin\/admin-ajax.php"}};
+</script>
+<script src="https://agrikoph.com/wp-includes/js/wp-util.min.js?ver=6.8.2" id="wp-util-js"></script>
+<script src="https://agrikoph.com/wp-includes/js/dist/hooks.min.js?ver=4d63a3d491d11ffd8ac6" id="wp-hooks-js"></script>
+<script src="https://agrikoph.com/wp-includes/js/dist/i18n.min.js?ver=5e580eb46a90c2b997e6" id="wp-i18n-js"></script>
+<script id="wp-i18n-js-after">
+wp.i18n.setLocaleData( { 'text direction\u0004ltr': [ 'ltr' ] } );
+</script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/tipsy/tipsy.min.js?ver=1.0.0a" id="um_tipsy-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/um-confirm/um-confirm.min.js?ver=1.0" id="um_confirm-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/pickadate/picker.min.js?ver=3.6.2" id="um_datetime-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/pickadate/picker.date.min.js?ver=3.6.2" id="um_datetime_date-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/pickadate/picker.time.min.js?ver=3.6.2" id="um_datetime_time-js"></script>
+<script id="um_common-js-extra">
+var um_common_variables = {"locale":"en_US"};
+var um_common_variables = {"locale":"en_US"};
+</script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/js/common.min.js?ver=2.10.5" id="um_common-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/cropper/cropper.min.js?ver=1.6.1" id="um_crop-js"></script>
+<script id="um_frontend_common-js-extra">
+var um_frontend_common_variables = [];
+</script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/js/common-frontend.min.js?ver=2.10.5" id="um_frontend_common-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/js/um-modal.min.js?ver=2.10.5" id="um_modal-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/jquery-form/jquery-form.min.js?ver=2.10.5" id="um_jquery_form-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/fileupload/fileupload.js?ver=2.10.5" id="um_fileupload-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/js/um-functions.min.js?ver=2.10.5" id="um_functions-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/js/um-responsive.min.js?ver=2.10.5" id="um_responsive-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/js/um-conditional.min.js?ver=2.10.5" id="um_conditional-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/select2/select2.full.min.js?ver=4.0.13" id="select2-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/select2/i18n/en.js?ver=4.0.13" id="um_select2_locale-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/libs/raty/um-raty.min.js?ver=2.6.0" id="um_raty-js"></script>
+<script id="um_scripts-js-extra">
+var um_scripts = {"max_upload_size":"3145728000","nonce":"da82ed5d78"};
+</script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/js/um-scripts.min.js?ver=2.10.5" id="um_scripts-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/js/um-profile.min.js?ver=2.10.5" id="um_profile-js"></script>
+<script src="https://agrikoph.com/wp-content/plugins/ultimate-member/assets/js/um-account.min.js?ver=2.10.5" id="um_account-js"></script>
+<script type="text/javascript" id="ct-footer-js"></script><!-- /WP_FOOTER --> 
+</body>
+</html>

@@ -1,0 +1,80 @@
+{
+  "timestamp": "2025-09-09T11:58:49.533Z",
+  "totalProducts": 11,
+  "targetImages": [
+    "5n1-500-for-health-.jpg",
+    "5n1-180-for-Website-P3.jpg",
+    "Pure-Salabat-100g-with-Background.jpg",
+    "Honey-with-Background.jpg",
+    "Agriko-Website-Imagery-2.jpg",
+    "eco-farm-scaled.jpg",
+    "blend-bg.png",
+    "gerry-paglinawan-family-agriko-founders.jpg"
+  ],
+  "downloaded": [
+    {
+      "filename": "5n1-180-for-Website-P3.jpg",
+      "product": "5n1 Turmeric Tea Blend 180g",
+      "url": "https://agrikoph.com/wp-content/uploads/2024/08/5n1-180-for-Website-P3.jpg",
+      "success": true
+    },
+    {
+      "filename": "Honey-with-Background.jpg",
+      "product": "Organic Honey",
+      "url": "https://agrikoph.com/wp-content/uploads/2024/08/Honey-with-Background.jpg",
+      "success": true
+    },
+    {
+      "filename": "Pure-Salabat-100g-with-Background.jpg",
+      "product": "Salabat Tea Blend",
+      "url": "https://agrikoph.com/wp-content/uploads/2024/08/Salabat-Products-with-Background.jpg",
+      "success": true
+    },
+    {
+      "filename": "5n1-500-for-health-.jpg",
+      "product": "5n1 Turmeric Tea Blend 500g",
+      "url": "https://agrikoph.com/wp-content/uploads/2024/08/5n1-500-for-Website-P3.jpg",
+      "success": true
+    }
+  ],
+  "failed": [],
+  "missing": [
+    "Agriko-Website-Imagery-2.jpg",
+    "eco-farm-scaled.jpg",
+    "blend-bg.png",
+    "gerry-paglinawan-family-agriko-founders.jpg"
+  ],
+  "summary": {
+    "downloaded": 4,
+    "failed": 0,
+    "missing": 4
+  },
+  "missingImagesSearch": {
+    "timestamp": "2025-09-09T12:03:24.406Z",
+    "searchedImages": [
+      "Agriko-Website-Imagery-2.jpg",
+      "eco-farm-scaled.jpg",
+      "blend-bg.png",
+      "gerry-paglinawan-family-agriko-founders.jpg"
+    ],
+    "downloadedFromWP": [
+      {
+        "filename": "Agriko-Website-Imagery-2.jpg",
+        "title": "Agriko Website Imagery (2)",
+        "url": "https://agrikoph.com/wp-content/uploads/2024/08/Agriko-Website-Imagery-2.jpg",
+        "success": true
+      }
+    ],
+    "failedDownloads": [],
+    "stillMissing": [
+      "eco-farm-scaled.jpg",
+      "blend-bg.png",
+      "gerry-paglinawan-family-agriko-founders.jpg"
+    ],
+    "summary": {
+      "downloaded": 1,
+      "failed": 0,
+      "stillMissing": 3
+    }
+  }
+}
