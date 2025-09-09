@@ -6,7 +6,7 @@ import Navbar from './Navbar';
 import { WCProduct } from '@/types/woocommerce';
 import { useCommerceKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useCart } from '@/context/CartContext';
-import { getAllProducts } from '@/lib/woocommerce';
+// Removed direct WooCommerce import - now using API routes
 
 export default function NavbarWrapper() {
   const [products, setProducts] = useState<WCProduct[]>([]);
@@ -24,11 +24,15 @@ export default function NavbarWrapper() {
   });
 
   useEffect(() => {
-    // Fetch products for search functionality directly from WooCommerce
+    // Fetch products for search functionality via secure API route
     const loadProducts = async () => {
       try {
-        const data = await getAllProducts({ per_page: 100 });
-        setProducts(data);
+        const response = await fetch('/api/products?per_page=100&status=publish');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setProducts(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Error fetching products for search:', error);
         // Set empty array on error to prevent UI issues

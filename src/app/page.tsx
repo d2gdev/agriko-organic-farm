@@ -17,10 +17,60 @@ async function FeaturedProducts() {
     const featuredProducts = await getFeaturedProducts(8);
     
     if (featuredProducts.length === 0) {
+      // Fallback to latest products if no featured products
+      console.warn('No featured products found, falling back to latest products');
+      const latestProducts = await getAllProducts({
+        per_page: 8,
+        orderby: 'date',
+        order: 'desc',
+        status: 'publish'
+      });
+      
+      if (latestProducts.length === 0) {
+        return (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No products available at the moment.</p>
+          </div>
+        );
+      }
+      
+      const latestProductsSchema = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Latest Products",
+        "description": "Our newest additions - from specialty rice blends to health-boosting herbal formulations.",
+        "numberOfItems": latestProducts.length,
+        "itemListElement": latestProducts.map((product, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "Product",
+            "name": product.name,
+            "url": `https://shop.agrikoph.com/product/${product.slug}`,
+            "image": product.images?.[0]?.src || '',
+            "offers": {
+              "@type": "Offer",
+              "price": product.price,
+              "priceCurrency": "PHP"
+            }
+          }
+        }))
+      };
+
       return (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No featured products available.</p>
-        </div>
+        <>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(latestProductsSchema)
+            }}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {latestProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </>
       );
     }
 
@@ -65,9 +115,66 @@ async function FeaturedProducts() {
     );
   } catch (error) {
     console.error('Error loading featured products:', error);
+    // Try to show latest products as a fallback
+    try {
+      const latestProducts = await getAllProducts({
+        per_page: 8,
+        orderby: 'date',
+        order: 'desc',
+        status: 'publish'
+      });
+      
+      if (latestProducts.length > 0) {
+        const latestProductsSchema = {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "name": "Latest Products",
+          "description": "Currently showing our latest products due to temporary issues with featured products.",
+          "numberOfItems": latestProducts.length,
+          "itemListElement": latestProducts.map((product, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": {
+              "@type": "Product",
+              "name": product.name,
+              "url": `https://shop.agrikoph.com/product/${product.slug}`,
+              "image": product.images?.[0]?.src || '',
+              "offers": {
+                "@type": "Offer",
+                "price": product.price,
+                "priceCurrency": "PHP"
+              }
+            }
+          }))
+        };
+
+        return (
+          <>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify(latestProductsSchema)
+              }}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {latestProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            <div className="text-center mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-yellow-800">Currently showing latest products due to temporary issues. Please try again later.</p>
+            </div>
+          </>
+        );
+      }
+    } catch (fallbackError) {
+      console.error('Error loading fallback products:', fallbackError);
+    }
+    
     return (
       <div className="text-center py-12">
-        <p className="text-red-500">Unable to load featured products. Please try again later.</p>
+        <p className="text-red-500">Unable to load products. Please try again later.</p>
+        <p className="text-gray-500 mt-2 text-sm">This might be due to temporary network issues with our product database.</p>
       </div>
     );
   }
@@ -86,7 +193,7 @@ async function LatestProducts() {
     if (latestProducts.length === 0) {
       return (
         <div className="text-center py-12">
-          <p className="text-gray-500">No products available.</p>
+          <p className="text-gray-500">No products available at the moment.</p>
         </div>
       );
     }
@@ -134,7 +241,8 @@ async function LatestProducts() {
     console.error('Error loading latest products:', error);
     return (
       <div className="text-center py-12">
-        <p className="text-red-500">Unable to load products. Please try again later.</p>
+        <p className="text-red-500">Unable to load latest products. Please try again later.</p>
+        <p className="text-gray-500 mt-2 text-sm">This might be due to temporary network issues with our product database.</p>
       </div>
     );
   }

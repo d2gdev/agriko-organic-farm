@@ -27,7 +27,10 @@
       "Bash(npm run deploy:remote:*)",
       "Bash(ssh:*)",
       "Bash(dir:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "WebSearch",
+      "WebFetch(domain:zellwk.com)",
+      "WebFetch(domain:medium.com)"
     ],
     "deny": [],
     "ask": []

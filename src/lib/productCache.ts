@@ -4,14 +4,18 @@ interface CachedProduct {
   product: WCProduct;
   timestamp: number;
   etag?: string;
+  error?: boolean;
+  errorTimestamp?: number;
 }
 
 class ProductCache {
   private cache = new Map<string, CachedProduct>();
   private maxAge = 5 * 60 * 1000; // 5 minutes
-  private maxSize = 50; // Maximum cached items
+  private errorMaxAge = 30 * 1000; // 30 seconds for error caching
+  private maxSize = 100; // Increased maximum cached items
 
   set(key: string, product: WCProduct, etag?: string): void {
+    // Clean up if we're at max size
     if (this.cache.size >= this.maxSize) {
       const oldestKey = Array.from(this.cache.keys())[0];
       this.cache.delete(oldestKey);
@@ -24,10 +28,31 @@ class ProductCache {
     });
   }
 
+  setError(key: string): void {
+    this.cache.set(key, {
+      product: null as unknown as WCProduct,
+      timestamp: Date.now(),
+      error: true,
+      errorTimestamp: Date.now(),
+    });
+  }
+
   get(key: string): WCProduct | null {
     const cached = this.cache.get(key);
     if (!cached) return null;
 
+    // Handle error cache
+    if (cached.error) {
+      // If error is recent, return null to prevent cascading failures
+      if (cached.errorTimestamp && Date.now() - cached.errorTimestamp < this.errorMaxAge) {
+        return null;
+      }
+      // If error is old, remove it and allow retry
+      this.cache.delete(key);
+      return null;
+    }
+
+    // Handle normal cache expiration
     if (Date.now() - cached.timestamp > this.maxAge) {
       this.cache.delete(key);
       return null;
@@ -38,7 +63,7 @@ class ProductCache {
 
   getStale(key: string): WCProduct | null {
     const cached = this.cache.get(key);
-    return cached ? cached.product : null;
+    return cached && !cached.error ? cached.product : null;
   }
 
   has(key: string): boolean {
@@ -52,7 +77,8 @@ class ProductCache {
   cleanup(): void {
     const now = Date.now();
     for (const [key, cached] of this.cache.entries()) {
-      if (now - cached.timestamp > this.maxAge) {
+      const maxAge = cached.error ? this.errorMaxAge : this.maxAge;
+      if (now - cached.timestamp > maxAge) {
         this.cache.delete(key);
       }
     }

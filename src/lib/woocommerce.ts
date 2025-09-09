@@ -17,8 +17,8 @@ const getAuthHeader = () => {
   };
 };
 
-// Timeout helper
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise<T> {
+// Timeout helper with shorter timeout during build
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = process.env.NODE_ENV === 'production' ? 10000 : 30000): Promise<T> {
   return Promise.race([
     promise,
     new Promise<never>((_, reject) => {
@@ -28,7 +28,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 10000): Promise
 }
 
 // Generic API request function with timeout and retry
-async function wcRequest<T>(endpoint: string, options: RequestInit = {}, retries: number = 2): Promise<T> {
+async function wcRequest<T>(endpoint: string, options: RequestInit = {}, retries: number = 3): Promise<T> {
   if (!WC_API_URL) {
     // During build time or when API is unavailable, return empty array for GET requests
     if (!options.method || options.method === 'GET') {
@@ -38,6 +38,9 @@ async function wcRequest<T>(endpoint: string, options: RequestInit = {}, retries
     throw new Error('Missing WooCommerce API URL. Please check your environment variables.');
   }
   
+  // During production build, use shorter retries and timeout
+  const buildTimeRetries = process.env.NODE_ENV === 'production' ? 1 : retries;
+  
   const url = `${WC_API_URL}${endpoint}`;
   
   const defaultOptions: RequestInit = {
@@ -45,15 +48,18 @@ async function wcRequest<T>(endpoint: string, options: RequestInit = {}, retries
     ...options,
   };
 
-  for (let attempt = 0; attempt <= retries; attempt++) {
+  for (let attempt = 0; attempt <= buildTimeRetries; attempt++) {
     try {
       const fetchPromise = fetch(url, defaultOptions);
-      const response = await withTimeout(fetchPromise, 10000);
+      // Use dynamic timeout based on environment
+      const timeoutMs = process.env.NODE_ENV === 'production' ? 10000 : 30000;
+      const response = await withTimeout(fetchPromise, timeoutMs);
       
       if (!response.ok) {
-        if (response.status >= 500 && attempt < retries) {
+        if (response.status >= 500 && attempt < buildTimeRetries) {
           console.warn(`Server error ${response.status} on attempt ${attempt + 1}, retrying...`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+          // Exponential backoff: 1s, 2s, 4s, etc.
+          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
           continue;
         }
         throw new Error(`WooCommerce API error: ${response.status} ${response.statusText}`);
@@ -67,7 +73,8 @@ async function wcRequest<T>(endpoint: string, options: RequestInit = {}, retries
         throw error;
       }
       console.warn(`Request failed on attempt ${attempt + 1}, retrying...`, error);
-      await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+      // Exponential backoff: 1s, 2s, 4s, etc.
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
     }
   }
   
@@ -125,11 +132,17 @@ export async function getProductBySlug(slug: string): Promise<WCProduct | null> 
     if (product) {
       productCache.set(cacheKey, product);
       productCache.set(`id:${product.id}`, product);
+    } else {
+      // Cache the "not found" result to prevent repeated requests
+      productCache.setError(cacheKey);
     }
     
     return product;
   } catch (error) {
     console.error(`Product with slug ${slug} not found:`, error);
+    
+    // Cache the error to prevent repeated failing requests
+    productCache.setError(cacheKey);
     
     // Return stale cache if available
     const stale = productCache.getStale(cacheKey);

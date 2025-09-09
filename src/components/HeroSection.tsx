@@ -59,7 +59,7 @@ export default function HeroSection({
         </div>
 
         {/* Main Title */}
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white mb-6 leading-normal animate-fade-in-up">
+        <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white mb-10 leading-relaxed animate-fade-in-up">
           <span className="block bg-gradient-to-r from-white via-white to-accent-200 bg-clip-text text-transparent drop-shadow-lg">
             {title}
           </span>

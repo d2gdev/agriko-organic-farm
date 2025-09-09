@@ -163,46 +163,56 @@ jobs:
         name: build-files
         path: ${{ env.BUILD_PATH }}
     
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GH_TOKEN }}
-        publish_dir: ${{ env.BUILD_PATH }}
-        publish_branch: gh-pages
-        force_orphan: true
+    - name: Setup SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 143.42.189.57 >> ~/.ssh/known_hosts
+    
+    - name: Prepare server directory
+      run: |
+        ssh root@143.42.189.57 "mkdir -p /var/www/shop && chown -R www-data:www-data /var/www/shop"
+    
+    - name: Deploy to Server
+      run: |
+        scp -r ${{ env.BUILD_PATH }}/* root@143.42.189.57:/var/www/shop/
+        
+    - name: Set proper permissions
+      run: |
+        ssh root@143.42.189.57 "chown -R www-data:www-data /var/www/shop && chmod -R 755 /var/www/shop"
     
     - name: Verify deployment
       run: |
-        # Wait for GitHub Pages to be ready
+        # Wait for server to process files
         sleep 10
         
-        # Get the repository info
-        REPO_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        SITE_URL="https://shop.agrikoph.com"
         
-        echo "Checking deployment at: $REPO_URL"
-        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $REPO_URL || echo "000")
+        echo "Checking deployment at: $SITE_URL"
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $SITE_URL || echo "000")
         
         if [ "$HTTP_STATUS" = "200" ]; then
-          echo "✅ Deployment successful! Site is live at $REPO_URL"
+          echo "✅ Deployment successful! Site is live at $SITE_URL"
         else
           echo "⚠️  Warning: Site returned HTTP $HTTP_STATUS"
-          echo "GitHub Pages may still be processing the deployment"
+          echo "Server may still be processing the deployment"
         fi
     
     - name: Create deployment summary
       if: always()
       run: |
-        REPO_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        SITE_URL="https://shop.agrikoph.com"
         
         echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- **Environment:** GitHub Pages" >> $GITHUB_STEP_SUMMARY
-        echo "- **URL:** $REPO_URL" >> $GITHUB_STEP_SUMMARY
+        echo "- **Environment:** Production Server" >> $GITHUB_STEP_SUMMARY
+        echo "- **URL:** $SITE_URL" >> $GITHUB_STEP_SUMMARY
         echo "- **Deployment Time:** $(date)" >> $GITHUB_STEP_SUMMARY
         echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
         echo "- **Actor:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
         
         # Check final status
-        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $REPO_URL || echo "000")
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $SITE_URL || echo "000")
         if [ "$HTTP_STATUS" = "200" ]; then
           echo "- **Status:** ✅ Live" >> $GITHUB_STEP_SUMMARY
         else
