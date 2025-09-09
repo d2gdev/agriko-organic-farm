@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { WCProduct } from '@/types/woocommerce';
 import { SearchFilters } from '@/components/SearchFilters';
 
@@ -194,13 +194,13 @@ export function useProductSearch(products: WCProduct[], debounceMs: number = 300
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
   // Debounce search query
-  useState(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
     }, debounceMs);
 
     return () => clearTimeout(timer);
-  });
+  }, [query, debounceMs]);
 
   // Search results
   const results = useMemo(() => {

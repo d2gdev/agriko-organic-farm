@@ -6,7 +6,7 @@ import { WCProduct } from '@/types/woocommerce';
 import { formatPrice, getProductMainImage, stripHtml, isProductInStock } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface ProductCardProps {
   product: WCProduct;
@@ -24,6 +24,14 @@ export default function ProductCard({
   const { addItem, toggleCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+    };
+  }, []);
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,32 +40,36 @@ export default function ProductCard({
     setIsLoading(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 600));
-      addItem(product);
+      const delayTimeout = setTimeout(() => {
+        addItem(product);
+        
+        toast.success(
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <span>{product.name} added to cart!</span>
+          </div>,
+          {
+            duration: 3000,
+            style: {
+              background: 'white',
+              color: '#1f2937',
+              borderRadius: '12px',
+              boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              border: '1px solid #e5e7eb',
+              padding: '16px',
+            },
+          }
+        );
+        
+        const toggleTimeout = setTimeout(() => toggleCart(), 1200);
+        timeoutsRef.current.push(toggleTimeout);
+      }, 600);
       
-      toast.success(
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-            <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <span>{product.name} added to cart!</span>
-        </div>,
-        {
-          duration: 3000,
-          style: {
-            background: 'white',
-            color: '#1f2937',
-            borderRadius: '12px',
-            boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-            border: '1px solid #e5e7eb',
-            padding: '16px',
-          },
-        }
-      );
-      
-      setTimeout(() => toggleCart(), 1200);
+      timeoutsRef.current.push(delayTimeout);
       
     } catch (error) {
       toast.error('Failed to add item to cart');
@@ -131,11 +143,9 @@ export default function ProductCard({
           <Link href={`/product/${product.slug}`} className="block relative">
             <div className="relative aspect-square bg-gradient-to-br from-neutral-50 to-neutral-100 overflow-hidden group-hover:from-primary-50 group-hover:to-primary-100 transition-colors duration-500">
               
-              {/* Loading Shimmer */}
+              {/* Loading Shimmer - Only show while loading */}
               {!imageLoaded && (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-pulse">
-                  <div className="absolute inset-0 bg-neutral-200 animate-shimmer"></div>
-                </div>
+                <div className="absolute inset-0 bg-neutral-200 animate-pulse" />
               )}
               
               <Image
@@ -147,7 +157,16 @@ export default function ProductCard({
                 }`}
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                 priority={priority}
-                onLoad={() => setImageLoaded(true)}
+                onLoad={() => {
+                  if (!imageLoaded) {
+                    setImageLoaded(true);
+                  }
+                }}
+                onError={() => {
+                  if (!imageLoaded) {
+                    setImageLoaded(true);
+                  }
+                }}
               />
               
               {/* Sale Badge with Percentage */}
