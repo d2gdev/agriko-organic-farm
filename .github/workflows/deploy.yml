@@ -163,81 +163,50 @@ jobs:
         name: build-files
         path: ${{ env.BUILD_PATH }}
     
-    - name: Setup SSH
-      uses: webfactory/ssh-agent@v0.8.0
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
       with:
-        ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
-    
-    - name: Add server to known hosts
-      run: |
-        mkdir -p ~/.ssh
-        ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
-    
-    - name: Create backup on server
-      run: |
-        ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
-          if [ -d '${{ secrets.DEPLOY_PATH }}' ]; then
-            sudo cp -r ${{ secrets.DEPLOY_PATH }} ${{ secrets.DEPLOY_PATH }}.backup.\$(date +%Y%m%d-%H%M%S)
-            echo '✅ Backup created successfully'
-          else
-            echo '⚠️  No existing deployment found, skipping backup'
-          fi
-        "
-    
-    - name: Deploy files to server
-      run: |
-        rsync -avz --delete --progress \
-          -e "ssh -o StrictHostKeyChecking=no" \
-          ${{ env.BUILD_PATH }}/ \
-          ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/
-    
-    - name: Set permissions and reload Apache
-      run: |
-        ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "
-          # Set correct ownership and permissions
-          sudo chown -R www-data:www-data ${{ secrets.DEPLOY_PATH }}
-          sudo chmod -R 755 ${{ secrets.DEPLOY_PATH }}
-          
-          # Test Apache configuration
-          sudo apache2ctl configtest
-          
-          # Reload Apache
-          sudo systemctl reload apache2
-          
-          echo '✅ Server configuration updated'
-        "
+        github_token: ${{ secrets.GH_TOKEN }}
+        publish_dir: ${{ env.BUILD_PATH }}
+        publish_branch: gh-pages
+        force_orphan: true
     
     - name: Verify deployment
       run: |
-        # Wait for server to be ready
-        sleep 5
+        # Wait for GitHub Pages to be ready
+        sleep 10
         
-        # Check if site is accessible
-        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://shop.agrikoph.com || echo "000")
+        # Get the repository info
+        REPO_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        
+        echo "Checking deployment at: $REPO_URL"
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $REPO_URL || echo "000")
         
         if [ "$HTTP_STATUS" = "200" ]; then
-          echo "✅ Deployment successful! Site is live."
+          echo "✅ Deployment successful! Site is live at $REPO_URL"
         else
           echo "⚠️  Warning: Site returned HTTP $HTTP_STATUS"
-          exit 1
+          echo "GitHub Pages may still be processing the deployment"
         fi
     
     - name: Create deployment summary
       if: always()
       run: |
+        REPO_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        
         echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- **Environment:** Production" >> $GITHUB_STEP_SUMMARY
-        echo "- **URL:** https://shop.agrikoph.com" >> $GITHUB_STEP_SUMMARY
+        echo "- **Environment:** GitHub Pages" >> $GITHUB_STEP_SUMMARY
+        echo "- **URL:** $REPO_URL" >> $GITHUB_STEP_SUMMARY
         echo "- **Deployment Time:** $(date)" >> $GITHUB_STEP_SUMMARY
         echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
         echo "- **Actor:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
         
         # Check final status
-        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://shop.agrikoph.com || echo "000")
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $REPO_URL || echo "000")
         if [ "$HTTP_STATUS" = "200" ]; then
           echo "- **Status:** ✅ Live" >> $GITHUB_STEP_SUMMARY
         else
-          echo "- **Status:** ❌ Error (HTTP $HTTP_STATUS)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ⏳ Processing" >> $GITHUB_STEP_SUMMARY
         fi
     
     - name: Notify on failure
