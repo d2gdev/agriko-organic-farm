@@ -89,7 +89,7 @@ jobs:
       run: npm run build:export
       env:
         NODE_ENV: production
-        NEXT_PUBLIC_WC_API_URL: ${{ secrets.NEXT_PUBLIC_WC_API_URL }}
+        NEXT_PUBLIC_WC_API_URL: ${{ secrets.WC_API_URL }}
         WC_CONSUMER_KEY: ${{ secrets.WC_CONSUMER_KEY }}
         WC_CONSUMER_SECRET: ${{ secrets.WC_CONSUMER_SECRET }}
     
