@@ -53,8 +53,17 @@ jobs:
           echo "WC_CONSUMER_SECRET=${{ secrets.WC_CONSUMER_SECRET }}" >> .env.local
           npm ci --omit=dev
           npm run build
+          # Check if out directory exists and has files
+          ls -la out/
           # Copy static files to web directory
-          sudo cp -r out/* /var/www/html/
+          if [ -d "out" ] && [ "$(ls -A out)" ]; then
+            sudo cp -r out/* /var/www/html/
+            echo "✅ Files copied successfully"
+          else
+            echo "❌ No files in out directory to copy"
+            exit 1
+          fi
           # Set proper permissions
           sudo chown -R www-data:www-data /var/www/html/
           sudo chmod -R 755 /var/www/html/
+          echo "✅ Deployment completed successfully"
