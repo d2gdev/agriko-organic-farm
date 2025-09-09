@@ -87,9 +87,18 @@ class ProductCache {
 
 export const productCache = new ProductCache();
 
-// Cleanup every 5 minutes
+// Cleanup every 5 minutes with proper cleanup
+let cleanupInterval: NodeJS.Timeout | null = null;
+
 if (typeof window !== 'undefined') {
-  setInterval(() => {
+  cleanupInterval = setInterval(() => {
     productCache.cleanup();
   }, 5 * 60 * 1000);
+  
+  // Clean up interval when page unloads
+  window.addEventListener('beforeunload', () => {
+    if (cleanupInterval) {
+      clearInterval(cleanupInterval);
+    }
+  });
 }
