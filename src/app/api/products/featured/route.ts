@@ -1,20 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Required for static export builds
-export const dynamic = 'force-dynamic';
-export const revalidate = 600;
+// Static export configuration
+export const dynamic = 'force-static';
 
 const WC_API_URL = process.env.NEXT_PUBLIC_WC_API_URL;
 const WC_CONSUMER_KEY = process.env.WC_CONSUMER_KEY;
 const WC_CONSUMER_SECRET = process.env.WC_CONSUMER_SECRET;
 
 export async function GET(request: NextRequest) {
+  // For static export builds, return empty array
+  if (process.env.NODE_ENV === 'production' && !WC_CONSUMER_KEY) {
+    return NextResponse.json([]);
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get('per_page') || '8';
 
     if (!WC_API_URL || !WC_CONSUMER_KEY || !WC_CONSUMER_SECRET) {
-      throw new Error('WooCommerce API credentials not configured');
+      return NextResponse.json([]);
     }
 
     const credentials = Buffer.from(`${WC_CONSUMER_KEY}:${WC_CONSUMER_SECRET}`).toString('base64');
@@ -35,18 +39,11 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(products, {
       headers: {
-        'Cache-Control': 'public, max-age=600, s-maxage=3600', // Cache for 10 minutes client, 1 hour CDN
+        'Cache-Control': 'public, max-age=600',
       },
     });
   } catch (error) {
     console.error('Featured products API Error:', error);
-    
-    // Return empty array for build/static generation compatibility
-    return NextResponse.json([], {
-      status: 200,
-      headers: {
-        'Cache-Control': 'public, max-age=60',
-      },
-    });
+    return NextResponse.json([]);
   }
 }

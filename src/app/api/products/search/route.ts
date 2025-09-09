@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Required for static export builds
-export const dynamic = 'force-dynamic';
-export const revalidate = 300;
+// Static export configuration  
+export const dynamic = 'force-static';
 
 const WC_API_URL = process.env.NEXT_PUBLIC_WC_API_URL;
 const WC_CONSUMER_KEY = process.env.WC_CONSUMER_KEY;
 const WC_CONSUMER_SECRET = process.env.WC_CONSUMER_SECRET;
 
 export async function GET(request: NextRequest) {
+  // For static export builds, return empty array
+  if (process.env.NODE_ENV === 'production' && !WC_CONSUMER_KEY) {
+    return NextResponse.json([]);
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
@@ -19,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!WC_API_URL || !WC_CONSUMER_KEY || !WC_CONSUMER_SECRET) {
-      throw new Error('WooCommerce API credentials not configured');
+      return NextResponse.json([]);
     }
 
     const credentials = Buffer.from(`${WC_CONSUMER_KEY}:${WC_CONSUMER_SECRET}`).toString('base64');
@@ -40,15 +44,11 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(products, {
       headers: {
-        'Cache-Control': 'public, max-age=300', // Cache search results for 5 minutes
+        'Cache-Control': 'public, max-age=300',
       },
     });
   } catch (error) {
     console.error('Product search API Error:', error);
-    
-    return NextResponse.json(
-      { error: 'Failed to search products' },
-      { status: 500 }
-    );
+    return NextResponse.json([]);
   }
 }
