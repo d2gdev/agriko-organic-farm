@@ -31,6 +31,14 @@ jobs:
     - name: Build static export
       run: npm run build
         
+    - name: Debug secrets (non-sensitive check)
+      run: |
+        echo "Checking if secrets are available..."
+        if [ -z "${{ secrets.SERVER_HOST }}" ]; then echo "❌ SERVER_HOST is empty"; else echo "✅ SERVER_HOST is set"; fi
+        if [ -z "${{ secrets.SERVER_USER }}" ]; then echo "❌ SERVER_USER is empty"; else echo "✅ SERVER_USER is set"; fi
+        if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then echo "❌ SSH_PRIVATE_KEY is empty"; else echo "✅ SSH_PRIVATE_KEY is set"; fi
+        if [ -z "${{ secrets.DEPLOY_PATH }}" ]; then echo "❌ DEPLOY_PATH is empty"; else echo "✅ DEPLOY_PATH is set"; fi
+        
     - name: Deploy static files to server
       uses: appleboy/ssh-action@v1.2.0
       with:
