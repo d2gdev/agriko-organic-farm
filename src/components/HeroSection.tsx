@@ -34,8 +34,8 @@ export default function HeroSection({
         className="object-cover object-center"
         priority
       />
-      {/* Transparent black overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/20 to-black/40"></div>
+      {/* Black 70% overlay */}
+      <div className="absolute inset-0 bg-black/70"></div>
       
       {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">

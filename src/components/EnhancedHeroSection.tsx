@@ -42,7 +42,8 @@ export default function EnhancedHeroSection({
           priority
           quality={90}
         />
-        {/* No overlay - show background image clearly */}
+        {/* Black 70% overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/70"></div>
       </div>
 
       {/* Floating Elements */}
