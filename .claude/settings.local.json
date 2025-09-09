@@ -30,7 +30,10 @@
       "Bash(curl:*)",
       "WebSearch",
       "WebFetch(domain:zellwk.com)",
-      "WebFetch(domain:medium.com)"
+      "WebFetch(domain:medium.com)",
+      "Bash(rd:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
