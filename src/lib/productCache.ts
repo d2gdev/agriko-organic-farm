@@ -1,4 +1,5 @@
 import { WCProduct } from '@/types/woocommerce';
+import { logger } from '@/lib/logger';
 
 interface CachedProduct {
   product: WCProduct;
@@ -15,10 +16,22 @@ class ProductCache {
   private maxSize = 100; // Increased maximum cached items
 
   set(key: string, product: WCProduct, etag?: string): void {
+    // Add type safety check
+    if (!key) {
+      logger.warn('ProductCache: Attempted to set cache with falsy key');
+      return;
+    }
+    
     // Clean up if we're at max size
     if (this.cache.size >= this.maxSize) {
-      const oldestKey = Array.from(this.cache.keys())[0];
-      this.cache.delete(oldestKey);
+      const keys = Array.from(this.cache.keys());
+      if (keys.length > 0) {
+        const oldestKey = keys[0];
+        // Add type check to ensure oldestKey is a string
+        if (typeof oldestKey === 'string') {
+          this.cache.delete(oldestKey);
+        }
+      }
     }
 
     this.cache.set(key, {
@@ -29,6 +42,12 @@ class ProductCache {
   }
 
   setError(key: string): void {
+    // Add type safety check
+    if (!key) {
+      logger.warn('ProductCache: Attempted to set error with falsy key');
+      return;
+    }
+    
     this.cache.set(key, {
       product: null as unknown as WCProduct,
       timestamp: Date.now(),
@@ -38,6 +57,12 @@ class ProductCache {
   }
 
   get(key: string): WCProduct | null {
+    // Add type safety check
+    if (!key) {
+      logger.warn('ProductCache: Attempted to get cache with falsy key');
+      return null;
+    }
+    
     const cached = this.cache.get(key);
     if (!cached) return null;
 
@@ -62,11 +87,23 @@ class ProductCache {
   }
 
   getStale(key: string): WCProduct | null {
+    // Add type safety check
+    if (!key) {
+      logger.warn('ProductCache: Attempted to get stale cache with falsy key');
+      return null;
+    }
+    
     const cached = this.cache.get(key);
     return cached && !cached.error ? cached.product : null;
   }
 
   has(key: string): boolean {
+    // Add type safety check
+    if (!key) {
+      logger.warn('ProductCache: Attempted to check cache with falsy key');
+      return false;
+    }
+    
     return this.cache.has(key);
   }
 
@@ -77,11 +114,35 @@ class ProductCache {
   cleanup(): void {
     const now = Date.now();
     for (const [key, cached] of this.cache.entries()) {
+      // Add safety check for key
+      if (!key) {
+        this.cache.delete(key);
+        continue;
+      }
+      
       const maxAge = cached.error ? this.errorMaxAge : this.maxAge;
       if (now - cached.timestamp > maxAge) {
-        this.cache.delete(key);
+        // Type assertion to ensure key is string
+        this.cache.delete(key as string);
       }
     }
+  }
+
+  // Add missing getMetrics method
+  getMetrics(): { hits: number; misses: number; size: number; hitRate: number } {
+    // Since we don't track hits/misses in this simple implementation,
+    // we'll return basic stats
+    return {
+      hits: 0,
+      misses: 0,
+      size: this.cache.size,
+      hitRate: 0
+    };
+  }
+
+  // Add size method for compatibility
+  size(): number {
+    return this.cache.size;
   }
 }
 

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
+import { safePriceMultiply } from '@/lib/price-validation';
 import HeroSection from '@/components/HeroSection';
 
 export default function CartPage() {
@@ -102,10 +103,10 @@ export default function CartPage() {
 
   return (
     <>
-      <HeroSection 
+      <HeroSection
         title="Agriko"
-        subtitle="Shopping Cart"
-        description="Review your selected organic products before checkout. Quality farm-fresh items delivered to your door."
+        subtitle="Your Wellness Selection"
+        description="Review your carefully chosen organic products before checkout. Quality farm-fresh wellness delivered to your door."
         showButtons={false}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -133,7 +134,8 @@ export default function CartPage() {
             <div className="divide-y divide-gray-200">
               {state.items.map((item) => {
                 const itemKey = `${item.product.id}-${item.variation?.id || 'no-variation'}`;
-                const itemTotal = parseFloat(item.product.price) * item.quantity;
+                const itemTotalResult = safePriceMultiply(item.product.price, item.quantity, `cart-item-${item.product.id}`);
+                const itemTotal = itemTotalResult.success ? itemTotalResult.value : 0;
 
                 return (
                   <div key={itemKey} className="p-6 animate-fadeInUp hover:bg-gray-50 transition-colors duration-200">
@@ -280,7 +282,8 @@ export default function CartPage() {
               <div className="space-y-2 pb-2">
                 {state.items.slice(0, 3).map((item, index) => {
                   const itemKey = `${item.product.id}-${item.variation?.id || 'no-variation'}`;
-                  const itemTotal = parseFloat(item.product.price) * item.quantity;
+                  const itemTotalResult = safePriceMultiply(item.product.price, item.quantity, `cart-summary-${item.product.id}`);
+                  const itemTotal = itemTotalResult.success ? itemTotalResult.value : 0;
                   return (
                     <div key={itemKey} className="flex justify-between text-sm">
                       <span className="text-neutral-600 truncate mr-2">

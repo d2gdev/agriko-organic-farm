@@ -69,7 +69,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   id,
   ...props
 }, ref) => {
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const inputId = id ?? `input-${Math.random().toString(36).substr(2, 9)}`;
   const errorId = `${inputId}-error`;
   const helperId = `${inputId}-helper`;
 
@@ -93,7 +93,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
         aria-describedby={cn(
           error && errorId,
           helperText && helperId
-        ) || undefined}
+        ) ?? undefined}
         {...props}
       />
       
@@ -139,7 +139,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
   id,
   ...props
 }, ref) => {
-  const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+  const textareaId = id ?? `textarea-${Math.random().toString(36).substr(2, 9)}`;
   const errorId = `${textareaId}-error`;
   const helperId = `${textareaId}-helper`;
 
@@ -164,7 +164,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
         aria-describedby={cn(
           error && errorId,
           helperText && helperId
-        ) || undefined}
+        ) ?? undefined}
         {...props}
       />
       
@@ -212,7 +212,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
   children,
   ...props
 }, ref) => {
-  const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
+  const selectId = id ?? `select-${Math.random().toString(36).substr(2, 9)}`;
   const errorId = `${selectId}-error`;
   const helperId = `${selectId}-helper`;
 
@@ -238,7 +238,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
           aria-describedby={cn(
             error && errorId,
             helperText && helperId
-          ) || undefined}
+          ) ?? undefined}
           {...props}
         >
           {children}

@@ -1,0 +1,257 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { validateApiAuth } from '@/lib/unified-auth';
+import { checkEndpointRateLimit, createRateLimitResponse } from '@/lib/rate-limit';
+import { createCSRFProtection } from '@/lib/csrf';
+import { logger } from '@/lib/logger';
+import { monitoring } from '@/lib/monitoring-service';
+
+// Initialize CSRF protection
+const csrfProtection = createCSRFProtection({
+  methods: ['POST', 'PUT', 'DELETE', 'PATCH'],
+  skipPaths: [
+    '/api/webhooks',
+    '/api/health',
+    '/api/public',
+    '/api/analytics/track'
+  ],
+  requireForApi: true
+});
+
+// Use the unified authentication system
+async function isAuthenticated(request: NextRequest): Promise<boolean> {
+  const authResult = await validateApiAuth(request);
+  return authResult.isAuthenticated;
+}
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const method = request.method;
+  const startTime = Date.now();
+  
+  // Log request for security monitoring
+  logger.info(`${method} ${pathname}`, {
+    userAgent: request.headers.get('user-agent'),
+    ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+  });
+  
+  // Skip middleware for login page itself
+  if (pathname === '/admin/login') {
+    return NextResponse.next();
+  }
+  
+  // Apply CSRF protection for state-changing requests
+  const csrfResponse = csrfProtection(request);
+  if (csrfResponse) {
+    const responseTime = Date.now() - startTime;
+    monitoring.trackRequest(responseTime, false, 'csrf_violation');
+    return csrfResponse;
+  }
+  
+  let response: NextResponse;
+  let success = true;
+  let errorType: string | undefined;
+  
+  try {
+    // API Route Protection
+    if (pathname.startsWith('/api/')) {
+      response = await handleApiSecurity(request, pathname);
+    } else {
+      // UI Route Protection
+      response = await handleUiSecurity(request, pathname);
+    }
+    
+    success = response.status < 400;
+    if (!success) {
+      errorType = `http_${response.status}`;
+    }
+    
+    return response;
+  } catch (error) {
+    success = false;
+    errorType = error instanceof Error ? error.constructor.name : 'middleware_error';
+    throw error;
+  } finally {
+    // Track request metrics
+    const responseTime = Date.now() - startTime;
+    monitoring.trackRequest(responseTime, success, errorType);
+  }
+}
+
+async function handleApiSecurity(request: NextRequest, pathname: string): Promise<NextResponse> {
+  // Define endpoint categories with their security requirements
+  const endpointConfig = {
+    // Authentication required + strict rate limiting
+    admin: {
+      patterns: ['/api/admin/', '/api/analytics/', '/api/ab-testing/results', '/api/graph/stats', '/api/graph/sync', '/api/populate-graph', '/api/vectorize', '/api/test-connections'],
+      requiresAuth: true,
+      rateLimitType: 'admin' as const
+    },
+    // Moderate rate limiting
+    search: {
+      patterns: ['/api/search/'],
+      requiresAuth: false,
+      rateLimitType: 'search' as const
+    },
+    // Public with rate limiting
+    public: {
+      patterns: ['/api/recommendations/', '/api/reviews/'],
+      requiresAuth: false,
+      rateLimitType: 'public' as const
+    },
+    // Analytics - lenient rate limiting
+    analytics: {
+      patterns: ['/api/analytics/track'],
+      requiresAuth: false,
+      rateLimitType: 'analytics' as const
+    }
+  };
+
+  // Determine endpoint category
+  let endpointCategory: string | null = null;
+  let config: typeof endpointConfig[keyof typeof endpointConfig] | null = null;
+
+  for (const [category, categoryConfig] of Object.entries(endpointConfig)) {
+    if (categoryConfig.patterns.some(pattern => pathname.startsWith(pattern))) {
+      endpointCategory = category;
+      config = categoryConfig;
+      break;
+    }
+  }
+
+  if (!config) {
+    // Unknown API endpoint - apply default rate limiting
+    const rateLimitResult = checkEndpointRateLimit(request, 'public');
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+    return NextResponse.next();
+  }
+
+  // Check rate limiting first (before auth to prevent auth brute force)
+  const rateLimitResult = checkEndpointRateLimit(request, config.rateLimitType);
+  if (!rateLimitResult.success) {
+    logger.warn(`Rate limit exceeded for ${pathname}`, {
+      limit: rateLimitResult.limit,
+      current: rateLimitResult.current,
+      ip: request.headers.get('x-forwarded-for') || 'unknown'
+    });
+    return createRateLimitResponse(rateLimitResult);
+  }
+
+  // Check authentication if required
+  if (config.requiresAuth) {
+    const authResult = await validateApiAuth(request);
+    
+    if (!authResult.isAuthenticated) {
+      logger.warn(`API access denied for ${pathname}`, {
+        error: authResult.error,
+        ip: request.headers.get('x-forwarded-for') || 'unknown'
+      });
+      
+      return NextResponse.json(
+        {
+          success: false,
+          error: authResult.error || 'Authentication required',
+          timestamp: new Date().toISOString()
+        },
+        {
+          status: 401,
+          headers: { 
+            'Content-Type': 'application/json',
+            'WWW-Authenticate': 'Bearer realm="API"'
+          }
+        }
+      );
+    }
+    
+    logger.info(`API access granted for user: ${authResult.user?.userId}`, {
+      pathname,
+      role: authResult.user?.role
+    });
+  }
+  
+  // Add security headers to API responses
+  const response = NextResponse.next();
+  
+  // Rate limit headers
+  response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
+  response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
+  response.headers.set('X-RateLimit-Reset', rateLimitResult.resetTime.toString());
+  
+  // Security headers for API responses
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  return response;
+}
+
+async function handleUiSecurity(request: NextRequest, pathname: string): Promise<NextResponse> {
+  // Protected routes that require authentication
+  const protectedRoutes = [
+    '/admin',
+    '/analytics-dashboard',
+    '/test-search',
+    '/test-graph'
+  ];
+  
+  // Check if the current path is protected
+  const isProtectedRoute = protectedRoutes.some(route => {
+    if (route === '/admin') {
+      // For /admin, protect all paths except /admin/login
+      return pathname.startsWith('/admin') && pathname !== '/admin/login';
+    }
+    return pathname.startsWith(route);
+  });
+  
+  if (isProtectedRoute) {
+    // Check authentication
+    const authenticated = await isAuthenticated(request);
+    if (!authenticated) {
+      logger.warn(`Unauthorized access attempt to protected route: ${pathname}`, {
+        ip: request.headers.get('x-forwarded-for') || 'unknown',
+        userAgent: request.headers.get('user-agent')
+      });
+      
+      // Redirect to login page
+      const loginUrl = new URL('/admin/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    
+    logger.info(`Access granted to protected route: ${pathname}`);
+  }
+  
+  // Add security headers to all responses
+  const response = NextResponse.next();
+  
+  // Basic security headers
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  
+  // Content Security Policy (secure configuration)
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: https: blob:",
+    "connect-src 'self' https://api.openai.com https://agrikoph.com https://www.google-analytics.com",
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+    "base-uri 'self'",
+  ].join('; ');
+  
+  response.headers.set('Content-Security-Policy', csp);
+  
+  return response;
+}
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ]
+};

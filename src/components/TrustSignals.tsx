@@ -213,7 +213,7 @@ export function TrustSignalsSection() {
               description={badge.description}
               color={badge.color}
               className="animation-delay-200"
-              style={{ animationDelay: `${index * 200}ms` } as any}
+              style={{ animationDelay: `${index * 200}ms` }}
             />
           ))}
         </div>
@@ -275,7 +275,7 @@ export function CustomerReviewsSection() {
               role={testimonial.role}
               rating={testimonial.rating}
               className="animate-fadeInUp"
-              style={{ animationDelay: `${index * 200}ms` } as any}
+              style={{ animationDelay: `${index * 200}ms` }}
             />
           ))}
         </div>
@@ -318,7 +318,7 @@ export function StatisticsSection() {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0]?.isIntersecting) {
           animateNumbers();
           observer.disconnect();
         }

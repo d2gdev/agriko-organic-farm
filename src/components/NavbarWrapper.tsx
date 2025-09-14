@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
+import { reliableFetch } from '@/lib/reliable-fetch';
+
 import { useRouter } from 'next/navigation';
 import Navbar from './Navbar';
 import { WCProduct } from '@/types/woocommerce';
@@ -28,7 +31,9 @@ export default function NavbarWrapper() {
     const loadProducts = async () => {
       try {
         // Try API route first (works in development and server deployment)
-        const response = await fetch('/api/products?per_page=100&status=publish');
+        const response = await reliableFetch('/api/products?per_page=100&status=publish', {
+          timeoutLevel: 'standard'
+        });
         if (response.ok) {
           const data = await response.json();
           setProducts(Array.isArray(data) ? data : []);
@@ -36,10 +41,10 @@ export default function NavbarWrapper() {
         }
         
         // Fallback for static export builds - skip product loading
-        console.log('API routes not available in static export, skipping product preload');
+        logger.info('API routes not available in static export, skipping product preload');
         setProducts([]);
       } catch (error) {
-        console.error('Error fetching products for search:', error);
+        logger.error('Error fetching products for search:', error as Record<string, unknown>);
         // Set empty array on error to prevent UI issues
         setProducts([]);
       }

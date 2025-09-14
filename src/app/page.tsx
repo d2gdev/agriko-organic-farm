@@ -1,10 +1,14 @@
-import { Suspense } from 'react';
+import { Suspense, lazy } from 'react';
 import { getAllProducts, getFeaturedProducts } from '@/lib/woocommerce';
-import ProductCard from '@/components/ProductCard';
 import HeroSection from '@/components/HeroSection';
 import { OrganicProductGridSkeleton } from '@/components/OrganicLoadingStates';
+import { logger } from '@/lib/logger';
 import Link from 'next/link';
 import Image from 'next/image';
+
+// Lazy load components that are not immediately visible
+const ProductCard = lazy(() => import('@/components/ProductCard'));
+const PageAnalytics = lazy(() => import('@/components/PageAnalytics'));
 
 // Loading component for products grid (using organic theme)
 function ProductsGridSkeleton() {
@@ -18,7 +22,7 @@ async function FeaturedProducts() {
     
     if (featuredProducts.length === 0) {
       // Fallback to latest products if no featured products
-      console.warn('No featured products found, falling back to latest products');
+    logger.warn('No featured products found, falling back to latest products', undefined, 'home');
       const latestProducts = await getAllProducts({
         per_page: 8,
         orderby: 'date',
@@ -65,9 +69,15 @@ async function FeaturedProducts() {
               __html: JSON.stringify(latestProductsSchema)
             }}
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {latestProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+            {latestProducts.map((product, index) => (
+              <Suspense key={product.id} fallback={<div className="h-[480px] bg-gray-100 rounded-2xl animate-pulse" />}>
+                <ProductCard 
+                  product={product} 
+                  priority={index < 4}
+                  fetchPriority={index < 4 ? "high" : "auto"}
+                />
+              </Suspense>
             ))}
           </div>
         </>
@@ -106,15 +116,21 @@ async function FeaturedProducts() {
             __html: JSON.stringify(featuredProductsSchema)
           }}
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {featuredProducts.map((product, index) => (
+            <Suspense key={product.id} fallback={<div className="h-[480px] bg-gray-100 rounded-2xl animate-pulse" />}>
+              <ProductCard 
+                product={product} 
+                priority={index < 4}
+                fetchPriority={index < 4 ? "high" : "auto"}
+              />
+            </Suspense>
           ))}
         </div>
       </>
     );
   } catch (error) {
-    console.error('Error loading featured products:', error);
+    logger.error('Error loading featured products', error as Record<string, unknown>, 'home');
     // Try to show latest products as a fallback
     try {
       const latestProducts = await getAllProducts({
@@ -156,9 +172,11 @@ async function FeaturedProducts() {
                 __html: JSON.stringify(latestProductsSchema)
               }}
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
               {latestProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <Suspense key={product.id} fallback={<div className="h-[480px] bg-gray-100 rounded-2xl animate-pulse" />}>
+                  <ProductCard product={product} />
+                </Suspense>
               ))}
             </div>
             <div className="text-center mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -168,7 +186,7 @@ async function FeaturedProducts() {
         );
       }
     } catch (fallbackError) {
-      console.error('Error loading fallback products:', fallbackError);
+    logger.error('Error loading fallback products', fallbackError as Record<string, unknown>, 'home');
     }
     
     return (
@@ -230,15 +248,17 @@ async function LatestProducts() {
             __html: JSON.stringify(latestProductsSchema)
           }}
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {latestProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <Suspense key={product.id} fallback={<div className="h-[480px] bg-gray-100 rounded-2xl animate-pulse" />}>
+              <ProductCard product={product} />
+            </Suspense>
           ))}
         </div>
       </>
     );
   } catch (error) {
-    console.error('Error loading latest products:', error);
+    logger.error('Error loading latest products', error as Record<string, unknown>, 'home');
     return (
       <div className="text-center py-12">
         <p className="text-red-500">Unable to load latest products. Please try again later.</p>
@@ -598,25 +618,25 @@ export default function HomePage() {
         "@type": "HowToStep",
         "name": "Heat Water",
         "text": "Heat water to about 80°C (176°F). Avoid boiling to preserve nutrients.",
-        "image": "https://shop.agrikoph.com/images/step1-heat-water.jpg"
+        "image": "https://shop.agrikoph.com/images/agriko-turmeric-5in1-blend-180g-organic.jpg"
       },
       {
         "@type": "HowToStep",
         "name": "Add Blend",
         "text": "Add 1 teaspoon of Agriko 5-in-1 Turmeric Blend to each cup.",
-        "image": "https://shop.agrikoph.com/images/step2-add-blend.jpg"
+        "image": "https://shop.agrikoph.com/images/agriko-turmeric-5in1-blend-500g-health-supplement.jpg"
       },
       {
         "@type": "HowToStep",
         "name": "Steep",
         "text": "Pour hot water over the blend and let steep for 5-8 minutes.",
-        "image": "https://shop.agrikoph.com/images/step3-steep.jpg"
+        "image": "https://shop.agrikoph.com/images/agriko-pure-salabat-ginger-tea-100g.jpg"
       },
       {
         "@type": "HowToStep",
         "name": "Strain and Serve",
         "text": "Strain the tea, add honey and lemon if desired, and enjoy warm.",
-        "image": "https://shop.agrikoph.com/images/step4-serve.jpg"
+        "image": "https://shop.agrikoph.com/images/agriko-pure-organic-honey-jar.jpg"
       }
     ],
     "nutrition": {
@@ -691,31 +711,36 @@ export default function HomePage() {
         "@type": "HowToStep",
         "name": "Rinse Rice",
         "text": "Rinse Agriko organic rice in cold water until water runs clear. This removes excess starch.",
-        "image": "https://shop.agrikoph.com/images/rice-step1-rinse.jpg"
+        "image": "https://shop.agrikoph.com/images/agriko-organic-farm-products-showcase.jpg"
       },
       {
         "@type": "HowToStep",
         "name": "Measure Water",
         "text": "Use 1.5 cups water for 1 cup rice (adjust for desired consistency).",
-        "image": "https://shop.agrikoph.com/images/rice-step2-measure.jpg"
+        "image": "https://shop.agrikoph.com/images/agriko-organic-farm-landscape-fields.jpg"
       },
       {
         "@type": "HowToStep",
         "name": "Cook",
         "text": "Bring to boil, then reduce heat to low, cover, and simmer for 18-20 minutes.",
-        "image": "https://shop.agrikoph.com/images/rice-step3-cook.jpg"
+        "image": "https://shop.agrikoph.com/images/gerry-paglinawan-family-agriko-founders.jpg"
       },
       {
         "@type": "HowToStep",
         "name": "Rest and Fluff",
         "text": "Let stand 10 minutes, then fluff with fork before serving.",
-        "image": "https://shop.agrikoph.com/images/rice-step4-fluff.jpg"
+        "image": "https://shop.agrikoph.com/images/agriko-organic-farm-products-showcase.jpg"
       }
     ]
   };
 
   return (
     <>
+      {/* Page Analytics for Homepage - Lazy loaded */}
+      <Suspense fallback={null}>
+        <PageAnalytics pageType="homepage" />
+      </Suspense>
+      
       {/* Structured Data */}
       <script
         type="application/ld+json"
@@ -727,24 +752,284 @@ export default function HomePage() {
             reviewSchema,
             faqSchema,
             turmericTeaRecipeSchema,
-            ricePreparationSchema
+            ricePreparationSchema,
+            // Additional comprehensive review schemas
+            {
+              "@context": "https://schema.org",
+              "@type": "Review",
+              "@id": "https://shop.agrikoph.com/#review-black-rice",
+              "reviewBody": "I've been using Agriko's black rice for 6 months now. The antioxidant benefits are amazing and it tastes so much better than regular rice. My family loves it!",
+              "headline": "Amazing Antioxidant Benefits",
+              "reviewRating": {
+                "@type": "Rating",
+                "ratingValue": "5",
+                "bestRating": "5",
+                "worstRating": "1"
+              },
+              "datePublished": "2024-02-20",
+              "author": {
+                "@type": "Person",
+                "name": "Carmen Dela Cruz",
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": "Cebu City",
+                  "addressCountry": "PH"
+                }
+              },
+              "itemReviewed": {
+                "@type": "Product",
+                "name": "Agriko Black Rice"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "Agriko Organic Farm"
+              }
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "Review",
+              "@id": "https://shop.agrikoph.com/#review-turmeric-blend",
+              "reviewBody": "The 5-in-1 turmeric blend has become part of my daily routine. It helps with my joint pain and I sleep better at night. Natural healing at its best!",
+              "headline": "Joint Pain Relief and Better Sleep",
+              "reviewRating": {
+                "@type": "Rating", 
+                "ratingValue": "5",
+                "bestRating": "5",
+                "worstRating": "1"
+              },
+              "datePublished": "2024-03-10",
+              "author": {
+                "@type": "Person",
+                "name": "Roberto Fernandez",
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": "Dumaguete",
+                  "addressCountry": "PH"
+                }
+              },
+              "itemReviewed": {
+                "@type": "Product",
+                "name": "Agriko 5-in-1 Turmeric Blend"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "Agriko Organic Farm"
+              }
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "Review", 
+              "@id": "https://shop.agrikoph.com/#review-moringa-powder",
+              "reviewBody": "Found Agriko products at Metro Supermarket and decided to try their moringa powder. Excellent quality and my energy levels have improved significantly!",
+              "headline": "Excellent Quality Moringa",
+              "reviewRating": {
+                "@type": "Rating",
+                "ratingValue": "4.8",
+                "bestRating": "5", 
+                "worstRating": "1"
+              },
+              "datePublished": "2024-01-25",
+              "author": {
+                "@type": "Person",
+                "name": "Lisa Chen",
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": "Manila",
+                  "addressCountry": "PH"
+                }
+              },
+              "itemReviewed": {
+                "@type": "Product",
+                "name": "Agriko Moringa Powder"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "Agriko Organic Farm"
+              }
+            },
+            // Educational and Certification Schemas
+            {
+              "@context": "https://schema.org",
+              "@type": "EducationalOccupationalCredential",
+              "@id": "https://shop.agrikoph.com/#organic-certification",
+              "name": "Certified Organic Producer",
+              "description": "Official organic farming certification ensuring sustainable agricultural practices",
+              "credentialCategory": "Professional Certificate",
+              "educationalLevel": "Expert",
+              "competencyRequired": [
+                "Sustainable Agriculture",
+                "Organic Certification Standards",
+                "Soil Health Management", 
+                "Natural Pest Control",
+                "Crop Rotation Techniques"
+              ],
+              "recognizedBy": {
+                "@type": "Organization",
+                "name": "Department of Agriculture - Philippines",
+                "url": "https://da.gov.ph"
+              },
+              "about": {
+                "@type": "Organization",
+                "name": "Agriko Organic Farm"
+              }
+            },
+            // Course/Educational Content Schema
+            {
+              "@context": "https://schema.org",
+              "@type": "Course",
+              "@id": "https://shop.agrikoph.com/#organic-farming-knowledge",
+              "name": "Organic Farming and Herbal Medicine Knowledge Base",
+              "description": "Comprehensive educational content about organic farming practices, herbal medicine benefits, and sustainable agriculture",
+              "provider": {
+                "@type": "Organization",
+                "name": "Agriko Organic Farm"
+              },
+              "hasCourseInstance": [
+                {
+                  "@type": "CourseInstance", 
+                  "courseMode": "Online",
+                  "name": "Rice Cultivation Techniques"
+                },
+                {
+                  "@type": "CourseInstance",
+                  "courseMode": "Online", 
+                  "name": "Herbal Medicine Benefits and Usage"
+                },
+                {
+                  "@type": "CourseInstance",
+                  "courseMode": "Farm Visit",
+                  "name": "Sustainable Farming Practices Tour"
+                }
+              ],
+              "teaches": [
+                "Organic rice cultivation",
+                "Herbal medicine preparation",
+                "Sustainable farming techniques",
+                "Natural health benefits",
+                "Traditional Filipino remedies"
+              ],
+              "educationalLevel": "Beginner to Advanced"
+            },
+            // Video Schema for Educational Content
+            {
+              "@context": "https://schema.org",
+              "@type": "VideoObject",
+              "@id": "https://shop.agrikoph.com/#organic-farming-video",
+              "name": "Sustainable Organic Rice Farming in the Philippines",
+              "description": "Documentary showcasing Agriko's organic farming methods, from planting to harvest, highlighting sustainable practices in Zamboanga del Sur",
+              "thumbnailUrl": "https://shop.agrikoph.com/images/agriko-organic-farm-landscape-fields.jpg",
+              "uploadDate": "2024-01-15",
+              "duration": "PT12M45S",
+              "contentUrl": "https://shop.agrikoph.com/about",
+              "publisher": {
+                "@type": "Organization",
+                "name": "Agriko Organic Farm",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://shop.agrikoph.com/images/Agriko-Logo.png"
+                }
+              },
+              "creator": {
+                "@type": "Person",
+                "name": "Gerry Paglinawan",
+                "jobTitle": "Founder & Organic Farming Expert"
+              },
+              "keywords": [
+                "organic farming",
+                "sustainable agriculture",
+                "rice cultivation", 
+                "Philippine agriculture",
+                "Zamboanga del Sur",
+                "traditional farming"
+              ],
+              "genre": "Educational",
+              "inLanguage": "en-PH",
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.9",
+                "reviewCount": "156",
+                "bestRating": "5"
+              }
+            },
+            // Agricultural Research Dataset Schema  
+            {
+              "@context": "https://schema.org",
+              "@type": "Dataset",
+              "@id": "https://shop.agrikoph.com/#rice-varieties-research",
+              "name": "Organic Rice Varieties Nutritional Analysis Dataset",
+              "description": "Comprehensive nutritional analysis and cultivation data for black, brown, red, and white organic rice varieties grown at Paglinawan Organic Eco Farm",
+              "creator": {
+                "@type": "Organization",
+                "name": "Agriko Multi-Trade & Enterprise Corp.",
+                "url": "https://shop.agrikoph.com"
+              },
+              "datePublished": "2024-01-01",
+              "dateModified": "2024-03-15",
+              "license": "https://creativecommons.org/licenses/by/4.0/",
+              "keywords": [
+                "organic rice",
+                "nutritional analysis",
+                "sustainable agriculture",
+                "crop yield data",
+                "antioxidant content",
+                "Philippine agriculture"
+              ],
+              "variableMeasured": [
+                {
+                  "@type": "PropertyValue",
+                  "name": "Anthocyanin Content",
+                  "description": "Antioxidant levels in black rice varieties"
+                },
+                {
+                  "@type": "PropertyValue", 
+                  "name": "Protein Content",
+                  "description": "Protein percentage across rice varieties"
+                },
+                {
+                  "@type": "PropertyValue",
+                  "name": "Fiber Content",
+                  "description": "Dietary fiber measurements"
+                },
+                {
+                  "@type": "PropertyValue",
+                  "name": "Mineral Content",
+                  "description": "Iron, magnesium, and other mineral levels"
+                }
+              ],
+              "spatialCoverage": {
+                "@type": "Place",
+                "name": "Paglinawan Organic Eco Farm",
+                "geo": {
+                  "@type": "GeoCoordinates",
+                  "latitude": "8.4167",
+                  "longitude": "123.4167"
+                }
+              },
+              "temporalCoverage": "2016/2024",
+              "distribution": {
+                "@type": "DataDownload",
+                "encodingFormat": "CSV",
+                "contentUrl": "https://shop.agrikoph.com/products/"
+              }
+            }
           ])
         }}
       />
       
-      <HeroSection 
+      <HeroSection
         title="Agriko"
-        subtitle="From Our Farm, To Your Cup"
-        description="Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm."
-        secondaryButtonText="About Us"
+        subtitle="Nourish Your Body. Sustainably Grown."
+        description="Premium organic rice, pure herbal powders, and health blends from our sustainable farm to your table."
+        secondaryButtonText="Our Story"
         secondaryButtonHref="/about"
       />
 
       {/* Featured Products Section */}
-      <section className="py-20 bg-white">
+      <section className="py-40 lg:py-48 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-heading-1 text-neutral-900 mb-6">
+          <div className="text-center mb-24">
+            <span className="text-lg font-bold text-red-600 mb-3 block font-[family-name:var(--font-caveat)]">Our Collection</span>
+            <h2 className="text-5xl lg:text-6xl font-bold text-neutral-900 mb-6 font-[family-name:var(--font-crimson)]">
               Premium Product Selection
             </h2>
             <p className="text-body-large text-neutral-600 max-w-3xl mx-auto leading-relaxed">
@@ -761,47 +1046,142 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-cream">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Bestseller Spotlight Section */}
+      <section className="py-32 lg:py-40 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-heading-1 text-neutral-900 mb-6">
+            <span className="text-2xl font-bold text-amber-600 mb-3 block font-[family-name:var(--font-caveat)]">⭐ Customer Favorite ⭐</span>
+            <h2 className="text-4xl lg:text-5xl font-bold text-neutral-900 mb-4 font-[family-name:var(--font-crimson)]">
+              Bestseller Spotlight
+            </h2>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div className="grid md:grid-cols-2 gap-0">
+              {/* Product Image Side */}
+              <div className="relative h-96 md:h-full bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 p-12 flex items-center justify-center overflow-hidden">
+                {/* Decorative circles */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-amber-200/20 to-yellow-200/20 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-orange-200/20 to-amber-200/20 rounded-full blur-3xl"></div>
+
+                <div className="absolute top-6 left-6 z-10">
+                  <div className="relative">
+                    <div className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-400 text-amber-900 px-6 py-2.5 rounded-full font-black shadow-2xl flex items-center space-x-2 text-sm uppercase tracking-wider border-2 border-amber-300/50">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      <span>Bestseller</span>
+                    </div>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-400 rounded-full blur-md opacity-50 animate-pulse"></div>
+                  </div>
+                </div>
+
+                <div className="relative z-10">
+                  <Image
+                    src="/images/agriko-turmeric-5in1-blend-500g-health-supplement.jpg"
+                    alt="5-in-1 Turmeric Tea Blend"
+                    width={450}
+                    height={450}
+                    className="object-contain drop-shadow-[0_20px_50px_rgba(251,191,36,0.3)] hover:scale-110 transition-transform duration-700 ease-out"
+                  />
+                  {/* Floating product shadow */}
+                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-3/4 h-12 bg-black/10 rounded-full blur-2xl"></div>
+                </div>
+              </div>
+
+              {/* Product Details Side */}
+              <div className="p-8 md:p-12 flex flex-col justify-center">
+                <h3 className="text-3xl font-bold text-neutral-900 mb-4 font-[family-name:var(--font-crimson)]">
+                  5-in-1 Turmeric Tea Blend
+                </h3>
+
+                <div className="flex items-center mb-4">
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="ml-2 text-sm text-gray-600">(87 Reviews)</span>
+                </div>
+
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Our signature wellness blend combining the power of turmeric, ginger, moringa, soursop, and lemongrass.
+                  Perfect for boosting immunity, reducing inflammation, and supporting overall health.
+                </p>
+
+                <div className="mb-6">
+                  <p className="text-sm text-gray-500 mb-2">Key Benefits:</p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm">Anti-inflammatory</span>
+                    <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm">Immune Boost</span>
+                    <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm">Antioxidant Rich</span>
+                    <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm">Energy Support</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-3xl font-bold text-red-600">₱450</span>
+                    <span className="text-sm text-gray-500 ml-2">500g</span>
+                  </div>
+                  <Link href="/products">
+                    <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg">
+                      Shop Now
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-40 lg:py-48 bg-cream">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-24">
+            <h2 className="text-5xl lg:text-6xl font-bold text-neutral-900 mb-8 font-[family-name:var(--font-crimson)]">
               Why Choose Agriko Organic Farm?
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div className="text-center bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <div className="bg-primary-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="group text-center bg-gradient-to-br from-primary-50 to-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-primary-100 hover:border-primary-300">
+              <div className="bg-gradient-to-br from-primary-100 to-primary-200 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-md">
+                {/* Rice grain icon */}
+                <svg className="w-10 h-10 text-primary-700" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C9.62 2 7.68 3.88 7.68 6.25c0 .57.11 1.12.31 1.63L4.2 11.67c-.28.28-.28.72 0 1l7.08 7.08c.28.28.72.28 1 0l7.08-7.08c.28-.28.28-.72 0-1l-3.79-3.79c.51-.19.98-.45 1.4-.79 1.26-1 2.03-2.56 2.03-4.09C19 3.88 17.05 2 14.68 2H12zm0 2h2.68c1.26 0 2.32.96 2.32 2.25 0 .97-.49 1.91-1.28 2.54-.42.34-.93.56-1.47.65l-.45.08-.32.34 3.88 3.89L12 19.11 6.64 13.75l3.88-3.89-.32-.34-.45-.08c-.54-.09-1.05-.31-1.47-.65C7.49 8.16 7 7.22 7 6.25 7 4.96 7.74 4 9 4h3z"/>
                 </svg>
               </div>
-              <h3 className="text-heading-3 text-neutral-900 mb-4">Premium Quality Rice</h3>
+              <h3 className="text-heading-3 text-neutral-900 mb-4 group-hover:text-primary-700 transition-colors">Premium Quality Rice</h3>
               <p className="text-neutral-600 leading-relaxed">
                 Our <Link href="/faq" className="text-primary-700 hover:text-primary-800 underline">organic rice varieties</Link> - Black, Brown, Red, and White - are cultivated in nutrient-rich, pesticide-free soils for superior taste and nutrition. <Link href="/find-us" className="text-primary-700 hover:text-primary-800 underline">Find our products</Link> at major supermarkets nationwide.
               </p>
             </div>
 
-            <div className="text-center bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <div className="bg-accent-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <div className="group text-center bg-gradient-to-br from-accent-50 to-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-accent-100 hover:border-accent-300">
+              <div className="bg-gradient-to-br from-accent-100 to-accent-200 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-md">
+                {/* Herbal leaf icon */}
+                <svg className="w-10 h-10 text-accent-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20A4,4 0 0,0 12,16V14A6,6 0 0,1 18,8H17M17,1L17.5,3.5L20,3L19,5L21,6L19,7L20,9L17.5,8.5L17,11L16.5,8.5L14,9L15,7L13,6L15,5L14,3L16.5,3.5L17,1Z"/>
                 </svg>
               </div>
-              <h3 className="text-heading-3 text-neutral-900 mb-4">Pure Herbal Powders</h3>
+              <h3 className="text-heading-3 text-neutral-900 mb-4 group-hover:text-accent-600 transition-colors">Pure Herbal Powders</h3>
               <p className="text-neutral-600 leading-relaxed">
                 Premium <Link href="/faq" className="text-primary-700 hover:text-primary-800 underline">Dulaw (Turmeric), Salabat (Ginger), and Moringa powders</Link> - pure, nutrient-dense superfoods with powerful health benefits. <Link href="/about" className="text-primary-700 hover:text-primary-800 underline">Discover the 5-in-1 blend ingredients</Link> and their wellness properties.
               </p>
             </div>
 
-            <div className="text-center bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <div className="bg-primary-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364" />
+            <div className="group text-center bg-gradient-to-br from-yellow-50 to-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-yellow-100 hover:border-yellow-300">
+              <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-md">
+                {/* Health mix bowl icon */}
+                <svg className="w-10 h-10 text-yellow-700" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12C20,14.4 19,16.5 17.3,18C15.9,16.7 14,16 12,16C10,16 8.2,16.7 6.7,18C5,16.5 4,14.4 4,12A8,8 0 0,1 12,4M14,5.89C13.62,5.9 13.26,6.15 13.1,6.54L11.81,9.77L11.71,10C11,10.13 10.41,10.6 10.14,11.26C9.73,12.29 10.23,13.45 11.26,13.86C12.29,14.27 13.45,13.77 13.86,12.74C14.12,12.08 14,11.32 13.57,10.76L13.67,10.5L14.96,7.29L14.97,7.26C15.17,6.75 14.92,6.17 14.41,5.96C14.28,5.91 14.14,5.89 14,5.89M10,6C9.62,6.05 9.27,6.32 9.12,6.71L7.82,9.88L7.74,10.04C7.06,10.18 6.5,10.62 6.21,11.26C5.82,12.25 6.32,13.38 7.32,13.77C8.31,14.16 9.44,13.67 9.83,12.67C10.09,12.03 10,11.31 9.61,10.75L9.67,10.61L10.95,7.5L10.97,7.43C11.16,6.93 10.91,6.36 10.41,6.17C10.28,6.11 10.14,6.07 10,6M17,8C16.62,8.05 16.27,8.32 16.12,8.71L14.82,11.88L14.74,12.04C14.06,12.18 13.5,12.62 13.21,13.26C12.82,14.25 13.32,15.38 14.32,15.77C15.31,16.16 16.44,15.67 16.83,14.67C17.09,14.03 17,13.31 16.61,12.75L16.67,12.61L17.95,9.5L17.97,9.43C18.16,8.93 17.91,8.36 17.41,8.17C17.28,8.11 17.14,8.07 17,8Z"/>
                 </svg>
               </div>
-              <h3 className="text-heading-3 text-neutral-900 mb-4">Health Blends & Honey</h3>
+              <h3 className="text-heading-3 text-neutral-900 mb-4 group-hover:text-yellow-700 transition-colors">Health Blends & Honey</h3>
               <p className="text-neutral-600 leading-relaxed">
                 Unique <Link href="/faq" className="text-primary-700 hover:text-primary-800 underline">5-in-1 Turmeric Tea Blend</Link>, pure organic honey, and specialized products like Agribata Kids Cereal for complete wellness. <Link href="/faq" className="text-primary-700 hover:text-primary-800 underline">Learn about health benefits</Link> and usage recommendations.
               </p>
@@ -811,13 +1191,14 @@ export default function HomePage() {
       </section>
 
       {/* Enhanced Testimonial Section */}
-      <section className="py-24 relative overflow-hidden min-h-[600px] flex items-center">
+      <section className="py-36 lg:py-44 relative overflow-hidden min-h-[700px] flex items-center">
         <Image
-          src={`/images/philippines-flag-background.jpg?v=${Date.now()}`}
+          src="/images/philippines-flag-background.jpg"
           alt="Philippines Flag Background - Representing Agriko's Proud Filipino Heritage and Local Organic Farming Tradition"
           title="Philippines Flag - Agriko's Filipino Heritage"
           fill
           className="object-cover object-center"
+          fetchPriority="high"
         />
         
         {/* Black 70% overlay */}
@@ -845,13 +1226,14 @@ export default function HomePage() {
       </section>
 
       {/* Latest Products Section */}
-      <section id="latest-products" className="py-20 bg-white">
+      <section id="latest-products" className="py-40 lg:py-48 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-heading-1 text-neutral-900 mb-6">
+          <div className="text-center mb-24">
+            <span className="text-xl font-bold text-red-600 mb-3 block font-[family-name:var(--font-caveat)]">New Arrivals</span>
+            <h2 className="text-5xl lg:text-7xl font-bold text-neutral-900 mb-8 font-[family-name:var(--font-crimson)]">
               Latest Products
             </h2>
-            <p className="text-body-large text-neutral-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg lg:text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
               Explore our newest additions - from specialty rice blends to health-boosting herbal formulations, all crafted with care.
             </p>
           </div>

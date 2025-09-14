@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
+
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
-import { createOrder } from '@/lib/woocommerce';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
+import { safePriceMultiply } from '@/lib/price-validation';
 import { CheckoutData, WCAddress } from '@/types/woocommerce';
 import HeroSection from '@/components/HeroSection';
 import { PlantGrowingLoader } from '@/components/OrganicLoadingStates';
@@ -61,16 +63,22 @@ export default function CheckoutPage() {
     // Billing validation
     if (!billingData.first_name.trim()) newErrors.billing_first_name = 'First name is required';
     if (!billingData.last_name.trim()) newErrors.billing_last_name = 'Last name is required';
-    if (!billingData.email?.trim()) newErrors.billing_email = 'Email is required';
+
+    // Email validation - check both presence and format
+    if (!billingData.email?.trim()) {
+      newErrors.billing_email = 'Email is required';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const isValidEmail = emailRegex.test(billingData.email.trim());
+      if (!isValidEmail) {
+        newErrors.billing_email = 'Please enter a valid email address';
+      }
+    }
+
     if (!billingData.address_1.trim()) newErrors.billing_address_1 = 'Address is required';
     if (!billingData.city.trim()) newErrors.billing_city = 'City is required';
     if (!billingData.postcode.trim()) newErrors.billing_postcode = 'ZIP/Postal code is required';
-    if (!billingData.phone || !billingData.phone.trim()) newErrors.billing_phone = 'Phone number is required';
-
-    // Email validation
-    if (billingData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(billingData.email)) {
-      newErrors.billing_email = 'Please enter a valid email address';
-    }
+    if (!billingData.phone?.trim()) newErrors.billing_phone = 'Phone number is required';
 
     // Shipping validation (if different from billing)
     if (!sameAsBilling) {
@@ -85,10 +93,13 @@ export default function CheckoutPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
+
+    const isValid = validateForm();
+
+    if (!isValid) {
       return;
     }
 
@@ -108,7 +119,20 @@ export default function CheckoutPage() {
         customer_note: customerNote,
       };
 
-      const order = await createOrder(orderData);
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create order');
+      }
+
+      const order = await response.json();
       
       // Clear the cart
       clearCart();
@@ -116,7 +140,7 @@ export default function CheckoutPage() {
       // Redirect to success page (order details sent via email for static export deployment)
       router.push('/success');
     } catch (error) {
-      console.error('Error creating order:', error);
+      logger.error('Error creating order:', error as Record<string, unknown>);
       setErrors({ general: 'Failed to process your order. Please try again.' });
     } finally {
       setIsProcessing(false);
@@ -125,17 +149,54 @@ export default function CheckoutPage() {
 
   const updateBillingData = (field: keyof WCAddress, value: string) => {
     setBillingData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
+
+    // Smart error clearing
     if (errors[`billing_${field}`]) {
-      setErrors(prev => ({ ...prev, [`billing_${field}`]: '' }));
+      const newErrors = { ...errors };
+      let shouldClearError = false;
+
+      // Field-specific validation for clearing errors
+      if (field === 'email') {
+        // For email: clear "Email is required" when user starts typing
+        // Only keep format errors if the email is invalid but not empty
+        if (value.trim()) {
+          if (errors.billing_email === 'Email is required') {
+            shouldClearError = true;
+          } else {
+            // For format errors, only clear when email becomes valid
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            shouldClearError = emailRegex.test(value.trim());
+          }
+        }
+      } else if (value.trim()) {
+        // For non-email fields, clear error when field is not empty
+        shouldClearError = true;
+      }
+
+      if (shouldClearError) {
+        delete newErrors[`billing_${field}`];
+        setErrors(newErrors);
+      }
     }
   };
 
   const updateShippingData = (field: keyof WCAddress, value: string) => {
-    setShippingData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
+    setShippingData({ ...shippingData, [field]: value });
+
+    // Smart error clearing - only clear errors when field becomes valid
     if (errors[`shipping_${field}`]) {
-      setErrors(prev => ({ ...prev, [`shipping_${field}`]: '' }));
+      const newErrors = { ...errors };
+      let shouldClearError = false;
+
+      // For shipping fields, clear error when field is not empty
+      if (value.trim()) {
+        shouldClearError = true;
+      }
+
+      if (shouldClearError) {
+        delete newErrors[`shipping_${field}`];
+        setErrors(newErrors);
+      }
     }
   };
 
@@ -170,10 +231,12 @@ export default function CheckoutPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="billing_first_name" className="block text-sm font-medium text-gray-700 mb-2">
                     First Name *
                   </label>
                   <input
+                    id="billing_first_name"
+                    name="billing_first_name"
                     type="text"
                     value={billingData.first_name}
                     onChange={(e) => updateBillingData('first_name', e.target.value)}
@@ -187,10 +250,12 @@ export default function CheckoutPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="billing_last_name" className="block text-sm font-medium text-gray-700 mb-2">
                     Last Name *
                   </label>
                   <input
+                    id="billing_last_name"
+                    name="billing_last_name"
                     type="text"
                     value={billingData.last_name}
                     onChange={(e) => updateBillingData('last_name', e.target.value)}
@@ -216,10 +281,12 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="billing_email" className="block text-sm font-medium text-gray-700 mb-2">
                     Email Address *
                   </label>
                   <input
+                    id="billing_email"
+                    name="billing_email"
                     type="email"
                     value={billingData.email}
                     onChange={(e) => updateBillingData('email', e.target.value)}
@@ -233,10 +300,12 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="billing_phone" className="block text-sm font-medium text-gray-700 mb-2">
                     Phone Number *
                   </label>
                   <input
+                    id="billing_phone"
+                    name="billing_phone"
                     type="tel"
                     value={billingData.phone}
                     onChange={(e) => updateBillingData('phone', e.target.value)}
@@ -250,10 +319,12 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="billing_address_1" className="block text-sm font-medium text-gray-700 mb-2">
                     Address *
                   </label>
                   <input
+                    id="billing_address_1"
+                    name="billing_address_1"
                     type="text"
                     value={billingData.address_1}
                     onChange={(e) => updateBillingData('address_1', e.target.value)}
@@ -278,10 +349,12 @@ export default function CheckoutPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="billing_city" className="block text-sm font-medium text-gray-700 mb-2">
                     City *
                   </label>
                   <input
+                    id="billing_city"
+                    name="billing_city"
                     type="text"
                     value={billingData.city}
                     onChange={(e) => updateBillingData('city', e.target.value)}
@@ -307,10 +380,12 @@ export default function CheckoutPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="billing_postcode" className="block text-sm font-medium text-gray-700 mb-2">
                     ZIP/Postal Code *
                   </label>
                   <input
+                    id="billing_postcode"
+                    name="billing_postcode"
                     type="text"
                     value={billingData.postcode}
                     onChange={(e) => updateBillingData('postcode', e.target.value)}
@@ -360,10 +435,11 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Similar fields as billing but for shipping */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="shipping_first_name" className="block text-sm font-medium text-gray-700 mb-2">
                       First Name *
                     </label>
                     <input
+                      id="shipping_first_name"
                       type="text"
                       value={shippingData.first_name}
                       onChange={(e) => updateShippingData('first_name', e.target.value)}
@@ -377,10 +453,11 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="shipping_last_name" className="block text-sm font-medium text-gray-700 mb-2">
                       Last Name *
                     </label>
                     <input
+                      id="shipping_last_name"
                       type="text"
                       value={shippingData.last_name}
                       onChange={(e) => updateShippingData('last_name', e.target.value)}
@@ -396,10 +473,11 @@ export default function CheckoutPage() {
                   {/* Add remaining shipping fields similar to billing */}
                   {/* For brevity, I'm including key fields only */}
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="shipping_address_1" className="block text-sm font-medium text-gray-700 mb-2">
                       Address *
                     </label>
                     <input
+                      id="shipping_address_1"
                       type="text"
                       value={shippingData.address_1}
                       onChange={(e) => updateShippingData('address_1', e.target.value)}
@@ -413,10 +491,11 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="shipping_city" className="block text-sm font-medium text-gray-700 mb-2">
                       City *
                     </label>
                     <input
+                      id="shipping_city"
                       type="text"
                       value={shippingData.city}
                       onChange={(e) => updateShippingData('city', e.target.value)}
@@ -430,10 +509,11 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="shipping_postcode" className="block text-sm font-medium text-gray-700 mb-2">
                       ZIP/Postal Code *
                     </label>
                     <input
+                      id="shipping_postcode"
                       type="text"
                       value={shippingData.postcode}
                       onChange={(e) => updateShippingData('postcode', e.target.value)}
@@ -508,7 +588,8 @@ export default function CheckoutPage() {
               <div className="space-y-4 mb-6">
                 {state.items.map((item) => {
                   const itemKey = `${item.product.id}-${item.variation?.id || 'no-variation'}`;
-                  const itemTotal = parseFloat(item.product.price) * item.quantity;
+                  const itemTotalResult = safePriceMultiply(item.product.price, item.quantity, `checkout-item-${item.product.id}`);
+                  const itemTotal = itemTotalResult.success ? itemTotalResult.value : 0;
 
                   return (
                     <div key={itemKey} className="flex items-start space-x-3">

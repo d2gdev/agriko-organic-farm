@@ -28,21 +28,22 @@ export default function HeroSection({
     <section className="relative min-h-[80vh] flex items-center justify-center">
       {/* Background image */}
       <Image
-        src={`/images/hero.png?v=${Date.now()}`}
+        src="/images/hero.png"
         alt="Hero background"
         fill
         className="object-cover object-center"
         priority
+        fetchPriority="high"
       />
-      {/* Black 70% overlay */}
-      <div className="absolute inset-0 bg-black/70"></div>
+      {/* Gradient overlay for better text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent"></div>
       
       {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
-        <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 animate-fade-in-up" style={{ fontSize: 'inherit' }}>
           {title}
         </h1>
-        <p className="text-xl md:text-2xl text-accent-400 mb-4">
+        <p className="text-xl md:text-2xl text-accent-400 mb-4 font-semibold animate-fade-in-up animation-delay-200">
           {subtitle}
         </p>
         <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
@@ -55,15 +56,15 @@ export default function HeroSection({
               targetSelector={primaryButtonHref}
               variant="primary"
               size="lg"
-              className="bg-accent-500 hover:bg-accent-600 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
             >
               {primaryButtonText}
             </ScrollButton>
             <Link href={secondaryButtonHref}>
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="lg"
-                className="bg-transparent hover:bg-white/10 text-white border-2 border-white/50 hover:border-white/70"
+                className="!border-2 !border-white !text-white hover:!bg-white hover:!text-red-700 backdrop-blur-sm bg-white/10 transition-all duration-200"
               >
                 {secondaryButtonText}
               </Button>

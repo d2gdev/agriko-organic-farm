@@ -9,6 +9,7 @@ import { formatPrice, getProductMainImage, stripHtml } from '@/lib/utils';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useProductFilters } from '@/hooks/useProductFilters';
 import SearchFiltersComponent, { SearchFilters } from '@/components/SearchFilters';
+import SearchAutocomplete from '@/components/SearchAutocomplete';
 import Button from '@/components/Button';
 
 interface SearchModalProps {
@@ -125,10 +126,12 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
       aria-describedby="search-modal-description"
     >
       <div className="flex items-start justify-center min-h-screen pt-8 p-4">
-        <div 
+        <div
           ref={modalRef}
           className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl animate-slideInFromTop max-h-[90vh] flex flex-col"
           role="search"
+          onKeyDown={handleKeyDown}
+          tabIndex={-1}
         >
           {/* Header */}
           <div className="p-6 border-b border-gray-200">
@@ -145,23 +148,17 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
               Search through our organic products and find what you need
             </p>
             <div className="flex items-center space-x-4">
-              <div className="flex-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Search products..."
+              <div className="flex-1">
+                <SearchAutocomplete
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-lg"
-                  aria-label="Search products"
-                  aria-describedby="search-results"
-                  autoComplete="off"
+                  onChange={setQuery}
+                  onSearch={(searchQuery) => {
+                    setQuery(searchQuery);
+                    setSearchQuery(searchQuery);
+                  }}
+                  placeholder="Search products..."
+                  maxSuggestions={6}
+                  className=""
                 />
               </div>
               {/* Filter Toggle Button */}

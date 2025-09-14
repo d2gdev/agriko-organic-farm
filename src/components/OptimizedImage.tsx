@@ -73,9 +73,9 @@ export default function OptimizedImage({
     // Group by format
     const byFormat: { [format: string]: Array<{ path: string; width: number }> } = {};
     
-    imageData.optimized.forEach(opt => {
+    imageData.optimized?.forEach(opt => {
       if (!byFormat[opt.format]) byFormat[opt.format] = [];
-      byFormat[opt.format].push({
+      byFormat[opt.format]?.push({
         path: `/optimized/${opt.path}`,
         width: opt.width
       });
@@ -83,7 +83,7 @@ export default function OptimizedImage({
     
     // Sort by width
     Object.keys(byFormat).forEach(format => {
-      byFormat[format].sort((a, b) => a.width - b.width);
+      byFormat[format]?.sort((a, b) => a.width - b.width);
     });
     
     return byFormat;
@@ -95,9 +95,17 @@ export default function OptimizedImage({
   };
 
   // Get fallback image (largest JPEG or original)
-  const getFallbackSrc = (versions: any) => {
-    if (versions?.jpeg?.length) {
-      return versions.jpeg[versions.jpeg.length - 1].path;
+  interface ImageVersions {
+    [format: string]: Array<{ path: string; width: number }> | undefined;
+  }
+
+  const getFallbackSrc = (versions: ImageVersions | null) => {
+    const jpegArray = versions?.jpeg;
+    if (jpegArray && jpegArray.length > 0) {
+      const lastItem = jpegArray[jpegArray.length - 1];
+      if (lastItem) {
+        return lastItem.path;
+      }
     }
     return src; // Use original as fallback
   };

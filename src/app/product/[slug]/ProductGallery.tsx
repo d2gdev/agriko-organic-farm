@@ -19,17 +19,32 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
 
   const selectedImage = images[selectedImageIndex];
 
+  // Create helper functions that don't rely on the functional update pattern
+  const handlePrevImage = () => {
+    setSelectedImageIndex(selectedImageIndex === 0 ? images.length - 1 : selectedImageIndex - 1);
+  };
+
+  const handleNextImage = () => {
+    setSelectedImageIndex(selectedImageIndex === images.length - 1 ? 0 : selectedImageIndex + 1);
+  };
+
+  const handleSelectImage = (index: number) => {
+    setSelectedImageIndex(index);
+    setIsZoomed(false);
+  };
+
   return (
     <div className="space-y-4">
       {/* Main Image */}
       <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden group">
         <Image
-          src={selectedImage.src}
-          alt={selectedImage.alt || product.name}
+          src={selectedImage?.src || ''}
+          alt={selectedImage?.alt || product.name}
           fill
           className={`object-cover transition-transform duration-300 ${isZoomed ? 'scale-150' : 'hover:scale-105'}`}
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
+          fetchPriority="high"
           onClick={() => setIsZoomed(!isZoomed)}
         />
         
@@ -44,7 +59,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
         {images.length > 1 && (
           <>
             <button
-              onClick={() => setSelectedImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
+              onClick={handlePrevImage}
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity md:hidden"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +67,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
               </svg>
             </button>
             <button
-              onClick={() => setSelectedImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
+              onClick={handleNextImage}
               className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity md:hidden"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,10 +91,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
           {images.map((image, index) => (
             <button
               key={`${image.id}-${index}`}
-              onClick={() => {
-                setSelectedImageIndex(index);
-                setIsZoomed(false);
-              }}
+              onClick={() => handleSelectImage(index)}
               className={`relative aspect-square bg-gray-100 rounded border-2 overflow-hidden transition-all ${
                 index === selectedImageIndex
                   ? 'border-primary-500 ring-2 ring-primary-200'
@@ -104,7 +116,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
           {images.map((_, index) => (
             <button
               key={`indicator-${index}`}
-              onClick={() => setSelectedImageIndex(index)}
+              onClick={() => handleSelectImage(index)}
               className={`w-2 h-2 rounded-full transition-colors ${
                 index === selectedImageIndex ? 'bg-primary-600' : 'bg-gray-300'
               }`}

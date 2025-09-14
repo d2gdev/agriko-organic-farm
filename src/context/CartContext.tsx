@@ -1,7 +1,13 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { logger } from '@/lib/logger';
+import SafeLocalStorage from '@/lib/safe-localstorage';
+
 import { WCProduct } from '@/types/woocommerce';
+import { ecommerceEvent, funnelEvent } from '@/lib/gtag';
+import { parseCartData, compareVariations, validateCartItem } from '@/lib/cart-validation';
+import { parsePrice, safePriceMultiply } from '@/lib/price-validation';
 
 export interface CartItem {
   product: WCProduct;
@@ -37,14 +43,47 @@ const initialState: CartState = {
 };
 
 const calculateTotals = (items: CartItem[]): { total: number; itemCount: number } => {
+  const MAX_SAFE_CURRENCY = 999999999; // Max safe currency value
+  const MAX_SAFE_QUANTITY = 9999; // Max reasonable quantity
+  
   const total = items.reduce((sum, item) => {
-    const price = parseFloat(item.product.price) || 0;
-    return sum + (price * item.quantity);
+    const multiplyResult = safePriceMultiply(
+      item.product.price, 
+      Math.min(item.quantity, MAX_SAFE_QUANTITY),
+      `CartItem ${item.product.name}`
+    );
+    
+    if (!multiplyResult.success) {
+      logger.error('Cart item calculation failed', { 
+        error: multiplyResult.error,
+        productId: item.product.id,
+        price: item.product.price,
+        quantity: item.quantity
+      });
+      return sum; // Skip this item to prevent errors
+    }
+    
+    const itemTotal = multiplyResult.value;
+    
+    // Check for overflow before addition
+    if (sum > MAX_SAFE_CURRENCY - itemTotal) {
+      logger.error('Cart total overflow detected', { 
+        currentSum: sum, 
+        itemTotal, 
+        productId: item.product.id 
+      });
+      return MAX_SAFE_CURRENCY; // Cap at maximum safe value
+    }
+    
+    return sum + itemTotal;
   }, 0);
 
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = items.reduce((sum, item) => {
+    const quantity = Math.min(item.quantity, MAX_SAFE_QUANTITY);
+    return sum + quantity;
+  }, 0);
 
-  return { total, itemCount };
+  return { total: Math.min(total, MAX_SAFE_CURRENCY), itemCount };
 };
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
@@ -53,7 +92,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       const { product, quantity = 1, variation } = action.payload;
       const existingItemIndex = state.items.findIndex(item => 
         item.product.id === product.id && 
-        JSON.stringify(item.variation) === JSON.stringify(variation)
+        compareVariations(item.variation, variation)
       );
 
       let newItems: CartItem[];
@@ -185,6 +224,12 @@ export const useCart = () => {
   return context;
 };
 
+// Safe version for components that might render outside CartProvider
+export const useSafeCart = () => {
+  const context = useContext(CartContext);
+  return context || null;
+};
+
 interface CartProviderProps {
   children: React.ReactNode;
 }
@@ -192,34 +237,88 @@ interface CartProviderProps {
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  // Load cart from localStorage on mount
+  // Load cart from localStorage on mount with validation
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem('agriko-cart');
+      const savedCart = SafeLocalStorage.getItem('agriko-cart');
       if (savedCart) {
-        const cartItems = JSON.parse(savedCart);
+        const cartItems = parseCartData(savedCart);
         dispatch({ type: 'LOAD_CART', payload: cartItems });
       }
     } catch (error) {
-      console.error('Error loading cart from localStorage:', error);
+      logger.error('Error loading cart from localStorage:', error as Record<string, unknown>);
+      // Clear corrupted cart data
+      SafeLocalStorage.removeItem('agriko-cart');
     }
   }, []);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     try {
-      localStorage.setItem('agriko-cart', JSON.stringify(state.items));
+      SafeLocalStorage.setJSON('agriko-cart', state.items);
     } catch (error) {
-      console.error('Error saving cart to localStorage:', error);
+      logger.error('Error saving cart to localStorage:', error as Record<string, unknown>);
     }
   }, [state.items]);
 
+  // Track cart view in funnel when cart is opened
+  useEffect(() => {
+    if (state.isOpen) {
+      funnelEvent.viewCart(state.itemCount, state.total);
+    }
+  }, [state.isOpen, state.itemCount, state.total]);
+
   const addItem = (product: WCProduct, quantity = 1, variation?: CartItem['variation']) => {
+    // Validate cart item before adding
+    if (!validateCartItem(product, quantity, variation)) {
+      logger.error('Invalid cart item, refusing to add');
+      return;
+    }
+
     dispatch({ type: 'ADD_ITEM', payload: { product, quantity, variation } });
+    
+    // Track add to cart event in GA4
+    const priceResult = parsePrice(product.price, `addToCart ${product.name}`);
+    const price = priceResult.success ? priceResult.value : 0;
+    const category = product.categories?.[0]?.name ?? 'Uncategorized';
+    ecommerceEvent.addToCart(
+      product.id.toString(),
+      product.name,
+      category,
+      price,
+      quantity
+    );
+
+    // Track funnel progression
+    funnelEvent.addToCart(
+      product.id.toString(),
+      product.name,
+      price * quantity
+    );
   };
 
   const removeItem = (productId: number, variationId?: number) => {
+    // Get item details before removing for GA tracking
+    const item = state.items.find(item => 
+      item.product.id === productId && 
+      (variationId === undefined || item.variation?.id === variationId)
+    );
+    
     dispatch({ type: 'REMOVE_ITEM', payload: { productId, variationId } });
+    
+    // Track remove from cart event in GA4
+    if (item) {
+      const priceResult = parsePrice(item.product.price, `removeFromCart ${item.product.name}`);
+      const price = priceResult.success ? priceResult.value : 0;
+      const category = item.product.categories?.[0]?.name ?? 'Uncategorized';
+      ecommerceEvent.removeFromCart(
+        item.product.id.toString(),
+        item.product.name,
+        category,
+        price,
+        item.quantity
+      );
+    }
   };
 
   const updateQuantity = (productId: number, quantity: number, variationId?: number) => {

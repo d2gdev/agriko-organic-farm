@@ -188,3 +188,13 @@ Required environment variables:
 - Set environment variables for production
 - Configure build and start scripts
 - Enable static file serving
+- TESTING METHODOLOGY    - Assume tests are correct when they fail
+  - Investigate implementation for root causes first
+  - Analyze memory, performance, and security implications
+  - Fix implementation before considering test adjustments
+  - Document learnings for organizational knowledge
+- TESTING METHODOLOGY    - Assume tests are correct when they fail
+  - Investigate implementation for root causes first
+  - Analyze memory, performance, and security implications
+  - Fix implementation before considering test adjustments
+  - Document learnings for organizational knowledge

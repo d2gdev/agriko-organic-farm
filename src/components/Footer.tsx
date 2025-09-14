@@ -1,114 +1,236 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
-    <footer className="bg-primary-900 text-white mt-auto relative overflow-hidden">
-      <div 
-        className="absolute inset-0 bg-cover bg-center opacity-30"
-        style={{ 
-          backgroundImage: "url('/images/footer-background.jpg')",
-          backgroundAttachment: "fixed",
-          backgroundRepeat: "no-repeat"
-        }}
-      ></div>
-      <div className="absolute inset-0 bg-primary-900 bg-opacity-70"></div>
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          {/* Company Info */}
-          <div className="md:col-span-2 space-y-6">
-            <h3 className="text-heading-3 text-accent-400">Agriko</h3>
-            <p className="text-white text-lg leading-relaxed">
-              A family-owned organic farm committed to sustainable farming practices and delivering the freshest, healthiest produce to your table for over 20 years.
-            </p>
-            <div className="flex space-x-6">
-              <a href="https://www.facebook.com/AgrikoPH/" target="_blank" rel="noopener noreferrer" className="text-white hover:text-accent-400 transition-colors transform hover:scale-110">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </a>
-              <a href="#" className="text-white hover:text-accent-400 transition-colors transform hover:scale-110">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
-                </svg>
-              </a>
-              <a href="#" className="text-white hover:text-accent-400 transition-colors transform hover:scale-110">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.347-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.748-1.378 0 0-.599 2.282-.744 2.840-.282 1.073-1.073 2.436-1.574 3.259C9.787 23.664 10.892 24 12.017 24c6.624 0 11.99-5.367 11.99-11.987C24.007 5.367 18.641.001 12.017.001z"/>
-                </svg>
-              </a>
-              <a href="#" className="text-white hover:text-accent-400 transition-colors transform hover:scale-110">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-              </a>
+    <footer className="relative mt-auto">
+      {/* CTA Section */}
+      <div className="bg-gradient-to-r from-green-50 to-yellow-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 relative overflow-hidden">
+            {/* Decorative Element */}
+            <div className="absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br from-green-100 to-yellow-100 rounded-full opacity-50"></div>
+            <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-gradient-to-br from-green-100 to-yellow-100 rounded-full opacity-50"></div>
+
+            <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h3 className="text-3xl font-bold text-neutral-900 mb-4">
+                  🌿 Try Our Bestseller
+                </h3>
+                <p className="text-lg text-neutral-600 mb-6">
+                  Experience the power of our 5-in-1 Turmeric Tea Blend - a perfect fusion of organic turmeric, ginger, and premium herbs for your daily wellness routine.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link
+                    href="/products"
+                    className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
+                    Shop Now
+                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
+                  <Link
+                    href="/faq"
+                    className="inline-flex items-center justify-center px-6 py-3 border-2 border-green-600 text-green-700 font-semibold rounded-xl hover:bg-green-50 transition-all duration-300"
+                  >
+                    Learn More
+                  </Link>
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <div className="relative w-64 h-64">
+                  <Image
+                    src="/images/agriko-turmeric-5in1-blend-500g-health-supplement.jpg"
+                    alt="5-in-1 Turmeric Tea Blend"
+                    fill
+                    className="object-cover rounded-xl shadow-lg"
+                  />
+                  <div className="absolute -top-4 -right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                    Bestseller
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Footer */}
+      <div className="bg-gradient-to-br from-neutral-50 via-green-50/30 to-yellow-50/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            {/* Company Info */}
+            <div className="md:col-span-2 space-y-6">
+              <h3 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
+                Agriko Organic Farm
+              </h3>
+              <p className="text-neutral-600 text-base leading-relaxed">
+                A family-owned organic farm committed to sustainable farming practices and delivering the freshest, healthiest produce to your table for over 20 years.
+              </p>
+
+              {/* Social Icons */}
+              <div className="flex space-x-4">
+                <a
+                  href="https://www.facebook.com/AgrikoPH/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-600 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </a>
+
+                <a
+                  href="#"
+                  className="w-10 h-10 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-600 hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-all duration-300 shadow-sm hover:shadow-md"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
+                  </svg>
+                </a>
+
+                <a
+                  href="#"
+                  className="w-10 h-10 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-600 hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-600 hover:text-white hover:border-purple-600 transition-all duration-300 shadow-sm hover:shadow-md"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z"/>
+                  </svg>
+                </a>
+
+                <a
+                  href="#"
+                  className="w-10 h-10 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-600 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300 shadow-sm hover:shadow-md"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.347-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.748-1.378 0 0-.599 2.282-.744 2.840-.282 1.073-1.073 2.436-1.574 3.259C9.787 23.664 10.892 24 12.017 24c6.624 0 11.99-5.367 11.99-11.987C24.007 5.367 18.641.001 12.017.001z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-neutral-900">Quick Links</h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
+                    <span className="w-1 h-1 bg-green-500 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/#latest-products" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
+                    <span className="w-1 h-1 bg-green-500 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    Our Products
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/about" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
+                    <span className="w-1 h-1 bg-green-500 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/find-us" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
+                    <span className="w-1 h-1 bg-green-500 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    Find Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/faq" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
+                    <span className="w-1 h-1 bg-green-500 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    FAQ
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Customer Service */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-neutral-900">Products & Info</h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/faq" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
+                    <span className="w-1 h-1 bg-green-500 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    Health Benefits
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/faq" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
+                    <span className="w-1 h-1 bg-green-500 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    Storage Guide
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/about" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
+                    <span className="w-1 h-1 bg-green-500 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    Our Farm
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/find-us" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
+                    <span className="w-1 h-1 bg-green-500 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    Visit Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/faq" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
+                    <span className="w-1 h-1 bg-green-500 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    Organic Certification
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="space-y-4">
-            <h4 className="text-heading-4 text-accent-400">Quick Links</h4>
-            <ul className="space-y-3">
-              <li><Link href="/" className="text-white hover:text-accent-400 transition-colors">Home</Link></li>
-              <li><Link href="/#latest-products" className="text-white hover:text-accent-400 transition-colors">Our Products</Link></li>
-              <li><Link href="/about" className="text-white hover:text-accent-400 transition-colors">About Us</Link></li>
-              <li><Link href="/find-us" className="text-white hover:text-accent-400 transition-colors">Find Us</Link></li>
-              <li><Link href="/faq" className="text-white hover:text-accent-400 transition-colors">FAQ</Link></li>
-              <li><Link href="/contact" className="text-white hover:text-accent-400 transition-colors">Contact</Link></li>
-            </ul>
+          {/* Newsletter Section */}
+          <div className="mt-12 pt-8 border-t border-neutral-200">
+            <div className="bg-gradient-to-r from-green-50 to-yellow-50 rounded-xl p-6 md:p-8">
+              <div className="grid md:grid-cols-2 gap-6 items-center">
+                <div>
+                  <h4 className="text-xl font-semibold text-neutral-900 mb-2">
+                    🌱 Stay Connected
+                  </h4>
+                  <p className="text-neutral-600">
+                    Get exclusive offers, farming tips, and new product announcements.
+                  </p>
+                </div>
+                <form className="flex gap-3">
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="flex-1 px-4 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-medium rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-md hover:shadow-lg"
+                  >
+                    Subscribe
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
 
-          {/* Customer Service */}
-          <div className="space-y-4">
-            <h4 className="text-heading-4 text-accent-400">Products & Info</h4>
-            <ul className="space-y-3">
-              <li><Link href="/faq" className="text-white hover:text-accent-400 transition-colors">Health Benefits</Link></li>
-              <li><Link href="/faq" className="text-white hover:text-accent-400 transition-colors">Storage Guide</Link></li>
-              <li><Link href="/about" className="text-white hover:text-accent-400 transition-colors">Our Farm</Link></li>
-              <li><Link href="/find-us" className="text-white hover:text-accent-400 transition-colors">Visit Us</Link></li>
-              <li><Link href="/faq" className="text-white hover:text-accent-400 transition-colors">Organic Certification</Link></li>
-            </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div className="space-y-4">
-            <h4 className="text-heading-4">Stay Updated</h4>
-            <p className="text-white text-sm">
-              Subscribe to our newsletter for the latest products and offers.
+          {/* Bottom Bar */}
+          <div className="mt-8 pt-8 border-t border-neutral-200 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-neutral-600 text-sm">
+              © 2024 Agriko Organic Farm. All rights reserved.
             </p>
-            <form className="space-y-2">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-md text-black placeholder-black focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-              <button
-                type="submit"
-                className="w-full bg-neutral-800 text-white py-2 px-4 rounded-md hover:bg-neutral-900 transition-colors font-medium"
-              >
-                Subscribe
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-primary-800 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-white text-base">
-            © 2024 Agriko. All rights reserved.
-          </p>
-          <div className="flex space-x-8 mt-6 md:mt-0">
-            <Link href="/privacy" className="text-white hover:text-accent-400 transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="text-white hover:text-accent-400 transition-colors">
-              Terms of Service
-            </Link>
-            <Link href="/cookies" className="text-white hover:text-accent-400 transition-colors">
-              Cookie Policy
-            </Link>
+            <div className="flex space-x-6 mt-4 md:mt-0">
+              <Link href="/privacy" className="text-neutral-600 hover:text-green-600 transition-colors text-sm">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="text-neutral-600 hover:text-green-600 transition-colors text-sm">
+                Terms of Service
+              </Link>
+              <Link href="/cookies" className="text-neutral-600 hover:text-green-600 transition-colors text-sm">
+                Cookie Policy
+              </Link>
+            </div>
           </div>
         </div>
       </div>

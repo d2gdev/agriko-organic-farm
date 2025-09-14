@@ -267,6 +267,7 @@ export function Toast({
       const timer = setTimeout(onClose, duration);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isVisible, duration, onClose]);
 
   const typeClasses = {
@@ -372,6 +373,7 @@ export function ProgressBar({
     } else {
       setDisplayProgress(progress);
     }
+    return undefined;
   }, [progress, animated]);
 
   return (

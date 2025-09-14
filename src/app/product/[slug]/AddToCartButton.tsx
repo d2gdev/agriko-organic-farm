@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { logger } from '@/lib/logger';
+
 import { WCProduct } from '@/types/woocommerce';
 import { useCart } from '@/context/CartContext';
 import { isProductInStock } from '@/lib/utils';
@@ -29,7 +31,7 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
         openCart();
       }, 200);
     } catch (error) {
-      console.error('Error adding to cart:', error);
+      logger.error('Error adding to cart:', error as Record<string, unknown>);
     } finally {
       setIsAdding(false);
     }

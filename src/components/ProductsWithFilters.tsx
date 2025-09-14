@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { WCProduct } from '@/types/woocommerce';
 import { useProductFilters } from '@/hooks/useProductFilters';
@@ -23,14 +23,14 @@ export default function ProductsWithFilters({ products }: ProductsWithFiltersPro
 
   // Initialize filters from URL params
   const initialFilters: SearchFilters = {
-    category: searchParams.get('category') || undefined,
-    minPrice: searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined,
-    maxPrice: searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined,
-    sortBy: (searchParams.get('sortBy') as SearchFilters['sortBy']) || undefined,
-    inStock: searchParams.get('inStock') === 'true' || undefined
+    category: searchParams.get('category') ?? undefined,
+    minPrice: searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice') as string) : undefined,
+    maxPrice: searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice') as string) : undefined,
+    sortBy: (searchParams.get('sortBy') as SearchFilters['sortBy']) ?? undefined,
+    inStock: searchParams.get('inStock') === 'true' ? true : undefined
   };
 
-  const initialSearchQuery = searchParams.get('search') || '';
+  const initialSearchQuery = searchParams.get('search') ?? '';
 
   const {
     filters,
@@ -53,21 +53,42 @@ export default function ProductsWithFilters({ products }: ProductsWithFiltersPro
     }
   }, [initialSearchQuery, searchQuery, setSearchQuery]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-  const startIndex = (currentPage - 1) * productsPerPage;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + productsPerPage);
+  // Pagination - memoized to prevent unnecessary recalculations
+  const { totalPages, paginatedProducts, startIndex } = useMemo(() => {
+    const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+    const startIndex = (currentPage - 1) * productsPerPage;
+    const paginatedProducts = filteredProducts.slice(startIndex, startIndex + productsPerPage);
+
+    return { totalPages, paginatedProducts, startIndex };
+  }, [filteredProducts, currentPage, productsPerPage]);
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [filters, searchQuery]);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
     // Scroll to top of results
     document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
+
+  // Optimized event handlers
+  const toggleFilters = useCallback(() => {
+    setShowFilters(!showFilters);
+  }, [showFilters]);
+
+  const switchToGrid = useCallback(() => {
+    setViewMode('grid');
+  }, []);
+
+  const switchToList = useCallback(() => {
+    setViewMode('list');
+  }, []);
+
+  const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilters({ ...filters, sortBy: e.target.value as SearchFilters['sortBy'] ?? undefined });
+  }, [filters, setFilters]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -76,7 +97,7 @@ export default function ProductsWithFilters({ products }: ProductsWithFiltersPro
         <div className="flex items-center space-x-4">
           <Button
             variant={showFilters ? 'primary' : 'secondary'}
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={toggleFilters}
             className="lg:hidden"
             leftIcon={
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,7 +120,7 @@ export default function ProductsWithFilters({ products }: ProductsWithFiltersPro
           {/* View Mode Toggle */}
           <div className="flex items-center bg-neutral-100 rounded-lg p-1">
             <button
-              onClick={() => setViewMode('grid')}
+              onClick={switchToGrid}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'grid' 
                   ? 'bg-white text-primary-600 shadow-sm' 
@@ -112,7 +133,7 @@ export default function ProductsWithFilters({ products }: ProductsWithFiltersPro
               </svg>
             </button>
             <button
-              onClick={() => setViewMode('list')}
+              onClick={switchToList}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'list' 
                   ? 'bg-white text-primary-600 shadow-sm' 
@@ -128,8 +149,8 @@ export default function ProductsWithFilters({ products }: ProductsWithFiltersPro
 
           {/* Quick Sort */}
           <select
-            value={filters.sortBy || ''}
-            onChange={(e) => setFilters({ ...filters, sortBy: e.target.value as SearchFilters['sortBy'] || undefined })}
+            value={filters.sortBy ?? ''}
+            onChange={handleSortChange}
             className="px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
           >
             <option value="">Default Sort</option>
@@ -176,7 +197,11 @@ export default function ProductsWithFilters({ products }: ProductsWithFiltersPro
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {paginatedProducts.map((product, index) => (
                     <div key={product.id} className="animate-fadeInUp" style={{ animationDelay: `${index * 50}ms` }}>
-                      <ProductCard product={product} />
+                      <ProductCard 
+                        product={product}
+                        priority={index < 4}
+                        fetchPriority={index < 4 ? "high" : "auto"}
+                      />
                     </div>
                   ))}
                 </div>
@@ -184,7 +209,12 @@ export default function ProductsWithFilters({ products }: ProductsWithFiltersPro
                 <div className="space-y-4">
                   {paginatedProducts.map((product, index) => (
                     <div key={product.id} className="animate-fadeInUp" style={{ animationDelay: `${index * 50}ms` }}>
-                      <ProductCard product={product} layout="list" />
+                      <ProductCard 
+                        product={product} 
+                        layout="list"
+                        priority={index < 4}
+                        fetchPriority={index < 4 ? "high" : "auto"}
+                      />
                     </div>
                   ))}
                 </div>

@@ -1,115 +1,107 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { getAllProducts } from '@/lib/woocommerce';
-import ProductCard from '@/components/ProductCard';
+import ProductsWithFilters from '@/components/ProductsWithFilters';
 import HeroSection from '@/components/HeroSection';
-import Breadcrumb from '@/components/Breadcrumb';
-import Card, { CardHeader, CardTitle, CardContent } from '@/components/Card';
-import { OrganicProductGridSkeleton } from '@/components/OrganicLoadingStates';
-import SearchFiltersComponent, { SearchFilters } from '@/components/SearchFilters';
+import { ProductGridSkeleton } from '@/components/LoadingStates';
 import type { Metadata } from 'next';
 
-// Products grid loading component
-function ProductsGridSkeleton() {
-  return <OrganicProductGridSkeleton count={12} />;
-}
+export const metadata: Metadata = {
+  title: 'Products - Agriko Organic Farm',
+  description: 'Browse our premium organic rice varieties, herbal powders, and health blends. Sustainably grown and carefully processed for maximum nutrition.',
+  keywords: 'organic rice, herbal powders, health blends, organic products philippines, agriko products',
+  openGraph: {
+    title: 'Organic Products - Agriko Farm',
+    description: 'Discover our range of premium organic products from our family farm',
+    type: 'website',
+    url: 'https://shop.agrikoph.com/products',
+    images: [
+      {
+        url: '/images/og-products.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Agriko Organic Products',
+      },
+    ],
+  },
+};
 
-// Product categories section
+// Product categories section with organic-inspired design
 function CategoryCards() {
   const categories = [
     {
       name: 'Rice Varieties',
       description: 'Premium organic black, brown, red, and white rice varieties',
       icon: '🌾',
-      image: '/images/organic-rice-varieties.jpg',
-      href: '/?category=rice',
-      products: ['Black Rice', 'Brown Rice', 'Red Rice', 'White Rice']
+      href: '/products?category=rice',
+      // Rice beige and warm earth tones
+      gradient: 'from-[#f5e6d3] to-[#e8d5c4]',
+      borderColor: 'border-[#d4b896]',
+      iconBg: 'bg-[#f9f2e9]',
     },
     {
       name: 'Herbal Powders',
       description: 'Pure, nutrient-dense superfoods with powerful health benefits',
       icon: '🌿',
-      image: '/images/herbal-powders.jpg',
-      href: '/?category=herbs',
-      products: ['Turmeric Powder', 'Ginger Powder', 'Moringa Powder']
+      href: '/products?category=herbs',
+      // Sage green and muted earth
+      gradient: 'from-[#e8f0e3] to-[#d4e4cc]',
+      borderColor: 'border-[#a3b88c]',
+      iconBg: 'bg-[#f0f5ed]',
     },
     {
       name: 'Health Blends',
       description: 'Specially crafted blends and organic honey for complete wellness',
       icon: '🍯',
-      image: '/images/health-blends.jpg',
-      href: '/?category=blends',
-      products: ['5-in-1 Tea Blend', 'Organic Honey', 'Agribata Cereal']
+      href: '/products?category=blends',
+      // Clay and warm honey tones
+      gradient: 'from-[#f5e8dc] to-[#ead4c1]',
+      borderColor: 'border-[#d4a574]',
+      iconBg: 'bg-[#faf4ed]',
     }
   ];
 
   return (
-    <section className="py-20 bg-cream">
+    <section className="py-16 bg-gradient-to-b from-white to-[#faf8f5]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-heading-1 text-neutral-900 mb-6">
-            Product Categories
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Shop by Category
           </h2>
-          <p className="text-body-large text-neutral-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
             Explore our three main product categories, each carefully cultivated and processed to deliver maximum nutrition and authentic flavors.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {categories.map((category, index) => (
-            <Card 
-              key={category.name} 
-              variant="interactive" 
-              size="lg"
-              className="group animate-fadeInUp" 
-              style={{ animationDelay: `${index * 200}ms` }}
+            <Link
+              key={category.name}
+              href={category.href}
+              className={`group relative bg-gradient-to-br ${category.gradient} rounded-2xl p-8 border-2 ${category.borderColor} border-opacity-30 shadow-md hover:shadow-2xl transform hover:-translate-y-3 transition-all duration-500 overflow-hidden`}
+              style={{ animationDelay: `${index * 100}ms` }}
             >
-              {/* Category Image */}
-              <div className="relative h-48 bg-gradient-to-br from-primary-100 to-primary-200 overflow-hidden -m-8 mb-6">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-6xl group-hover:scale-110 transition-transform duration-300">
-                    {category.icon}
-                  </div>
-                </div>
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
+              {/* Subtle accent circle */}
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-white opacity-20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700" />
 
-              <CardHeader>
-                <CardTitle className="group-hover:text-primary-700 transition-colors duration-200">
+              <div className="relative text-center">
+                <div className={`inline-flex items-center justify-center w-20 h-20 ${category.iconBg} rounded-full mb-4 mx-auto group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
+                  <span className="text-5xl">{category.icon}</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#6b4423] transition-colors">
                   {category.name}
-                </CardTitle>
-              </CardHeader>
-              
-              <CardContent>
-                <p className="text-neutral-600 mb-6 leading-relaxed">
+                </h3>
+                <p className="text-gray-600 mb-4">
                   {category.description}
                 </p>
-
-                {/* Product examples */}
-                <div className="mb-6">
-                  <p className="text-sm font-medium text-neutral-500 mb-2">Popular items:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {category.products.map((product) => (
-                      <span key={product} className="inline-block bg-primary-50 text-primary-700 text-xs px-3 py-1 rounded-full">
-                        {product}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <Link 
-                  href={category.href}
-                  className="inline-flex items-center space-x-2 text-primary-700 hover:text-primary-800 font-semibold transition-colors duration-200 group/link"
-                >
-                  <span>Explore {category.name}</span>
-                  <svg className="w-4 h-4 group-hover/link:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="inline-flex items-center text-[#8b6f47] font-semibold group-hover:gap-3 transition-all">
+                  <span>Browse {category.name}</span>
+                  <svg className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
-                </Link>
-              </CardContent>
-            </Card>
+                </div>
+              </div>
+            </Link>
           ))}
         </div>
       </div>
@@ -117,276 +109,164 @@ function CategoryCards() {
   );
 }
 
-// All products section with dynamic import for client-side filtering
-async function AllProductsSection() {
+// Trust badges section
+function TrustBadges() {
+  const badges = [
+    { icon: '🌱', title: '100% Organic', description: 'Certified organic farming' },
+    { icon: '👨‍🌾', title: 'Family Farm', description: 'Locally grown with care' },
+    { icon: '🌿', title: 'Sustainable', description: 'Eco-friendly practices' },
+    { icon: '✨', title: 'Premium Quality', description: 'Hand-selected products' },
+  ];
+
+  return (
+    <section className="py-12 bg-white border-y border-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {badges.map((badge, index) => (
+            <div key={index} className="text-center">
+              <div className="text-4xl mb-2">{badge.icon}</div>
+              <h3 className="font-semibold text-gray-900 mb-1">{badge.title}</h3>
+              <p className="text-sm text-gray-600">{badge.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Products content component
+async function ProductsContent() {
   try {
     const products = await getAllProducts({
-      per_page: 100, // Get more products for filtering
+      per_page: 100,
       orderby: 'menu_order',
       order: 'asc',
       status: 'publish'
     });
 
-    if (products.length === 0) {
+    if (!products || products.length === 0) {
       return (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No products available at this time.</p>
+        <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+          <div className="text-gray-400 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414a1 1 0 00-.707-.293H4" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No products available</h3>
+          <p className="text-gray-600">Please check back later for our organic products.</p>
         </div>
       );
     }
 
-    // Dynamic import to avoid SSR issues
-    const { default: ProductsWithFilters } = await import('@/components/ProductsWithFilters');
-    
     return <ProductsWithFilters products={products} />;
-    
   } catch (error) {
     console.error('Error loading products:', error);
     return (
-      <div className="text-center py-12">
-        <p className="text-red-500">Unable to load products. Please try again later.</p>
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <h3 className="text-lg font-semibold text-red-800 mb-2">Unable to load products</h3>
+          <p className="text-red-600">Please try refreshing the page or check back later.</p>
+        </div>
       </div>
     );
   }
 }
 
-export const metadata: Metadata = {
-  title: 'Shop All Products - Agriko Organic Farm',
-  description: 'Browse our complete collection of organic rice varieties, herbal powders, and health blends. Premium quality products from our sustainable family farm.',
-  keywords: 'shop organic products, buy organic rice, herbal powders, health blends, organic farming, sustainable agriculture',
-};
-
-export default function ProductsPage() {
-  // Enhanced Collection Page Schema
-  const collectionPageSchema = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "@id": "https://shop.agrikoph.com/products#collectionpage",
-    "name": "Shop All Products - Agriko Organic Farm",
-    "description": "Browse our complete collection of organic rice varieties, herbal powders, and health blends.",
-    "url": "https://shop.agrikoph.com/products",
-    "inLanguage": "en-PH",
-    "datePublished": "2016-01-01",
-    "dateModified": new Date().toISOString().split('T')[0],
-    "isPartOf": {
-      "@type": "WebSite",
-      "name": "Agriko Organic Farm",
-      "url": "https://shop.agrikoph.com"
-    },
-    "breadcrumb": {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://shop.agrikoph.com"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Shop All Products",
-          "item": "https://shop.agrikoph.com/products"
-        }
-      ]
-    },
-    "mainEntity": {
-      "@type": "ItemList",
-      "name": "Agriko Product Categories",
-      "numberOfItems": 3,
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "item": {
-            "@type": "ProductGroup",
-            "name": "Organic Rice Varieties",
-            "description": "Premium organic black, brown, red, and white rice varieties",
-            "url": "https://shop.agrikoph.com/products?category=rice",
-            "hasVariant": [
-              {"@type": "Product", "name": "Black Rice"},
-              {"@type": "Product", "name": "Brown Rice"},
-              {"@type": "Product", "name": "Red Rice"},
-              {"@type": "Product", "name": "White Rice"}
-            ]
-          }
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "item": {
-            "@type": "ProductGroup",
-            "name": "Pure Herbal Powders",
-            "description": "Pure, nutrient-dense superfoods with powerful health benefits",
-            "url": "https://shop.agrikoph.com/products?category=herbs",
-            "hasVariant": [
-              {"@type": "Product", "name": "Turmeric Powder"},
-              {"@type": "Product", "name": "Ginger Powder"},
-              {"@type": "Product", "name": "Moringa Powder"}
-            ]
-          }
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "item": {
-            "@type": "ProductGroup",
-            "name": "Health Blends & Natural Products",
-            "description": "Specially crafted blends and organic honey for complete wellness",
-            "url": "https://shop.agrikoph.com/products?category=blends",
-            "hasVariant": [
-              {"@type": "Product", "name": "5-in-1 Turmeric Tea Blend"},
-              {"@type": "Product", "name": "Pure Organic Honey"},
-              {"@type": "Product", "name": "Agribata Kids Cereal"}
-            ]
-          }
-        }
-      ]
-    }
-  };
-
-  // Product Category Schemas
-  const categorySchemas = [
-    {
-      "@context": "https://schema.org",
-      "@type": "ProductGroup",
-      "@id": "https://shop.agrikoph.com/products#rice-category",
-      "name": "Organic Rice Varieties",
-      "description": "Premium organic rice varieties cultivated using sustainable farming practices",
-      "brand": {
-        "@type": "Brand",
-        "name": "Agriko Organic Farm"
-      },
-      "category": "Food & Beverage > Grains & Rice",
-      "productGroupID": "rice-varieties",
-      "hasVariant": [
-        {"@type": "Product", "name": "Organic Black Rice", "description": "Rich in antioxidants and nutrients"},
-        {"@type": "Product", "name": "Organic Brown Rice", "description": "High fiber whole grain rice"},
-        {"@type": "Product", "name": "Organic Red Rice", "description": "Traditional colored rice variety"},
-        {"@type": "Product", "name": "Organic White Rice", "description": "Classic premium quality rice"}
-      ],
-      "additionalProperty": [
-        {"@type": "PropertyValue", "name": "Organic Certified", "value": "Yes"},
-        {"@type": "PropertyValue", "name": "Gluten Free", "value": "Yes"},
-        {"@type": "PropertyValue", "name": "Non-GMO", "value": "Yes"}
-      ]
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "ProductGroup",
-      "@id": "https://shop.agrikoph.com/products#herbs-category",
-      "name": "Pure Herbal Powders",
-      "description": "Premium herbal powders with exceptional health benefits and nutritional value",
-      "brand": {
-        "@type": "Brand",
-        "name": "Agriko Organic Farm"
-      },
-      "category": "Health & Beauty > Health Supplements",
-      "productGroupID": "herbal-powders",
-      "hasVariant": [
-        {"@type": "Product", "name": "Pure Dulaw (Turmeric) Powder", "description": "Anti-inflammatory superfood powder"},
-        {"@type": "Product", "name": "Pure Salabat (Ginger) Powder", "description": "Digestive health and pain relief"},
-        {"@type": "Product", "name": "Pure Moringa Powder", "description": "Complete superfood with essential nutrients"}
-      ],
-      "additionalProperty": [
-        {"@type": "PropertyValue", "name": "Organic", "value": "Yes"},
-        {"@type": "PropertyValue", "name": "Raw", "value": "Yes"},
-        {"@type": "PropertyValue", "name": "No Additives", "value": "Yes"}
-      ]
-    }
-  ];
-
+export default async function ProductsPage() {
   return (
     <>
-      {/* Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify([collectionPageSchema, ...categorySchemas])
-        }}
-      />
-
-      {/* Hero Section */}
-      <HeroSection 
-        title="Shop All Products"
-        subtitle="Premium Organic Selection"
-        description="Discover our complete range of organic rice varieties, pure herbal powders, and health-boosting blends, all grown with sustainable farming practices on our family farm."
-        primaryButtonText="Browse Categories"
-        primaryButtonHref="#categories"
-        secondaryButtonText="View All Products"
-        secondaryButtonHref="#all-products"
-        showButtons={true}
-      />
-
-      {/* Breadcrumb Navigation */}
-      <Breadcrumb items={[{ name: 'Shop' }]} />
-
-      {/* Product Categories */}
-      <div id="categories">
-        <CategoryCards />
+      {/* Hero Section with Product-Centric Design */}
+      <div className="relative bg-gradient-to-br from-[#f5f2ed] via-[#faf8f3] to-[#f0e9df] overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 right-20 text-8xl transform rotate-12">🌾</div>
+          <div className="absolute bottom-20 left-20 text-8xl transform -rotate-12">🌿</div>
+          <div className="absolute top-1/2 right-1/3 text-6xl">🍯</div>
+        </div>
+        <HeroSection
+          title="Our Products"
+          subtitle="From Our Family Farm to Your Table"
+          description="Pure Organic Rice & Herbal Blends — Sustainably grown, carefully harvested, and lovingly packaged for your family's wellness."
+          showButtons={false}
+        />
       </div>
 
-      {/* All Products Section */}
-      <section id="all-products" className="py-20 bg-white">
-        <div className="text-center mb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-heading-1 text-neutral-900 mb-6">
-            All Products
-          </h2>
-          <p className="text-body-large text-neutral-600 max-w-3xl mx-auto">
-            Browse our complete collection of premium organic products. Use filters to find exactly what you&apos;re looking for.
-          </p>
-        </div>
+      {/* Category Cards */}
+      <CategoryCards />
 
-        <Suspense fallback={
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ProductsGridSkeleton />
+      {/* Trust Badges */}
+      <TrustBadges />
+
+      {/* Products with Filters */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              All Products
+            </h2>
+            <p className="text-lg text-gray-600">
+              Browse our complete collection of organic products
+            </p>
           </div>
-        }>
-          <AllProductsSection />
-        </Suspense>
+
+          <Suspense fallback={<ProductGridSkeleton count={12} />}>
+            <ProductsContent />
+          </Suspense>
+        </div>
       </section>
 
-      {/* Trust Signals */}
-      <section className="py-16 bg-primary-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div className="animate-fadeInUp">
-              <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🌱</span>
-              </div>
-              <h3 className="font-semibold text-neutral-900 mb-2">100% Organic</h3>
-              <p className="text-sm text-neutral-600">Certified organic farming practices</p>
-            </div>
-            
-            <div className="animate-fadeInUp animation-delay-200">
-              <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">👨‍👩‍👧‍👦</span>
-              </div>
-              <h3 className="font-semibold text-neutral-900 mb-2">Family Owned</h3>
-              <p className="text-sm text-neutral-600">Third-generation family farm</p>
-            </div>
-            
-            <div className="animate-fadeInUp animation-delay-400">
-              <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🚚</span>
-              </div>
-              <h3 className="font-semibold text-neutral-900 mb-2">Fast Shipping</h3>
-              <p className="text-sm text-neutral-600">Nationwide delivery available</p>
-            </div>
-            
-            <div className="animate-fadeInUp animation-delay-600">
-              <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">⭐</span>
-              </div>
-              <h3 className="font-semibold text-neutral-900 mb-2">Premium Quality</h3>
-              <p className="text-sm text-neutral-600">Hand-selected and processed</p>
-            </div>
+      {/* Softer Call to Action with Organic Feel */}
+      <section className="py-20 bg-gradient-to-br from-[#f5e8dc] via-[#faf4ed] to-[#f0e9df] relative overflow-hidden">
+        {/* Decorative Elements */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 text-8xl transform rotate-12">🌱</div>
+          <div className="absolute bottom-10 right-10 text-8xl transform -rotate-12">👨‍🌾</div>
+          <div className="absolute top-1/2 left-1/4 text-6xl">🌾</div>
+        </div>
+
+        <div className="max-w-4xl mx-auto text-center px-4 relative">
+          {/* Warm illustration-like header */}
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/80 rounded-full mb-6 shadow-lg">
+            <span className="text-4xl">💬</span>
           </div>
+
+          <h2 className="text-3xl font-bold text-[#6b4423] mb-4">
+            Need Help Choosing?
+          </h2>
+          <p className="text-xl text-[#8b6f47] mb-8 max-w-2xl mx-auto">
+            Our family is here to help you find the perfect organic products for your wellness journey
+          </p>
+
+          {/* Softer button styling with warm colors */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/contact"
+              className="group inline-flex items-center justify-center px-8 py-4 bg-white text-[#8b6f47] rounded-full font-semibold hover:bg-[#faf8f5] transition-all duration-300 shadow-lg border-2 border-[#e8d5c4] hover:border-[#d4b896]"
+            >
+              <svg className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Contact Our Team
+            </Link>
+            <Link
+              href="/faq"
+              className="group inline-flex items-center justify-center px-8 py-4 bg-[#a3b88c] text-white rounded-full font-semibold hover:bg-[#8fa775] transition-all duration-300 shadow-lg"
+            >
+              <svg className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Common Questions
+            </Link>
+          </div>
+
+          {/* Trust message */}
+          <p className="mt-8 text-sm text-[#a08968]">
+            ✨ Personal service from our family farm since 2015
+          </p>
         </div>
       </section>
     </>
   );
 }
 
-// Enable ISR with 1 hour revalidation for product updates
-export const revalidate = 3600;
+export const revalidate = 3600; // Revalidate every hour

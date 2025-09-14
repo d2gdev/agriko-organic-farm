@@ -1,0 +1,201 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main ]
+
+jobs:
+  pr-validation:
+    name: PR Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PR Title
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "PR Title: $PR_TITLE"
+
+          # Check if title follows conventional commits pattern
+          if [[ "$PR_TITLE" =~ ^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert)(\(.+\))?: .+ ]]; then
+            echo "✅ PR title follows conventional commits format"
+          else
+            echo "❌ PR title should follow conventional commits format"
+            echo "Examples: feat: add new feature, fix: resolve bug, docs: update README"
+            exit 1
+          fi
+
+      - name: Check for Breaking Changes
+        run: |
+          # Check if this is a breaking change
+          if [[ "${{ github.event.pull_request.title }}" =~ ^.*!: ]] || \
+             git log --format=%s ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | grep -q "BREAKING CHANGE"; then
+            echo "⚠️ Breaking change detected"
+            echo "breaking_change=true" >> $GITHUB_ENV
+          else
+            echo "✅ No breaking changes detected"
+            echo "breaking_change=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check Changed Files
+        run: |
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Check for sensitive file changes
+          SENSITIVE_PATTERNS="\.env|package\.json|tsconfig\.json|next\.config\.js|\.github/"
+
+          if echo "$CHANGED_FILES" | grep -E "$SENSITIVE_PATTERNS"; then
+            echo "⚠️ Sensitive configuration files modified - requires careful review"
+          fi
+
+          # Check for large file additions
+          git diff --stat ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | grep -E '\| [0-9]{3,} \+' && {
+            echo "⚠️ Large file changes detected - consider reviewing for performance impact"
+          } || true
+
+  size-impact:
+    name: Bundle Size Impact
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Base Branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies (Base)
+        run: npm ci
+
+      - name: Build Base Branch
+        run: npm run build
+        env:
+          NODE_ENV: production
+          WC_API_URL: http://base-api.example.com
+          WC_CONSUMER_KEY: base_key
+          WC_CONSUMER_SECRET: base_secret
+          ADMIN_PASSWORD: base_password
+
+      - name: Save Base Bundle Stats
+        run: |
+          if [ -f ".next/analyze/client.html" ]; then
+            cp -r .next/analyze ./base-analyze
+          fi
+
+      - name: Checkout PR Branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Install Dependencies (PR)
+        run: npm ci
+
+      - name: Build PR Branch
+        run: npm run analyze
+        env:
+          NODE_ENV: production
+          WC_API_URL: http://pr-api.example.com
+          WC_CONSUMER_KEY: pr_key
+          WC_CONSUMER_SECRET: pr_secret
+          ADMIN_PASSWORD: pr_password
+
+      - name: Compare Bundle Sizes
+        run: |
+          echo "Bundle size comparison will be implemented with bundle analyzer"
+          echo "This helps identify if the PR significantly increases bundle size"
+
+  security-check:
+    name: Security Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Security Scan
+        run: |
+          # Basic security checks
+          echo "🔍 Scanning for security issues..."
+
+          # Check for potential secrets in code
+          if grep -r -E "(password|secret|key|token)" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" src/ | grep -v "// " | grep -v "/\*" | head -10; then
+            echo "⚠️ Potential secrets found in code - please review"
+            echo "Consider using environment variables for sensitive data"
+          fi
+
+          # Check for console.log statements that might leak data
+          if grep -r "console\." --include="*.ts" --include="*.tsx" src/ | grep -v "console.error\|console.warn" | head -5; then
+            echo "⚠️ Console statements found - ensure no sensitive data is logged"
+          fi
+
+          echo "✅ Basic security checks completed"
+
+  comment-pr:
+    name: Comment on PR
+    runs-on: ubuntu-latest
+    needs: [pr-validation, size-impact, security-check]
+    if: always()
+
+    steps:
+      - name: Comment PR Results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' && comment.body.includes('## PR Quality Checks')
+            );
+
+            const validationResult = '${{ needs.pr-validation.result }}';
+            const sizeResult = '${{ needs.size-impact.result }}';
+            const securityResult = '${{ needs.security-check.result }}';
+
+            const body = `## PR Quality Checks
+
+            | Check | Result |
+            |-------|--------|
+            | PR Validation | ${validationResult === 'success' ? '✅ Passed' : '❌ Failed'} |
+            | Bundle Size Impact | ${sizeResult === 'success' ? '✅ Analyzed' : '❌ Failed'} |
+            | Security Scan | ${securityResult === 'success' ? '✅ Passed' : '❌ Failed'} |
+
+            ${validationResult !== 'success' ? '⚠️ Please fix PR validation issues before merging.' : ''}
+            ${securityResult !== 'success' ? '⚠️ Security scan found potential issues.' : ''}
+
+            *This comment is automatically updated by the PR workflow.*`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }

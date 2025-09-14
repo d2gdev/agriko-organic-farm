@@ -47,14 +47,14 @@ export function useProductFilters({
     if (filters.minPrice !== undefined) {
       filtered = filtered.filter(product => {
         const price = parseFloat(product.price);
-        return !isNaN(price) && price >= filters.minPrice!;
+        return !isNaN(price) && price >= (filters.minPrice || 0);
       });
     }
 
     if (filters.maxPrice !== undefined) {
       filtered = filtered.filter(product => {
         const price = parseFloat(product.price);
-        return !isNaN(price) && price <= filters.maxPrice!;
+        return !isNaN(price) && price <= (filters.maxPrice || Number.MAX_VALUE);
       });
     }
 
@@ -141,7 +141,7 @@ export function useProductFilters({
   };
 
   // Update a specific filter
-  const updateFilter = (key: keyof SearchFilters, value: any) => {
+  const updateFilter = (key: keyof SearchFilters, value: string | number | boolean | string[] | undefined) => {
     setFilters(prev => ({
       ...prev,
       [key]: value

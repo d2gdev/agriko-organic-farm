@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { WCProduct } from '@/types/woocommerce';
 import { cn } from '@/lib/utils';
 import Button from '@/components/Button';
@@ -11,6 +11,10 @@ export interface SearchFilters {
   maxPrice?: number;
   sortBy?: 'name' | 'price_low' | 'price_high' | 'newest' | 'popularity';
   inStock?: boolean;
+  featured?: boolean;
+  organic?: boolean;
+  healthBenefits?: string[];
+  priceRange?: 'all' | 'under-100' | '100-300' | '300-500' | 'over-500';
 }
 
 interface SearchFiltersProps {
@@ -20,64 +24,121 @@ interface SearchFiltersProps {
   className?: string;
 }
 
-export default function SearchFiltersComponent({
+const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
   products,
   filters,
   onFiltersChange,
   className
 }: SearchFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['sort', 'price']));
   const [priceRange, setPriceRange] = useState({
-    min: filters.minPrice?.toString() || '',
-    max: filters.maxPrice?.toString() || ''
+    min: filters.minPrice?.toString() ?? '',
+    max: filters.maxPrice?.toString() ?? ''
   });
 
-  // Get unique categories from products
-  const categories = Array.from(
-    new Set(
-      products.flatMap(product => 
-        product.categories?.map(cat => cat.name) || []
+  // Memoized expensive calculations to prevent unnecessary re-renders
+  const categories = useMemo(() => {
+    return Array.from(
+      new Set(
+        products.flatMap(product =>
+          product.categories?.map(cat => cat.name) ?? []
+        )
       )
-    )
-  ).sort();
+    ).sort();
+  }, [products]);
 
-  // Get price range from products
-  const prices = products.map(p => parseFloat(p.price)).filter(p => !isNaN(p));
-  const minProductPrice = Math.min(...prices);
-  const maxProductPrice = Math.max(...prices);
+  const { prices, minProductPrice, maxProductPrice } = useMemo(() => {
+    const prices = products.map(p => parseFloat(p.price)).filter(p => !isNaN(p));
+    return {
+      prices,
+      minProductPrice: prices.length > 0 ? Math.min(...prices) : 0,
+      maxProductPrice: prices.length > 0 ? Math.max(...prices) : 0
+    };
+  }, [products]);
+
+  const healthBenefits = useMemo(() => {
+    return Array.from(
+      new Set(
+        products.flatMap(product => extractHealthBenefits(product))
+      )
+    ).sort();
+  }, [products]);
+
+  const productCounts = useMemo(() => {
+    return {
+      inStock: products.filter(p => p.stock_status === 'instock').length,
+      featured: products.filter(p => p.featured).length,
+      organic: products.filter(p => isOrganic(p)).length,
+      total: products.length
+    };
+  }, [products]);
 
   // Update price range when filters change
   useEffect(() => {
     setPriceRange({
-      min: filters.minPrice?.toString() || '',
-      max: filters.maxPrice?.toString() || ''
+      min: filters.minPrice?.toString() ?? '',
+      max: filters.maxPrice?.toString() ?? ''
     });
   }, [filters.minPrice, filters.maxPrice]);
 
-  const handleFilterChange = (key: keyof SearchFilters, value: any) => {
+  const handleFilterChange = useCallback((key: keyof SearchFilters, value: string | number | boolean | string[] | undefined) => {
     onFiltersChange({
       ...filters,
       [key]: value
     });
-  };
+  }, [filters, onFiltersChange]);
 
-  const handlePriceRangeSubmit = () => {
+  const handlePriceRangeSubmit = useCallback(() => {
     const minPrice = priceRange.min ? parseFloat(priceRange.min) : undefined;
     const maxPrice = priceRange.max ? parseFloat(priceRange.max) : undefined;
-    
+
     onFiltersChange({
       ...filters,
       minPrice,
       maxPrice
     });
-  };
+  }, [priceRange, filters, onFiltersChange]);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     onFiltersChange({});
     setPriceRange({ min: '', max: '' });
-  };
+  }, [onFiltersChange]);
 
-  const hasActiveFilters = Object.keys(filters).length > 0;
+  const hasActiveFilters = useMemo(() => Object.keys(filters).length > 0, [filters]);
+
+  const toggleSection = useCallback((section: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(section)) {
+        newSet.delete(section);
+      } else {
+        newSet.add(section);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const SectionHeader = React.memo(({ title, section }: { title: string; section: string }) => (
+    <button
+      onClick={() => toggleSection(section)}
+      className="w-full flex items-center justify-between text-sm font-medium text-neutral-900 hover:text-primary-700 transition-colors py-2"
+    >
+      <span>{title}</span>
+      <svg
+        className={cn('w-4 h-4 transition-transform duration-200',
+          expandedSections.has(section) && 'rotate-180'
+        )}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+  ));
+
+  SectionHeader.displayName = 'SectionHeader';
 
   return (
     <div className={cn('bg-white rounded-xl shadow-sm border border-neutral-200', className)}>
@@ -128,100 +189,253 @@ export default function SearchFiltersComponent({
         !isExpanded && 'hidden',
         isExpanded && 'block'
       )}>
-        <div className="p-4 space-y-6">
-          
-          {/* Sort By */}
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-neutral-900">
-              Sort By
-            </label>
-            <select
-              value={filters.sortBy || ''}
-              onChange={(e) => handleFilterChange('sortBy', e.target.value || undefined)}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="">Default</option>
-              <option value="name">Name (A-Z)</option>
-              <option value="price_low">Price (Low to High)</option>
-              <option value="price_high">Price (High to Low)</option>
-              <option value="newest">Newest First</option>
-              <option value="popularity">Most Popular</option>
-            </select>
+        <div className="p-4 space-y-4">
+
+          {/* Sort By Accordion */}
+          <div className="border-b border-neutral-100 pb-4">
+            <SectionHeader title="Sort By" section="sort" />
+            {expandedSections.has('sort') && (
+              <div className="mt-3 space-y-2">
+                {[
+                  { value: '', label: 'Default' },
+                  { value: 'name', label: 'Name (A-Z)' },
+                  { value: 'price_low', label: 'Price: Low to High' },
+                  { value: 'price_high', label: 'Price: High to Low' },
+                  { value: 'newest', label: 'Newest First' },
+                  { value: 'popularity', label: 'Most Popular' }
+                ].map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleFilterChange('sortBy', option.value || undefined)}
+                    className={cn(
+                      'w-full text-left px-3 py-2 rounded-lg text-sm transition-all',
+                      filters.sortBy === option.value
+                        ? 'bg-primary-100 text-primary-800 font-medium'
+                        : 'hover:bg-neutral-50 text-neutral-700'
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Category Filter */}
+          {/* Category Filter Accordion */}
           {categories.length > 0 && (
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-neutral-900">
-                Category
-              </label>
-              <select
-                value={filters.category || ''}
-                onChange={(e) => handleFilterChange('category', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              >
-                <option value="">All Categories</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
+            <div className="border-b border-neutral-100 pb-4">
+              <SectionHeader title="Categories" section="category" />
+              {expandedSections.has('category') && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => handleFilterChange('category', undefined)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-full text-sm font-medium transition-all',
+                      !filters.category
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                    )}
+                  >
+                    All
+                  </button>
+                  {categories.map(category => (
+                    <button
+                      key={category}
+                      onClick={() => handleFilterChange('category', category)}
+                      className={cn(
+                        'px-3 py-1.5 rounded-full text-sm font-medium transition-all',
+                        filters.category === category
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                      )}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
-          {/* Price Range */}
+          {/* Price Range Accordion */}
           {prices.length > 0 && (
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-neutral-900">
-                Price Range
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <input
-                    type="number"
-                    placeholder={`Min (₱${minProductPrice})`}
-                    value={priceRange.min}
-                    onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    min={minProductPrice}
-                    max={maxProductPrice}
-                  />
+            <div className="border-b border-neutral-100 pb-4">
+              <SectionHeader title="Price Range" section="price" />
+              {expandedSections.has('price') && (
+                <div className="mt-3 space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: 'all', label: 'All Prices' },
+                      { value: 'under-100', label: 'Under ₱100' },
+                      { value: '100-300', label: '₱100 - ₱300' },
+                      { value: '300-500', label: '₱300 - ₱500' },
+                      { value: 'over-500', label: 'Over ₱500' }
+                    ].map(range => (
+                      <button
+                        key={range.value}
+                        onClick={() => {
+                          if (range.value === 'all') {
+                            handleFilterChange('minPrice', undefined);
+                            handleFilterChange('maxPrice', undefined);
+                          } else if (range.value === 'under-100') {
+                            handleFilterChange('minPrice', undefined);
+                            handleFilterChange('maxPrice', 100);
+                          } else if (range.value === '100-300') {
+                            handleFilterChange('minPrice', 100);
+                            handleFilterChange('maxPrice', 300);
+                          } else if (range.value === '300-500') {
+                            handleFilterChange('minPrice', 300);
+                            handleFilterChange('maxPrice', 500);
+                          } else if (range.value === 'over-500') {
+                            handleFilterChange('minPrice', 500);
+                            handleFilterChange('maxPrice', undefined);
+                          }
+                        }}
+                        className={cn(
+                          'px-3 py-1.5 rounded-full text-sm font-medium transition-all',
+                          (range.value === 'all' && !filters.minPrice && !filters.maxPrice) ||
+                          (range.value === 'under-100' && !filters.minPrice && filters.maxPrice === 100) ||
+                          (range.value === '100-300' && filters.minPrice === 100 && filters.maxPrice === 300) ||
+                          (range.value === '300-500' && filters.minPrice === 300 && filters.maxPrice === 500) ||
+                          (range.value === 'over-500' && filters.minPrice === 500 && !filters.maxPrice)
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                        )}
+                      >
+                        {range.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-neutral-600">
+                    <span>Custom:</span>
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={priceRange.min}
+                      onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                      className="w-20 px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      min={minProductPrice}
+                      max={maxProductPrice}
+                    />
+                    <span>-</span>
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={priceRange.max}
+                      onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                      className="w-20 px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      min={minProductPrice}
+                      max={maxProductPrice}
+                    />
+                    <button
+                      onClick={handlePriceRangeSubmit}
+                      className="px-3 py-1 border border-primary-600 text-primary-600 text-xs rounded-md hover:bg-primary-50 transition-colors font-medium"
+                    >
+                      Apply
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <input
-                    type="number"
-                    placeholder={`Max (₱${maxProductPrice})`}
-                    value={priceRange.max}
-                    onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    min={minProductPrice}
-                    max={maxProductPrice}
-                  />
-                </div>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handlePriceRangeSubmit}
-                className="w-full"
-              >
-                Apply Price Range
-              </Button>
+              )}
             </div>
           )}
 
-          {/* Stock Status */}
-          <div className="space-y-3">
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={filters.inStock || false}
-                onChange={(e) => handleFilterChange('inStock', e.target.checked || undefined)}
-                className="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500 focus:ring-2"
-              />
-              <span className="text-sm text-neutral-700">In Stock Only</span>
-            </label>
+          {/* Health Benefits Accordion */}
+          {healthBenefits.length > 0 && (
+            <div className="border-b border-neutral-100 pb-4">
+              <SectionHeader title="Health Benefits" section="benefits" />
+              {expandedSections.has('benefits') && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {healthBenefits.slice(0, 8).map(benefit => (
+                    <button
+                      key={benefit}
+                      onClick={() => {
+                        const current = filters.healthBenefits ?? [];
+                        const updated = current.includes(benefit)
+                          ? current.filter(b => b !== benefit)
+                          : [...current, benefit];
+                        handleFilterChange('healthBenefits', updated.length > 0 ? updated : undefined);
+                      }}
+                      className={cn(
+                        'px-3 py-1.5 rounded-full text-sm font-medium transition-all capitalize',
+                        filters.healthBenefits?.includes(benefit)
+                          ? 'bg-green-600 text-white'
+                          : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                      )}
+                    >
+                      {benefit}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Product Options Accordion */}
+          <div className="pb-4">
+            <SectionHeader title="Product Options" section="options" />
+            {expandedSections.has('options') && (
+              <div className="mt-3 space-y-2">
+                <button
+                  onClick={() => handleFilterChange('inStock', filters.inStock ? undefined : true)}
+                  className={cn(
+                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all',
+                    filters.inStock
+                      ? 'bg-primary-100 text-primary-800'
+                      : 'hover:bg-neutral-50 text-neutral-700'
+                  )}
+                >
+                  <span className="text-sm font-medium">In Stock Only</span>
+                  <span className={cn(
+                    'px-2 py-0.5 rounded-full text-xs font-medium',
+                    filters.inStock
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-neutral-100 text-neutral-600'
+                  )}>
+                    {productCounts.inStock}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => handleFilterChange('featured', filters.featured ? undefined : true)}
+                  className={cn(
+                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all',
+                    filters.featured
+                      ? 'bg-primary-100 text-primary-800'
+                      : 'hover:bg-neutral-50 text-neutral-700'
+                  )}
+                >
+                  <span className="text-sm font-medium">⭐ Featured Products</span>
+                  <span className={cn(
+                    'px-2 py-0.5 rounded-full text-xs font-medium',
+                    filters.featured
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-neutral-100 text-neutral-600'
+                  )}>
+                    {productCounts.featured}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => handleFilterChange('organic', filters.organic ? undefined : true)}
+                  className={cn(
+                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all',
+                    filters.organic
+                      ? 'bg-primary-100 text-primary-800'
+                      : 'hover:bg-neutral-50 text-neutral-700'
+                  )}
+                >
+                  <span className="text-sm font-medium">🌿 Organic Certified</span>
+                  <span className={cn(
+                    'px-2 py-0.5 rounded-full text-xs font-medium',
+                    filters.organic
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-neutral-100 text-neutral-600'
+                  )}>
+                    {productCounts.organic}
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
 
         </div>
@@ -244,9 +458,9 @@ export default function SearchFiltersComponent({
               </span>
             )}
             
-            {(filters.minPrice || filters.maxPrice) && (
+            {(filters.minPrice ?? filters.maxPrice) && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                ₱{filters.minPrice || 0} - ₱{filters.maxPrice || '∞'}
+                ₱{filters.minPrice ?? 0} - ₱{filters.maxPrice ?? '∞'}
                 <button
                   onClick={() => {
                     handleFilterChange('minPrice', undefined);
@@ -285,9 +499,88 @@ export default function SearchFiltersComponent({
                 </button>
               </span>
             )}
+
+            {filters.featured && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                Featured
+                <button
+                  onClick={() => handleFilterChange('featured', undefined)}
+                  className="ml-2 text-primary-600 hover:text-primary-800"
+                  aria-label="Remove featured filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+
+            {filters.organic && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                🌿 Organic
+                <button
+                  onClick={() => handleFilterChange('organic', undefined)}
+                  className="ml-2 text-primary-600 hover:text-primary-800"
+                  aria-label="Remove organic filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+
+            {filters.healthBenefits && filters.healthBenefits.length > 0 && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                Health: {filters.healthBenefits.join(', ')}
+                <button
+                  onClick={() => handleFilterChange('healthBenefits', undefined)}
+                  className="ml-2 text-primary-600 hover:text-primary-800"
+                  aria-label="Remove health benefits filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
           </div>
         </div>
       )}
     </div>
   );
+});
+
+SearchFiltersComponent.displayName = 'SearchFiltersComponent';
+
+export default SearchFiltersComponent;
+
+// Helper function to extract health benefits from product data
+function extractHealthBenefits(product: WCProduct): string[] {
+  const text = `${product.name} ${product.description ?? ''} ${product.short_description ?? ''}`.toLowerCase();
+  const benefits: string[] = [];
+
+  const healthKeywords = {
+    'anti-inflammatory': ['anti-inflammatory', 'inflammation', 'reduce inflammation'],
+    'immune support': ['immune', 'immunity', 'immune system', 'boost immunity'],
+    'digestive health': ['digestive', 'digestion', 'gut health', 'stomach'],
+    'heart health': ['heart', 'cardiovascular', 'circulation', 'blood pressure'],
+    'energy boost': ['energy', 'energizing', 'vitality', 'stamina'],
+    'brain health': ['brain', 'cognitive', 'memory', 'mental clarity'],
+    'weight management': ['weight', 'metabolism', 'slimming', 'weight loss'],
+    'antioxidant rich': ['antioxidant', 'antioxidants', 'free radicals'],
+    'blood sugar': ['blood sugar', 'glucose', 'diabetic', 'glycemic'],
+    'skin health': ['skin', 'complexion', 'beauty', 'glowing'],
+    'bone health': ['bone', 'calcium', 'osteoporosis', 'joint'],
+    'respiratory': ['respiratory', 'breathing', 'lungs', 'airways']
+  };
+
+  for (const [benefit, keywords] of Object.entries(healthKeywords)) {
+    if (keywords.some(keyword => text.includes(keyword))) {
+      benefits.push(benefit);
+    }
+  }
+
+  return benefits;
+}
+
+// Helper function to check if product is organic
+function isOrganic(product: WCProduct): boolean {
+  const text = `${product.name} ${product.description ?? ''} ${product.short_description ?? ''}`.toLowerCase();
+  const organicKeywords = ['organic', 'naturally grown', 'pesticide-free', 'chemical-free', 'bio', 'natural'];
+  return organicKeywords.some(keyword => text.includes(keyword));
 }

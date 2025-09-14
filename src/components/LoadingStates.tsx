@@ -134,19 +134,24 @@ export function LoadingSpinner({
 }
 
 // Progressive image component with loading state
+interface ProgressiveImageProps {
+  src: string;
+  alt: string;
+  className?: string;
+  priority?: boolean;
+  width?: number;
+  height?: number;
+}
+
 export function ProgressiveImage({
   src,
   alt,
   className = '',
   priority = false,
+  width,
+  height,
   ...props
-}: {
-  src: string;
-  alt: string;
-  className?: string;
-  priority?: boolean;
-  [key: string]: any;
-}) {
+}: ProgressiveImageProps & Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'className' | 'width' | 'height'>) {
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {/* Skeleton background while loading */}
@@ -156,7 +161,9 @@ export function ProgressiveImage({
       <Image
         src={src}
         alt={alt}
-        fill
+        fill={!width && !height} // Use fill when width and height are not specified
+        width={width}
+        height={height}
         className="relative z-10 object-cover transition-opacity duration-300"
         priority={priority}
         onLoad={(e) => {
@@ -184,8 +191,7 @@ export function LoadingButton({
   disabled?: boolean;
   className?: string;
   onClick?: (e: React.MouseEvent) => void | Promise<void>;
-  [key: string]: any;
-}) {
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'className' | 'onClick' | 'disabled'>) {
   return (
     <button
       className={`${className} flex items-center justify-center gap-2 relative`}

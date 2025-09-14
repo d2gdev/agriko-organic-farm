@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation';
+import { logger } from '@/lib/logger';
+
 import Image from 'next/image';
 import { Suspense } from 'react';
 import { 
@@ -9,13 +11,16 @@ import {
   isProductInStock,
   stripHtml 
 } from '@/lib/woocommerce';
+import { createSafeHtml, sanitizeHtml } from '@/lib/sanitize';
 import { WCProduct } from '@/types/woocommerce';
 import AddToCartButton from './AddToCartButton';
 import ProductGallery from './ProductGallery';
 import RelatedProducts from './RelatedProducts';
 import Link from 'next/link';
 import Breadcrumb from '@/components/Breadcrumb';
-import ErrorBoundary from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import ProductAnalytics from '@/components/ProductAnalytics';
+import ProductReviews from './ProductReviews';
 
 interface ProductPageProps {
   params: Promise<{
@@ -30,7 +35,7 @@ export async function generateStaticParams() {
     
     // If no slugs (API unavailable during build), provide fallback slugs
     if (slugs.length === 0) {
-      console.warn('No product slugs available, using fallback slugs for static export');
+      logger.warn('No product slugs available, using fallback slugs for static export');
       return [
         { slug: 'honey' },
         { slug: 'black-rice' },
@@ -43,7 +48,7 @@ export async function generateStaticParams() {
       slug: slug,
     }));
   } catch (error) {
-    console.error('Error generating static params:', error);
+    logger.error('Error generating static params:', error as Record<string, unknown>);
     // Provide fallback slugs to prevent build failure
     return [
       { slug: 'honey' },
@@ -99,7 +104,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
       },
     };
   } catch (error) {
-    console.error('Error generating metadata:', error);
+    logger.error('Error generating metadata:', error as Record<string, unknown>);
     return {
       title: 'Product - Agriko',
       description: 'Quality agricultural products from Agriko',
@@ -142,7 +147,7 @@ async function ProductContent({ slug }: { slug: string }) {
   try {
     product = await getProductBySlug(slug);
   } catch (error) {
-    console.error('Failed to fetch product:', error);
+    logger.error('Failed to fetch product:', error as Record<string, unknown>);
     
     // Return an error page instead of throwing
     return (
@@ -273,11 +278,14 @@ async function ProductContent({ slug }: { slug: string }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       
+      {/* Track product view analytics */}
+      <ProductAnalytics product={product} />
+      
       {/* Breadcrumbs */}
       <Breadcrumb 
         items={[
           { name: 'Products', href: '/' },
-          ...(product.categories && product.categories.length > 0 
+          ...(product.categories && product.categories.length > 0 && product.categories[0]
             ? [{ name: product.categories[0].name }] 
             : []
           ),
@@ -351,7 +359,7 @@ async function ProductContent({ slug }: { slug: string }) {
             {product.short_description && (
               <div 
                 className="prose prose-sm text-gray-700"
-                dangerouslySetInnerHTML={{ __html: product.short_description }}
+                dangerouslySetInnerHTML={createSafeHtml(product.short_description, 'default')}
               />
             )}
 
@@ -402,13 +410,20 @@ async function ProductContent({ slug }: { slug: string }) {
             <h2 className="text-heading-2 text-gray-900 mb-6">Product Details</h2>
             <div 
               className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: product.description }}
+              dangerouslySetInnerHTML={createSafeHtml(product.description, 'default')}
             />
           </div>
         )}
 
+        {/* Reviews Section */}
+        <div className="mt-16 border-t border-gray-200 pt-16">
+          <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg" />}>
+            <ProductReviews productId={product.id} productName={product.name} />
+          </Suspense>
+        </div>
+
         {/* Related Products */}
-        {product.categories && product.categories.length > 0 && (
+        {product.categories && product.categories.length > 0 && product.categories[0] && (
           <div className="mt-16">
             <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg" />}>
               <RelatedProducts 
