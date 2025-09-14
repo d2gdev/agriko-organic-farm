@@ -1,0 +1,33 @@
+name: Test Deployment
+
+on:
+  workflow_dispatch:
+
+env:
+  DEPLOY_PATH: '/var/www/shop'
+
+jobs:
+  deploy:
+    name: Test SSH Connection and Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Test SSH Connection
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT || 22 }}
+          script: |
+            echo "SSH connection successful!"
+            echo "Current user: $(whoami)"
+            echo "Server date: $(date)"
+            ls -la /var/www/shop/ | head -3
+            echo "Test file creation..."
+            echo "Deployment test at $(date)" | sudo tee /tmp/deployment-test.log
+            echo "Test completed successfully!"
