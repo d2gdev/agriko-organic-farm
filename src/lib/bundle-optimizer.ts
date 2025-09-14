@@ -173,7 +173,7 @@ export class BundleOptimizer {
               const className = element.className;
 
               // More robust className handling
-              if (typeof className === 'string') {
+              if (typeof className === 'string' && className) {
                 classes = className.split(' ');
               } else if (className && typeof className === 'object') {
                 // Handle SVGAnimatedString
@@ -185,8 +185,8 @@ export class BundleOptimizer {
                 }
                 // Handle DOMTokenList (modern browsers)
                 else if ('toString' in className && typeof (className as Record<string, unknown>).toString === 'function') {
-                  const classStr = (className as Record<string, unknown>).toString();
-                  if (classStr) {
+                  const classStr = String((className as Record<string, unknown>).toString());
+                  if (classStr && typeof classStr === 'string') {
                     classes = classStr.split(' ');
                   }
                 }

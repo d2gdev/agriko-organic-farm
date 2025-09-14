@@ -4,15 +4,13 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 const nextConfig = {
-  // Enable static export for Apache2 deployment in production only
-  // For development, we need API routes for semantic search
-  // Only enable export if we're not using API routes
-  ...(process.env.NODE_ENV === 'production' && process.env.ENABLE_STATIC_EXPORT === 'true' ? { output: 'export' } : {}),
+  // Dynamic Next.js server - no static export
+  // Server will run behind Apache reverse proxy
   trailingSlash: true,
-  
+
   images: {
-    // Only unoptimized for static export in production
-    unoptimized: process.env.NODE_ENV === 'production' && process.env.ENABLE_STATIC_EXPORT === 'true',
+    // Images will be optimized by Next.js server
+    unoptimized: false,
     remotePatterns: [
       {
         protocol: 'https',
@@ -33,12 +31,10 @@ const nextConfig = {
     minimumCacheTTL: 86400, // 24 hours cache for better performance
     dangerouslyAllowSVG: false, // Disabled for security - SVGs can contain malicious scripts
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    loader: process.env.NODE_ENV === 'production' && process.env.ENABLE_STATIC_EXPORT === 'true' ? 'custom' : 'default',
-    loaderFile: process.env.NODE_ENV === 'production' && process.env.ENABLE_STATIC_EXPORT === 'true' ? './src/lib/imageLoader.js' : undefined,
   },
-  
-  // Asset prefix for production deployment
-  assetPrefix: process.env.NODE_ENV === 'production' ? 'https://shop.agrikoph.com' : '',
+
+  // No asset prefix needed - Apache will proxy everything
+  assetPrefix: '',
   
   compress: true,
   poweredByHeader: false, // Remove X-Powered-By header for security and performance
