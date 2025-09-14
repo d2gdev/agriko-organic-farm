@@ -105,7 +105,10 @@
       "Bash(ANALYZE=true npm run build)",
       "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/lib/__tests__/cache-manager.test.ts src/lib/__tests__/retry-handler.test.ts --max-warnings=0)",
       "Bash(npx jest:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "WebFetch(domain:github.com)",
+      "Read(//c/Users/Sean/.ssh/**)",
+      "mcp__github-official__create_or_update_file"
     ],
     "deny": [],
     "ask": []

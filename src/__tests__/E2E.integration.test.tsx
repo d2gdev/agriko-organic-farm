@@ -90,7 +90,7 @@ const mockProducts: WCProduct[] = [
     id: 1,
     name: 'Organic Brown Rice',
     slug: 'organic-brown-rice',
-    price: 15.99,
+    price: '15.99',
     regular_price: '15.99',
     sale_price: '',
     on_sale: false,
@@ -110,6 +110,11 @@ const mockProducts: WCProduct[] = [
         id: 1,
         name: 'Rice',
         slug: 'rice',
+        description: '',
+        display: 'default',
+        image: null,
+        menu_order: 0,
+        count: 0,
       },
     ],
     tags: [],
@@ -121,12 +126,20 @@ const mockProducts: WCProduct[] = [
     stock_quantity: null,
     featured: false,
     catalog_visibility: 'visible',
+    permalink: '/product/organic-brown-rice',
+    status: 'publish',
+    sku: 'ORG-RICE-001',
+    meta_data: [],
+    average_rating: '0',
+    rating_count: 0,
+    date_created: '2024-01-01T00:00:00',
+    date_modified: '2024-01-01T00:00:00',
   },
   {
     id: 2,
     name: 'Organic Honey',
     slug: 'organic-honey',
-    price: 25.50,
+    price: '25.50',
     regular_price: '25.50',
     sale_price: '',
     on_sale: false,
@@ -146,6 +159,11 @@ const mockProducts: WCProduct[] = [
         id: 3,
         name: 'Blends',
         slug: 'blends',
+        description: '',
+        display: 'default',
+        image: null,
+        menu_order: 0,
+        count: 0,
       },
     ],
     tags: [],
@@ -157,11 +175,31 @@ const mockProducts: WCProduct[] = [
     stock_quantity: null,
     featured: false,
     catalog_visibility: 'visible',
+    permalink: '/product/organic-honey',
+    status: 'publish',
+    sku: 'ORG-HONEY-001',
+    meta_data: [],
+    average_rating: '0',
+    rating_count: 0,
+    date_created: '2024-01-01T00:00:00',
+    date_modified: '2024-01-01T00:00:00',
   },
 ];
 
+// Define proper types for cart items
+interface CartItem {
+  product: WCProduct;
+  quantity: number;
+  variation: any;
+}
+
+interface CartState {
+  items: CartItem[];
+  total: number;
+}
+
 // Helper to create a full cart context provider
-const createCartProvider = (initialState = { items: [], total: 0 }) => {
+const createCartProvider = (initialState: CartState = { items: [], total: 0 }) => {
   return function TestCartProvider({ children }: { children: React.ReactNode }) {
     const [state, setState] = React.useState(initialState);
 
@@ -177,13 +215,13 @@ const createCartProvider = (initialState = { items: [], total: 0 }) => {
           );
           return {
             items: updatedItems,
-            total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
+            total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price) * item.quantity), 0),
           };
         } else {
           const newItems = [...prevState.items, { product, quantity, variation: null }];
           return {
             items: newItems,
-            total: newItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
+            total: newItems.reduce((sum, item) => sum + (parseFloat(item.product.price) * item.quantity), 0),
           };
         }
       });
@@ -199,7 +237,7 @@ const createCartProvider = (initialState = { items: [], total: 0 }) => {
 
         return {
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
+          total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price) * item.quantity), 0),
         };
       });
     });
@@ -209,7 +247,7 @@ const createCartProvider = (initialState = { items: [], total: 0 }) => {
         const updatedItems = prevState.items.filter(item => item.product.id !== productId);
         return {
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0),
+          total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price) * item.quantity), 0),
         };
       });
     });
