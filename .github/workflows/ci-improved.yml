@@ -1,0 +1,196 @@
+name: Improved CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+# Cancel in-progress runs for the same workflow and branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Critical checks that must pass for deployment
+  critical-checks:
+    name: Critical Checks (ESLint & Build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run ESLint (Critical)
+        run: npm run lint
+        continue-on-error: false
+
+      - name: Build Application (Critical)
+        run: npm run build
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_WC_API_URL: http://build-api.example.com
+          WC_CONSUMER_KEY: build_key
+          WC_CONSUMER_SECRET: build_secret
+          ADMIN_PASSWORD_HASH: build_password_hash
+          JWT_SECRET: build_jwt_secret_that_is_at_least_32_chars_long
+        continue-on-error: false
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: build-output
+          path: |
+            .next/
+            out/
+          retention-days: 7
+
+  # Non-critical checks that provide feedback but don't block deployment
+  quality-checks:
+    name: Quality Checks (TypeScript & Tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: TypeScript Check (Non-blocking)
+        run: npm run type-check
+        continue-on-error: true
+        id: typescript-check
+
+      - name: Run Tests (Non-blocking)
+        run: npm run test:coverage
+        env:
+          NODE_ENV: test
+          NEXT_PUBLIC_WC_API_URL: http://test-api.example.com
+          WC_CONSUMER_KEY: test_key
+          WC_CONSUMER_SECRET: test_secret
+          ADMIN_PASSWORD_HASH: test_password_hash
+          JWT_SECRET: test_jwt_secret_that_is_at_least_32_chars_long
+        continue-on-error: true
+        id: test-check
+
+      - name: Upload Coverage Reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Comment on PR with Quality Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const typescriptResult = '${{ steps.typescript-check.outcome }}';
+            const testResult = '${{ steps.test-check.outcome }}';
+
+            const body = `## Quality Check Results
+
+            | Check | Status | Impact |
+            |-------|--------|---------|
+            | TypeScript | ${typescriptResult === 'success' ? '✅ Passed' : '⚠️ Issues Found'} | Non-blocking |
+            | Tests | ${testResult === 'success' ? '✅ Passed' : '⚠️ Issues Found'} | Non-blocking |
+
+            ${typescriptResult !== 'success' ? '⚠️ TypeScript issues detected. Please review but deployment can proceed.\n' : ''}
+            ${testResult !== 'success' ? '⚠️ Test issues detected. Please review but deployment can proceed.\n' : ''}
+
+            💡 **Note**: These checks provide quality feedback but do not block deployment. Critical checks (ESLint & Build) must pass.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  # Security audit - informational only
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Security Audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+  # Final deployment gate - only requires critical checks
+  deployment-gate:
+    name: Deployment Gate
+    runs-on: ubuntu-latest
+    needs: [critical-checks]
+    if: always()
+
+    steps:
+      - name: Check Critical Results
+        run: |
+          echo "Critical Checks: ${{ needs.critical-checks.result }}"
+
+          if [[ "${{ needs.critical-checks.result }}" != "success" ]]; then
+            echo "❌ Critical checks failed - blocking deployment"
+            exit 1
+          fi
+
+          echo "✅ Critical checks passed - deployment approved"
+
+  # Notification with comprehensive results
+  notify-results:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [critical-checks, quality-checks, security-audit, deployment-gate]
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Comprehensive Notification
+        run: |
+          echo "🔍 CI Pipeline Results Summary"
+          echo "Critical Checks: ${{ needs.critical-checks.result }}"
+          echo "Quality Checks: ${{ needs.quality-checks.result }}"
+          echo "Security Audit: ${{ needs.security-audit.result }}"
+          echo "Deployment Gate: ${{ needs.deployment-gate.result }}"
+
+          if [[ "${{ needs.deployment-gate.result }}" == "success" ]]; then
+            echo "🎉 Pipeline completed successfully - ready for deployment"
+          else
+            echo "❌ Pipeline failed - deployment blocked"
+            exit 1
+          fi

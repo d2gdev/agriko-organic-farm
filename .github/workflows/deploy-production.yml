@@ -1,0 +1,215 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment even if no changes'
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+
+env:
+  DEPLOY_PATH: '/var/www/shop'
+
+jobs:
+  deploy:
+    name: Deploy Pre-built Files
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Verify Build Directory Exists
+        run: |
+          if [ ! -d "out" ]; then
+            echo "❌ No 'out' directory found - please build locally first and commit the files"
+            echo "Run: npm run build && git add out/ && git commit -m 'Add build files' && git push"
+            exit 1
+          fi
+
+          if [ ! -f "out/index.html" ]; then
+            echo "❌ Build incomplete - no index.html found"
+            ls -la out/
+            exit 1
+          fi
+
+          echo "✅ Pre-built files found"
+          echo "Build size: $(du -sh out/ | cut -f1)"
+          echo "File count: $(find out/ -type f | wc -l)"
+
+      - name: Create Deployment Archive
+        run: |
+          tar -czf deployment.tar.gz out/
+          echo "Archive size: $(du -sh deployment.tar.gz | cut -f1)"
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT || 22 }}
+          timeout: 300s
+          script: |
+            set -e
+
+            echo "🚀 Starting deployment to production server..."
+
+            # Create backup of current deployment
+            if [ -d "${{ env.DEPLOY_PATH }}" ]; then
+              echo "📦 Creating backup..."
+              sudo cp -r ${{ env.DEPLOY_PATH }} /tmp/shop-backup-$(date +%Y%m%d_%H%M%S) || echo "⚠️  Backup failed, continuing..."
+            fi
+
+            # Create deployment directory
+            sudo mkdir -p ${{ env.DEPLOY_PATH }}
+
+            # Clean previous deployment
+            echo "🧹 Cleaning previous deployment..."
+            sudo rm -rf ${{ env.DEPLOY_PATH }}/*
+
+            echo "✅ Server prepared for deployment"
+
+      - name: Upload Files to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT || 22 }}
+          source: "deployment.tar.gz"
+          target: "/tmp/"
+          timeout: 300s
+
+      - name: Extract and Configure Files
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT || 22 }}
+          timeout: 300s
+          script: |
+            set -e
+
+            echo "📁 Extracting deployment files..."
+            cd /tmp
+            tar -xzf deployment.tar.gz
+
+            echo "📋 Moving files to web directory..."
+            sudo cp -r out/* ${{ env.DEPLOY_PATH }}/
+
+            echo "🔐 Setting correct permissions..."
+            sudo chown -R www-data:www-data ${{ env.DEPLOY_PATH }}
+            sudo chmod -R 755 ${{ env.DEPLOY_PATH }}
+
+            # Create .htaccess for better performance and security
+            sudo tee ${{ env.DEPLOY_PATH }}/.htaccess > /dev/null << 'EOF'
+            # Enable compression
+            <IfModule mod_deflate.c>
+              AddOutputFilterByType DEFLATE text/plain
+              AddOutputFilterByType DEFLATE text/html
+              AddOutputFilterByType DEFLATE text/xml
+              AddOutputFilterByType DEFLATE text/css
+              AddOutputFilterByType DEFLATE application/xml
+              AddOutputFilterByType DEFLATE application/xhtml+xml
+              AddOutputFilterByType DEFLATE application/rss+xml
+              AddOutputFilterByType DEFLATE application/javascript
+              AddOutputFilterByType DEFLATE application/x-javascript
+            </IfModule>
+
+            # Cache static assets
+            <IfModule mod_expires.c>
+              ExpiresActive on
+              ExpiresByType text/css "access plus 1 year"
+              ExpiresByType application/javascript "access plus 1 year"
+              ExpiresByType image/png "access plus 1 year"
+              ExpiresByType image/jpg "access plus 1 year"
+              ExpiresByType image/jpeg "access plus 1 year"
+              ExpiresByType image/gif "access plus 1 year"
+              ExpiresByType image/webp "access plus 1 year"
+              ExpiresByType image/avif "access plus 1 year"
+            </IfModule>
+
+            # Security headers
+            <IfModule mod_headers.c>
+              Header always set X-Content-Type-Options nosniff
+              Header always set X-Frame-Options SAMEORIGIN
+              Header always set X-XSS-Protection "1; mode=block"
+              Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+            </IfModule>
+
+            # Handle Next.js trailing slashes
+            RewriteEngine On
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_URI} !/$
+            RewriteRule ^(.*)$ /$1/ [R=301,L]
+            EOF
+
+            sudo chown www-data:www-data ${{ env.DEPLOY_PATH }}/.htaccess
+
+            echo "🧹 Cleaning up temporary files..."
+            rm -f /tmp/deployment.tar.gz
+            rm -rf /tmp/out
+
+            echo "🔄 Reloading Apache configuration..."
+            sudo systemctl reload apache2 || echo "⚠️  Apache reload failed, but deployment may still work"
+
+            echo "✅ Deployment completed successfully!"
+            echo "📊 Final stats:"
+            echo "  - Files deployed: $(find ${{ env.DEPLOY_PATH }} -type f | wc -l)"
+            echo "  - Total size: $(du -sh ${{ env.DEPLOY_PATH }} | cut -f1)"
+            echo "  - Permissions: $(ls -la ${{ env.DEPLOY_PATH }} | head -2 | tail -1)"
+
+      - name: Verify Deployment
+        run: |
+          echo "🔍 Verifying deployment..."
+
+          # Wait a moment for server to process
+          sleep 10
+
+          # Check if site is accessible
+          HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}\n" https://shop.agrikoph.com/ || echo "000")
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Deployment verification successful!"
+            echo "🌐 Site is accessible at https://shop.agrikoph.com/"
+          else
+            echo "⚠️  Site returned HTTP $HTTP_CODE"
+            echo "🔧 This might be normal if DNS/proxy needs time to update"
+          fi
+
+      - name: Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ✅ Successful" >> $GITHUB_STEP_SUMMARY
+          echo "**Server:** ${{ env.SERVER_HOST }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deploy Path:** ${{ env.DEPLOY_PATH }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**🌐 Live Site:** https://shop.agrikoph.com/" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Deployment completed at $(date -u)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "## ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please check the workflow logs for details." >> $GITHUB_STEP_SUMMARY
+          echo "Failed at $(date -u)" >> $GITHUB_STEP_SUMMARY

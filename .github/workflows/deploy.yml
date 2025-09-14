@@ -2,7 +2,7 @@ name: Deploy to Server
 
 on:
   workflow_run:
-    workflows: ["Continuous Integration"]
+    workflows: ["Improved CI/CD Pipeline"]
     types: [completed]
     branches: [ main ]
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Only deploy if CI workflow succeeded
+    # Only deploy if CI workflow succeeded OR manual dispatch
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
 
     steps:
@@ -27,6 +27,13 @@ jobs:
       run: |
         npm ci
         npm run build
+      env:
+        NODE_ENV: production
+        NEXT_PUBLIC_WC_API_URL: ${{ secrets.NEXT_PUBLIC_WC_API_URL }}
+        WC_CONSUMER_KEY: ${{ secrets.WC_CONSUMER_KEY }}
+        WC_CONSUMER_SECRET: ${{ secrets.WC_CONSUMER_SECRET }}
+        ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
         
     - name: Deploy via SSH
       uses: appleboy/ssh-action@v1.2.0

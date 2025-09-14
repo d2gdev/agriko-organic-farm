@@ -60,10 +60,11 @@ jobs:
         env:
           NODE_ENV: test
           # Mock environment variables for testing
-          WC_API_URL: http://test-api.example.com
+          NEXT_PUBLIC_WC_API_URL: http://test-api.example.com
           WC_CONSUMER_KEY: test_key
           WC_CONSUMER_SECRET: test_secret
-          ADMIN_PASSWORD: test_password
+          ADMIN_PASSWORD_HASH: test_password_hash
+          JWT_SECRET: test_jwt_secret_that_is_at_least_32_chars_long
 
       - name: Upload Coverage Reports
         uses: codecov/codecov-action@v4
@@ -98,10 +99,11 @@ jobs:
         env:
           NODE_ENV: production
           # Mock environment variables for build
-          WC_API_URL: http://build-api.example.com
+          NEXT_PUBLIC_WC_API_URL: http://build-api.example.com
           WC_CONSUMER_KEY: build_key
           WC_CONSUMER_SECRET: build_secret
-          ADMIN_PASSWORD: build_password
+          ADMIN_PASSWORD_HASH: build_password_hash
+          JWT_SECRET: build_jwt_secret_that_is_at_least_32_chars_long
 
       - name: Check Build Output
         run: |
@@ -144,10 +146,11 @@ jobs:
         run: npm run analyze
         env:
           NODE_ENV: production
-          WC_API_URL: http://analyze-api.example.com
+          NEXT_PUBLIC_WC_API_URL: http://analyze-api.example.com
           WC_CONSUMER_KEY: analyze_key
           WC_CONSUMER_SECRET: analyze_secret
-          ADMIN_PASSWORD: analyze_password
+          ADMIN_PASSWORD_HASH: analyze_password_hash
+          JWT_SECRET: analyze_jwt_secret_that_is_at_least_32_chars
 
       - name: Upload Bundle Analysis
         uses: actions/upload-artifact@v4
