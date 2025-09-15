@@ -11,6 +11,7 @@ import { useProductFilters } from '@/hooks/useProductFilters';
 import SearchFiltersComponent, { SearchFilters } from '@/components/SearchFilters';
 import SearchAutocomplete from '@/components/SearchAutocomplete';
 import Button from '@/components/Button';
+import SearchLoadingState from '@/components/SearchLoadingState';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -54,8 +55,18 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
 
   // Handle search with debouncing
   useEffect(() => {
-    setIsLoading(true);
-    
+    if (!query.trim()) {
+      setSearchQuery('');
+      setIsLoading(false);
+      return;
+    }
+
+    // Only show loading if query changed significantly
+    const shouldShowLoading = query.length > 2;
+    if (shouldShowLoading) {
+      setIsLoading(true);
+    }
+
     // Debounce search
     const timeoutId = setTimeout(() => {
       setSearchQuery(query);
@@ -235,10 +246,7 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
                 aria-label="Search results"
               >
                 {isLoading ? (
-                  <div className="p-8 text-center">
-                    <div className="animate-spin inline-block w-6 h-6 border-2 border-current border-t-transparent text-primary-600 rounded-full"></div>
-                    <p className="mt-2 text-gray-500">Searching...</p>
-                  </div>
+                  <SearchLoadingState message="Searching products..." />
                 ) : (query || hasActiveFilters) && displayResults.length === 0 ? (
                   <div className="p-8 text-center">
                     <div className="text-gray-400 mb-4">

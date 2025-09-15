@@ -81,9 +81,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: process.env.NODE_ENV === 'development'
-              ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://agrikoph.com https://shop.agrikoph.com https://api.openai.com https://api.pinecone.io https://*.googleapis.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self';"
-              : "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://agrikoph.com https://shop.agrikoph.com https://api.openai.com https://api.pinecone.io https://*.googleapis.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self';"
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.openai.com https://api.pinecone.io https://*.googleapis.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self';"
           }
         ],
       },

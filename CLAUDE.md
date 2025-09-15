@@ -198,3 +198,4 @@ Required environment variables:
   - Analyze memory, performance, and security implications
   - Fix implementation before considering test adjustments
   - Document learnings for organizational knowledge
+- we will never use sentry, please stop mentioning it.

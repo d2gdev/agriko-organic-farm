@@ -10,6 +10,7 @@ import { formatPrice, getProductMainImage, stripHtml } from '@/lib/utils';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import Button from '@/components/Button';
 import { ecommerceEvent } from '@/lib/gtag';
+import SearchLoadingState from '@/components/SearchLoadingState';
 
 interface SemanticResult {
   productId: number;
@@ -266,10 +267,7 @@ export default function SemanticSearchModal({ isOpen, onClose }: SemanticSearchM
               aria-label="Semantic search results"
             >
               {isLoading ? (
-                <div className="p-8 text-center">
-                  <div className="animate-spin inline-block w-8 h-8 border-3 border-current border-t-transparent text-primary-600 rounded-full"></div>
-                  <p className="mt-3 text-gray-500">🧠 AI is finding the best matches...</p>
-                </div>
+                <SearchLoadingState message="🧠 AI is finding the best matches..." />
               ) : query && results.length === 0 ? (
                 <div className="p-8 text-center">
                   <div className="text-gray-400 mb-4">

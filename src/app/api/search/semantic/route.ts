@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
-
-import { searchByText } from '@/lib/pinecone';
-import { semanticSearchApiSchema, semanticSearchBodySchema } from '@/lib/validation';
+import { improvedSearch, searchHealthProducts, searchSeasonalProducts } from '@/lib/improved-search';
+import { hybridQdrantSearch, checkQdrantHealth } from '@/lib/qdrant';
 import { checkEndpointRateLimit, createRateLimitResponse } from '@/lib/rate-limit';
 
 // Simple in-memory cache for GET queries (short TTL)
@@ -29,109 +28,134 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    
-    // Parse and validate query parameters
-    const rawParams = {
-      q: searchParams.get('q'),
-      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit') ?? '10') : 10,
-      category: searchParams.get('category'),
-      inStock: searchParams.get('inStock') === 'true' ? true : searchParams.get('inStock') === 'false' ? false : undefined,
-      minScore: searchParams.get('minScore') ? parseFloat(searchParams.get('minScore') ?? '0.3') : 0.3
-    };
 
-    // Validate with Zod schema
-    const validation = semanticSearchApiSchema.safeParse(rawParams);
-    if (!validation.success) {
+    const query = searchParams.get('q') ?? '';
+    const limit = Math.min(parseInt(searchParams.get('limit') ?? '10'), 50);
+    const category = searchParams.get('category') ?? undefined;
+    const inStock = searchParams.get('inStock') === 'true' ? true :
+                    searchParams.get('inStock') === 'false' ? false : undefined;
+    const searchType = searchParams.get('type') ?? 'general';
+
+    if (!query.trim() && searchType === 'general') {
       return NextResponse.json(
-        { 
-          error: 'Invalid parameters', 
-          details: validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`)
-        },
+        { error: 'Query parameter is required' },
         { status: 400 }
       );
     }
 
-    const { q: query, limit, category, inStock, minScore } = validation.data;
-
-    // Apply an explicit upper bound even after validation
-    const safeLimit = Math.min(limit, 50);
-
     // Check cache
-    const cacheKey = JSON.stringify({ q: query, limit: safeLimit, category, inStock, minScore });
+    const cacheKey = JSON.stringify({ q: query, limit, category, inStock, searchType });
     const cached = getCache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
       return NextResponse.json(cached.body);
     }
 
-    // Build filter for search
-    const filter: Record<string, unknown> = {};
-    
-    if (category) {
-      filter.categories = { $in: [category] };
-    }
-    
-    if (inStock === true) {
-      filter.inStock = { $eq: true };
+    logger.info(`🔍 Semantic search for: "${query}" (type: ${searchType})`);
+
+    let searchResults;
+
+    // Try Qdrant first if available
+    const qdrantHealthy = await checkQdrantHealth();
+
+    if (qdrantHealthy && searchType === 'general') {
+      // Use Qdrant hybrid search for general queries
+      const qdrantResults = await hybridQdrantSearch(query, {
+        limit,
+        category,
+        inStock,
+        semanticWeight: 0.7
+      });
+
+      searchResults = qdrantResults.map(result => ({
+        product: {
+          id: result.id as number,
+          slug: result.payload.slug,
+          name: result.payload.name,
+          price: String(result.payload.price),
+          sale_price: result.payload.sale_price ? String(result.payload.sale_price) : '',
+          categories: result.payload.categories?.map((c: string) => ({ name: c, slug: c })) ?? [],
+          tags: result.payload.tags?.map((t: string) => ({ name: t, slug: t })) ?? [],
+          in_stock: result.payload.in_stock,
+          stock_status: result.payload.in_stock ? 'instock' : 'outofstock', // Add stock_status field
+          featured: result.payload.featured,
+          images: result.payload.image ? [{ src: result.payload.image }] : [],
+          short_description: result.payload.short_description,
+          average_rating: result.payload.average_rating,
+          total_sales: result.payload.total_sales
+        },
+        score: result.score,
+        matchedTerms: [result.matchType as string]
+      }));
+    } else {
+      // Fallback to improved text search
+      switch (searchType) {
+        case 'health':
+          searchResults = await searchHealthProducts(query, limit);
+          break;
+        case 'seasonal':
+          searchResults = await searchSeasonalProducts(limit);
+          break;
+        default:
+          searchResults = await improvedSearch(query, {
+            limit,
+            category,
+            inStock,
+            sortBy: 'relevance'
+          });
+      }
     }
 
-    logger.info(`🔍 Semantic search for: "${query}" (threshold: ${minScore})`);
-    
-    const results = await searchByText(query, {
-      topK: safeLimit,
-      filter: Object.keys(filter).length > 0 ? filter : undefined,
-      includeMetadata: true,
-      minScore,
-    });
-
-    if (!results.success) {
-      return NextResponse.json(
-        { error: 'Search failed', details: results.error },
-        { status: 500 }
-      );
-    }
-
-    // Check if we have matches before accessing them
-    if (!results.matches || results.matches.length === 0) {
-      const body = {
-        success: true,
-        query,
-        results: [],
-        count: 0,
-        totalMatches: 0,
-        searchType: 'semantic',
-      };
-      getCache.set(cacheKey, { body, expiresAt: Date.now() + GET_TTL_MS });
-      return NextResponse.json(body);
-    }
-
-    // Transform results for frontend
-    const products = results.matches.map((match: { metadata?: Record<string, unknown>; score?: number }) => ({
-      productId: match.metadata?.productId,
-      slug: match.metadata?.slug,
-      title: match.metadata?.title || 'Untitled Product',
-      price: match.metadata?.price,
-      categories: match.metadata?.categories || [],
-      inStock: match.metadata?.inStock || false,
-      featured: match.metadata?.featured || false,
-      relevanceScore: match.score || 0,
-      timestamp: match.metadata?.timestamp,
+    // Format results for frontend
+    const formattedResults = searchResults.map(result => ({
+      productId: result.product.id,
+      slug: result.product.slug,
+      title: result.product.name,
+      price: result.product.price,
+      categories: result.product.categories?.map((c: any) => c.name) ?? [],
+      inStock: (result.product as any).in_stock ?? (result.product as any).stock_status === 'instock',
+      featured: (result.product as any).featured ?? false,
+      relevanceScore: result.score,
+      matchedTerms: result.matchedTerms,
+      image: result.product.images?.[0]?.src ?? '',
+      shortDescription: result.product.short_description?.replace(/<[^>]*>/g, '').slice(0, 100),
+      timestamp: new Date().toISOString()
     }));
 
-    const body = {
+    const responseBody: SearchResultData = {
       success: true,
       query,
-      results: products,
-      count: products.length,
-      totalMatches: results.matches.length,
-      searchType: 'semantic',
+      results: formattedResults,
+      count: formattedResults.length,
+      searchType: searchType === 'general' ? 'semantic' : searchType,
+      filters: { category, inStock },
+      totalMatches: searchResults.length
     };
-    getCache.set(cacheKey, { body, expiresAt: Date.now() + GET_TTL_MS });
-    return NextResponse.json(body);
 
+    // Cache the result
+    getCache.set(cacheKey, {
+      body: responseBody,
+      expiresAt: Date.now() + GET_TTL_MS
+    });
+
+    // Clean old cache entries periodically
+    if (Math.random() < 0.1) {
+      const now = Date.now();
+      for (const [key, entry] of getCache.entries()) {
+        if (entry.expiresAt < now) {
+          getCache.delete(key);
+        }
+      }
+    }
+
+    return NextResponse.json(responseBody);
   } catch (error) {
-    logger.error('❌ Semantic search API error:', error as Record<string, unknown>);
+    logger.error('Semantic search error:', error as Record<string, unknown>);
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        success: false,
+        error: 'Search failed',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
@@ -139,100 +163,85 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting for search endpoints
+    // Rate limiting
     const rl = checkEndpointRateLimit(request, 'search');
     if (!rl.success) {
       return createRateLimitResponse(rl);
     }
 
     const body = await request.json();
-    const validation = semanticSearchBodySchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(
-        { 
-          error: 'Invalid request data',
-          details: validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`)
-        },
-        { status: 400 }
-      );
+
+    const {
+      query = '',
+      limit = 10,
+      filters = {},
+      searchType = 'general'
+    } = body;
+
+    const safeLimit = Math.min(limit, 50);
+
+    logger.info(`🔍 POST semantic search: "${query}" (type: ${searchType})`);
+
+    let searchResults;
+
+    switch (searchType) {
+      case 'health':
+        searchResults = await searchHealthProducts(query, safeLimit);
+        break;
+      case 'seasonal':
+        searchResults = await searchSeasonalProducts(safeLimit);
+        break;
+      default:
+        searchResults = await improvedSearch(query, {
+          limit: safeLimit,
+          category: filters.category,
+          inStock: filters.inStock,
+          minPrice: filters.minPrice,
+          maxPrice: filters.maxPrice,
+          sortBy: filters.sortBy ?? 'relevance'
+        });
     }
 
-    const { query, filters, minScore = 0.3 } = validation.data;
-    const safeLimit = Math.min(validation.data.limit ?? 10, 50);
-
-    logger.info(`🔍 Advanced semantic search for: "${query}" (threshold: ${minScore})`);
-
-    // Build allowlisted Pinecone filter
-    const pineconeFilter: Record<string, unknown> = {};
-    if (filters?.categories && filters.categories.length > 0) {
-      pineconeFilter.categories = { $in: filters.categories };
-    }
-    if (filters?.inStock === true) {
-      pineconeFilter.inStock = { $eq: true };
-    }
-    if (filters?.featured === true) {
-      pineconeFilter.featured = { $eq: true };
-    }
-    if (filters?.priceRange && (filters.priceRange.min != null || filters.priceRange.max != null)) {
-      const priceCond: Record<string, number> = {};
-      if (filters.priceRange.min != null) priceCond.$gte = filters.priceRange.min;
-      if (filters.priceRange.max != null) priceCond.$lte = filters.priceRange.max;
-      pineconeFilter.price = priceCond;
-    }
-
-    const results = await searchByText(query, {
-      topK: safeLimit,
-      filter: Object.keys(pineconeFilter).length > 0 ? pineconeFilter : undefined,
-      includeMetadata: true,
-      minScore,
-    });
-
-    if (!results.success) {
-      return NextResponse.json(
-        { error: 'Search failed', details: results.error },
-        { status: 500 }
-      );
-    }
-
-    // Check if we have matches before accessing them
-    if (!results.matches || results.matches.length === 0) {
-      return NextResponse.json({
-        success: true,
-        query,
-        filters,
-        results: [],
-        count: 0,
-        totalMatches: 0,
-        searchType: 'semantic_advanced',
-      });
-    }
-
-    const products = results.matches.map((match: { metadata?: Record<string, unknown>; score?: number }) => ({
-      productId: match.metadata?.productId,
-      slug: match.metadata?.slug,
-      title: match.metadata?.title || 'Untitled Product',
-      price: match.metadata?.price,
-      categories: match.metadata?.categories || [],
-      inStock: match.metadata?.inStock || false,
-      featured: match.metadata?.featured || false,
-      relevanceScore: match.score || 0,
-      timestamp: match.metadata?.timestamp,
+    // Format for response
+    const formattedResults = searchResults.map(result => ({
+      productId: result.product.id,
+      slug: result.product.slug,
+      title: result.product.name,
+      price: result.product.price,
+      salePrice: result.product.sale_price,
+      categories: result.product.categories?.map((c: any) => c.name) ?? [],
+      tags: result.product.tags?.map((t: any) => t.name) ?? [],
+      inStock: (result.product as any).in_stock ?? (result.product as any).stock_status === 'instock',
+      featured: (result.product as any).featured ?? false,
+      relevanceScore: result.score,
+      matchedTerms: result.matchedTerms,
+      image: result.product.images?.[0]?.src ?? '',
+      gallery: result.product.images?.map((img: any) => img.src) ?? [],
+      shortDescription: result.product.short_description?.replace(/<[^>]*>/g, '').slice(0, 150),
+      attributes: result.product.attributes,
+      timestamp: new Date().toISOString()
     }));
 
     return NextResponse.json({
       success: true,
       query,
+      results: formattedResults,
+      count: formattedResults.length,
+      searchType,
       filters,
-      results: products,
-      count: products.length,
-      totalMatches: results.matches.length,
-      searchType: 'semantic_advanced',
+      suggestions: searchResults.length === 0 ?
+        ['Try different keywords', 'Check spelling', 'Use more general terms'] :
+        []
     });
 
   } catch (error) {
-    logger.error('❌ Advanced semantic search API error:', error as Record<string, unknown>);
+    logger.error('POST semantic search error:', error as Record<string, unknown>);
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        success: false,
+        error: 'Search failed',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

@@ -8,6 +8,7 @@ import CartDrawer from '@/components/CartDrawer';
 import Footer from '@/components/Footer';
 import { Toaster } from 'react-hot-toast';
 import { SkipLinks } from '@/components/SkipLink';
+import GlobalErrorBoundary from '@/components/GlobalErrorBoundary';
 
 // Lazy load analytics and performance components
 const GoogleAnalytics = lazy(() => import('@/components/GoogleAnalytics'));
@@ -146,13 +147,15 @@ export default function RootLayout({
           </header>
           
           {/* Main content area */}
-          <main 
+          <main
             id="main-content"
-            role="main" 
+            role="main"
             className="flex-1 pt-16"
             aria-label="Main content"
           >
-            {children}
+            <GlobalErrorBoundary>
+              {children}
+            </GlobalErrorBoundary>
           </main>
           
           {/* Site footer */}
