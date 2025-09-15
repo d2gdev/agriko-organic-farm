@@ -289,11 +289,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       quantity
     );
 
-    // Track funnel progression
+    // Track funnel progression with safe multiplication
+    const totalPriceResult = safePriceMultiply(price, quantity, `funnelEvent ${product.name}`);
+    const totalPrice = totalPriceResult.success ? totalPriceResult.value : 0;
     funnelEvent.addToCart(
       product.id.toString(),
       product.name,
-      price * quantity
+      totalPrice
     );
   };
 

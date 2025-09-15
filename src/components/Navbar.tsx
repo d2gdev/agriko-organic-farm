@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { usePathname } from 'next/navigation';
 import { WCProduct } from '@/types/woocommerce';
+import ClientOnly from './ClientOnly';
 
-// Lazy load heavy modal components for better bundle splitting
-const SearchModal = lazy(() => import('./SearchModal'));
-const SemanticSearchModal = lazy(() => import('./SemanticSearchModal'));
+// Import modals directly for debugging
+import SearchModal from './SearchModal';
+import SemanticSearchModal from './SemanticSearchModal';
 
 interface NavbarProps {
   products?: WCProduct[];
@@ -32,6 +33,7 @@ export default function Navbar({
   const isSearchOpen = externalIsSearchOpen ?? internalIsSearchOpen;
   const setIsSearchOpen = externalSetIsSearchOpen ?? setInternalIsSearchOpen;
   const { state, toggleCart } = useCart();
+
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -108,21 +110,18 @@ export default function Navbar({
     { name: 'Visit Farm', href: 'https://www.booking.com/hotel/ph/paglinawan-organic-eco-farm.en-gb.html', icon: '🚜', external: true },
   ];
 
+  // Use data attributes to avoid hydration issues
+  const navBaseClassName = 'fixed top-0 left-0 right-0 z-50 transition-all duration-300';
+
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        !hasMounted
-          ? 'bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200'
-          : isScrolled
-            ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-neutral-200/50'
-            : 'bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200'
-      }`}
+      className={`${navBaseClassName} ${hasMounted ? (isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-neutral-200/50' : 'bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200') : 'bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200'}`}
       role="navigation"
       aria-label="Main navigation"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          
+
           {/* Logo */}
           <div className="flex-shrink-0 group">
             <Link href="/" className="flex items-center space-x-2">
@@ -132,9 +131,8 @@ export default function Navbar({
                   alt="Agriko Organic Farm"
                   width={120}
                   height={60}
-                  className={`h-12 w-auto transition-all duration-300 ${
-                    hasMounted && isScrolled ? 'h-10' : 'h-12'
-                  } group-hover:scale-105`}
+                  className="w-auto transition-all duration-300 group-hover:scale-105 h-12 data-[scrolled=true]:h-10"
+                  data-scrolled={hasMounted && isScrolled}
                   priority
                 />
                 {/* Subtle glow effect */}
@@ -207,10 +205,10 @@ export default function Navbar({
 
           {/* Right side controls */}
           <div className="flex items-center space-x-3">
-            {/* Search Buttons */}
+            {/* Search Buttons - visible on medium and larger screens */}
             <div className="hidden md:flex items-center space-x-1">
               {/* Regular Search Button */}
-              <button 
+              <button
                 onClick={() => setIsSearchOpen(true)}
                 className="p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hover:scale-110"
                 aria-label="Search products"
@@ -220,9 +218,9 @@ export default function Navbar({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
-              
+
               {/* Semantic Search Button */}
-              <button 
+              <button
                 onClick={() => setIsSemanticSearchOpen(true)}
                 className="p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hover:scale-110 relative group"
                 aria-label="Semantic AI search"
@@ -237,7 +235,7 @@ export default function Navbar({
             </div>
 
             {/* Enhanced Cart Button */}
-            <button 
+            <button
               onClick={toggleCart}
               className="relative p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 group"
               aria-label={`Shopping cart with ${state.itemCount} items`}
@@ -247,20 +245,24 @@ export default function Navbar({
               </svg>
               
               {/* Enhanced Cart Counter */}
-              {state.itemCount > 0 && (
-                <div className="absolute -top-1 -right-1">
-                  <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg animate-pulse">
-                    {state.itemCount > 99 ? '99+' : state.itemCount}
+              <ClientOnly>
+                {state.itemCount > 0 && (
+                  <div className="absolute -top-1 -right-1">
+                    <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg animate-pulse">
+                      {state.itemCount > 99 ? '99+' : state.itemCount}
+                    </div>
+                    {/* Pulsing ring */}
+                    <div className="absolute inset-0 bg-primary-500 rounded-full animate-ping opacity-20"></div>
                   </div>
-                  {/* Pulsing ring */}
-                  <div className="absolute inset-0 bg-primary-500 rounded-full animate-ping opacity-20"></div>
-                </div>
-              )}
+                )}
+              </ClientOnly>
               
               {/* Hover tooltip */}
-              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-neutral-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                {state.itemCount === 0 ? 'Cart is empty' : `${state.itemCount} item${state.itemCount === 1 ? '' : 's'}`}
-              </div>
+              <ClientOnly>
+                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-neutral-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                  {state.itemCount === 0 ? 'Cart is empty' : `${state.itemCount} item${state.itemCount === 1 ? '' : 's'}`}
+                </div>
+              </ClientOnly>
             </button>
 
             {/* Enhanced Mobile Menu Button */}
@@ -286,10 +288,10 @@ export default function Navbar({
 
         {/* Enhanced Mobile Navigation */}
         <div className={`lg:hidden transition-all duration-300 overflow-hidden ${
-          isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}>
-          <div 
-            className="py-4 space-y-2 border-t border-neutral-200 bg-white/95 backdrop-blur-sm" 
+          <div
+            className="py-4 space-y-2 border-t border-neutral-200 bg-white/95 backdrop-blur-sm"
             ref={menuRef}
             role="menu"
             aria-label="Mobile navigation menu"
@@ -302,7 +304,7 @@ export default function Navbar({
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between px-4 py-3 text-neutral-700 hover:text-primary-700 hover:bg-primary-50 rounded-lg mx-2 transition-all duration-200 group"
+                  className="flex items-center justify-between px-4 py-3 text-neutral-700 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 group mx-2"
                   onClick={() => setIsMenuOpen(false)}
                   style={{ animationDelay: `${index * 50}ms` }}
                   role="menuitem"
@@ -343,35 +345,17 @@ export default function Navbar({
         </div>
       </div>
       
-      {/* Search Modals - Lazy loaded for better bundle splitting */}
-      {isSearchOpen && (
-        <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="animate-spin h-8 w-8 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto"></div>
-            <p className="text-center mt-4 text-neutral-600">Loading search...</p>
-          </div>
-        </div>}>
-          <SearchModal
-            isOpen={isSearchOpen}
-            onClose={() => setIsSearchOpen(false)}
-            products={products}
-          />
-        </Suspense>
-      )}
+      {/* Search Modals */}
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        products={products}
+      />
 
-      {isSemanticSearchOpen && (
-        <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="animate-spin h-8 w-8 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto"></div>
-            <p className="text-center mt-4 text-neutral-600">Loading semantic search...</p>
-          </div>
-        </div>}>
-          <SemanticSearchModal
-            isOpen={isSemanticSearchOpen}
-            onClose={() => setIsSemanticSearchOpen(false)}
-          />
-        </Suspense>
-      )}
+      <SemanticSearchModal
+        isOpen={isSemanticSearchOpen}
+        onClose={() => setIsSemanticSearchOpen(false)}
+      />
     </nav>
   );
 }

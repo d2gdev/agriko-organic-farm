@@ -30,10 +30,13 @@
     "@typescript-eslint/no-unsafe-member-access": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
     "@typescript-eslint/prefer-optional-chain": "warn",
-    "@typescript-eslint/no-non-null-assertion": "warn",
+    "@typescript-eslint/no-non-null-assertion": "error",
     // Additional rules for better CI compatibility
     "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-    "react-hooks/exhaustive-deps": "warn"
+    "react-hooks/exhaustive-deps": "error",
+    // Rules to prevent issues we fixed
+    "react/no-unstable-nested-components": "error",
+    "@typescript-eslint/no-unnecessary-type-assertion": "warn"
   },
   "overrides": [
     {

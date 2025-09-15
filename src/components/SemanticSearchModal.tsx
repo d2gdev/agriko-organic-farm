@@ -91,17 +91,25 @@ export default function SemanticSearchModal({ isOpen, onClose }: SemanticSearchM
 
   // Handle search with debouncing
   useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
-    
+
     // Debounce search
     const timeoutId = setTimeout(() => {
       if (searchMode === 'semantic') {
         performSemanticSearch(query);
+      } else {
+        setIsLoading(false);
       }
     }, 500); // Longer debounce for API calls
 
     return () => clearTimeout(timeoutId);
-  }, [query, searchMode]);
+  }, [query, searchMode]); // performSemanticSearch is stable, defined in component
 
   // Handle click outside
   useEffect(() => {
