@@ -1,5 +1,5 @@
 // Multi-Factor Recommendation Algorithm for Agriko
-import { Session } from 'neo4j-driver';
+// import { Session } from 'neo4j-driver'; // Removed unused import
 import { logger } from '@/lib/logger';
 
 import { withSession } from './memgraph';
@@ -17,9 +17,9 @@ interface Neo4jRecord {
   get(key: string): Neo4jValue;
 }
 
-interface Neo4jResult {
-  records: Neo4jRecord[];
-}
+// interface Neo4jResult {
+//   records: Neo4jRecord[];
+// } // Removed unused interface
 
 // Recommendation types and interfaces
 export interface RecommendationScore {
@@ -144,7 +144,7 @@ export class MultiFactorRecommendationEngine {
   // Collaborative filtering based on user behavior similarity
   private async getCollaborativeRecommendations(
     userProfile: UserProfile,
-    context: RecommendationContext
+    _context: RecommendationContext
   ): Promise<{ productId: number; score: number; reason: string }[]> {
     if (!userProfile.purchaseHistory?.length && !userProfile.viewHistory?.length) {
       return [];
@@ -259,7 +259,7 @@ export class MultiFactorRecommendationEngine {
   // Graph-based recommendations using relationship strengths
   private async getGraphBasedRecommendations(
     userProfile: UserProfile,
-    context: RecommendationContext
+    _context: RecommendationContext
   ): Promise<{ productId: number; score: number; reason: string }[]> {
     try {
       return await withSession(
@@ -450,7 +450,7 @@ export class MultiFactorRecommendationEngine {
   // Geographical recommendations
   private async getGeographicalRecommendations(
     userProfile: UserProfile,
-    context: RecommendationContext
+    _context: RecommendationContext
   ): Promise<{ productId: number; score: number; reason: string }[]> {
     if (!userProfile.location) {
       return [];
@@ -620,7 +620,8 @@ export class MultiFactorRecommendationEngine {
           const product = productNode?.properties ?? {};
           const categories = (record.get('categories') as string[]) ?? [];
           const healthBenefits = (record.get('healthBenefits') as string[]) ?? [];
-          const ingredients = (record.get('ingredients') as string[]) ?? [];
+          const _ingredients = (record.get('ingredients') as string[]) ?? [];
+          void _ingredients; // Preserved for future nutritional analysis
 
           const factors = [];
           let explanation = `We recommend ${product.name ?? 'this product'} because `;
@@ -707,7 +708,7 @@ export class MultiFactorRecommendationEngine {
     
     return {
       productId: productIdValue && typeof productIdValue === 'object' && 'toNumber' in productIdValue 
-        ? (productIdValue as Neo4jValue).toNumber?.() ?? 0 
+        ? productIdValue.toNumber?.() ?? 0 
         : typeof productIdValue === 'number' 
           ? productIdValue 
           : 0,

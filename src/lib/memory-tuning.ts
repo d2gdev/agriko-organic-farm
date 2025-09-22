@@ -266,7 +266,8 @@ export class MemoryTuningSystem {
     try {
       const recent = this.memoryHistory.slice(-10);
       const avgUsed = recent.reduce((sum, r) => sum + r.used, 0) / recent.length;
-      const maxUsed = Math.max(...recent.map(r => r.used));
+      const _maxUsed = Math.max(...recent.map(r => r.used));
+      void _maxUsed; // Preserved for future memory spike analysis
       
       if (!this.currentProfile) return;
 
@@ -332,7 +333,8 @@ export class MemoryTuningSystem {
     if (currentIndex >= 0 && currentIndex < profiles.length - 1) {
       const nextProfileEntry = profiles[currentIndex + 1];
       if (nextProfileEntry) {
-        const [nextKey, nextProfile] = nextProfileEntry;
+        const [_nextKey, nextProfile] = nextProfileEntry;
+        void _nextKey; // Key not needed for logging
         logger.info('Recommending memory profile upgrade', {
           current: this.currentProfile.name,
           recommended: nextProfile.name,

@@ -28,7 +28,7 @@ import {
 } from '@/lib/memgraph';
 
 // POST /api/graph/sync - Sync WooCommerce data to MemGraph
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     logger.info('🔄 Starting graph database sync...');
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
           categories: product.categories?.map(cat => cat.name) || [],
           description: product.short_description || product.description || '',
           inStock: product.stock_status === 'instock',
-          featured: product.featured
+          featured: Boolean(product.featured)
         };
 
         const success = await addProductToGraph(graphProduct);
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET /api/graph/sync - Get sync status and stats
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const connectionTest = await testMemgraphConnection();
     const stats = await getGraphStats();

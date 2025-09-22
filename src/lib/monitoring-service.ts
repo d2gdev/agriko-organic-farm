@@ -516,7 +516,8 @@ export class MonitoringService {
       const productStats = productCacheSafe.getStats();
       const apiStats = apiCacheSafe.getStats();
       
-      const overallUtilization = (productStats.utilizationPercent + apiStats.utilizationPercent) / 2;
+      const _overallUtilization = (productStats.utilizationPercent + apiStats.utilizationPercent) / 2;
+      void _overallUtilization; // Preserved for future cache utilization metrics
       const avgAccessCount = (productStats.averageAccessCount + apiStats.averageAccessCount) / 2;
       
       results.cache = { 
@@ -598,27 +599,27 @@ export class MonitoringService {
       }
     }
 
-    // Check Pinecone API
-    if (config.apis.pinecone?.apiKey) {
+    // Check Qdrant API
+    if (config.apis.qdrant?.apiKey) {
       try {
         const start = Date.now();
-        const response = await fetch('https://api.pinecone.io/whoami', {
+        const response = await fetch('http://localhost:6333/whoami', {
           method: 'GET',
           headers: {
-            'Api-Key': config.apis.pinecone?.apiKey,
+            'Api-Key': config.apis.qdrant?.apiKey,
             'Content-Type': 'application/json'
           },
           signal: AbortSignal.timeout(10000) // 10 second timeout
         });
         
         services.push({
-          name: 'pinecone',
+          name: 'qdrant',
           status: response.ok ? 'up' : 'down',
           latency: Date.now() - start
         });
       } catch (error) {
-        services.push({ name: 'pinecone', status: 'down' });
-        logger.debug('Pinecone API health check failed:', { 
+        services.push({ name: 'qdrant', status: 'down' });
+        logger.debug('Qdrant API health check failed:', { 
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined
         });

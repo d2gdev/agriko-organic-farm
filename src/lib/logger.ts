@@ -54,6 +54,10 @@ class Logger {
     this.config = { ...DEFAULT_CONFIG, ...config };
   }
 
+  private get isProduction(): boolean {
+    return process.env.NODE_ENV === 'production';
+  }
+
   private shouldLog(level: LogLevel, context?: string): boolean {
     // Check log level
     if (LOG_LEVELS[level] > LOG_LEVELS[this.config.level]) {
@@ -102,6 +106,10 @@ class Logger {
   private writeToConsole(entry: LogEntry): void {
     if (!this.config.enableConsole) return;
 
+    // Skip non-error console output in production
+    const isProduction = process.env.NODE_ENV === 'production';
+    if (isProduction && entry.level !== 'error') return;
+
     try {
       const emoji = this.getLevelEmoji(entry.level);
       const prefix = `${emoji} [${entry.level.toUpperCase()}]`;
@@ -126,10 +134,12 @@ class Logger {
           console.log(fullMessage, entry.data);
           break;
       }
-    } catch (error) {
-      // Gracefully handle console errors - fallback to basic console.log
+    } catch {
+      // Gracefully handle console errors - fallback to basic console.log (only for errors in production)
       try {
-        console.log(`Logger Error: Failed to write log entry: ${entry.message}`);
+        if (!isProduction || entry.level === 'error') {
+          console.log(`Logger Error: Failed to write log entry: ${entry.message}`);
+        }
       } catch {
         // If even basic console.log fails, fail silently to prevent infinite loops
       }
@@ -179,7 +189,7 @@ class Logger {
       );
     } catch (error) {
       // Fail silently to prevent logging loops
-      if (this.config.enableConsole) {
+      if (this.config.enableConsole && process.env.NODE_ENV !== 'production') {
         console.error('Failed to send log to remote service:', error);
       }
     }
@@ -229,6 +239,28 @@ class Logger {
 
   trace(message: string, data?: Record<string, unknown>, context?: string, requestId?: string): void {
     this.log('trace', message, data, context, requestId);
+  }
+
+  // Console grouping methods (only in development)
+  group(label: string): void {
+    if (this.isProduction) return;
+    if (typeof console !== 'undefined' && console.group) {
+      console.group(label);
+    }
+  }
+
+  groupEnd(): void {
+    if (this.isProduction) return;
+    if (typeof console !== 'undefined' && console.groupEnd) {
+      console.groupEnd();
+    }
+  }
+
+  table(data: unknown): void {
+    if (this.isProduction) return;
+    if (typeof console !== 'undefined' && console.table) {
+      console.table(data);
+    }
   }
 
   // Utility methods

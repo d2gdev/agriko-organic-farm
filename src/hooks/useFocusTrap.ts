@@ -57,7 +57,7 @@ export function useFocusTrap(
     const getFocusableElements = (): HTMLElement[] => {
       return Array.from(
         container.querySelectorAll(FOCUSABLE_ELEMENTS)
-      ) as HTMLElement[];
+      );
     };
 
     // Handle Tab key navigation with cleanup safety
@@ -240,10 +240,10 @@ export function useFocusTrap(
         
         const focusableElements = Array.from(
           containerRef.current.querySelectorAll(FOCUSABLE_ELEMENTS)
-        ) as HTMLElement[];
-        
+        );
+
         if (focusableElements.length > 0) {
-          focusableElements[0]?.focus();
+          (focusableElements[0] as HTMLElement)?.focus();
         }
       } catch (error) {
         logger.error('Error in focusFirst:', error as Record<string, unknown>);
@@ -257,11 +257,11 @@ export function useFocusTrap(
         
         const focusableElements = Array.from(
           containerRef.current.querySelectorAll(FOCUSABLE_ELEMENTS)
-        ) as HTMLElement[];
-        
+        );
+
         if (focusableElements.length > 0) {
           const lastElement = focusableElements[focusableElements.length - 1];
-          lastElement?.focus();
+          (lastElement as HTMLElement)?.focus();
         }
       } catch (error) {
         logger.error('Error in focusLast:', error as Record<string, unknown>);
@@ -292,7 +292,7 @@ export function useFocusManagement(containerRef: RefObject<HTMLElement>) {
 
       const focusableElements = Array.from(
         containerRef.current.querySelectorAll(FOCUSABLE_ELEMENTS)
-      ) as HTMLElement[];
+      );
 
       if (focusableElements.length === 0) return;
 
@@ -300,22 +300,22 @@ export function useFocusManagement(containerRef: RefObject<HTMLElement>) {
 
       switch (direction) {
         case 'first':
-          focusableElements[0]?.focus();
+          (focusableElements[0] as HTMLElement)?.focus();
           break;
         case 'last':
           const lastElement = focusableElements[focusableElements.length - 1];
-          lastElement?.focus();
+          (lastElement as HTMLElement)?.focus();
           break;
         case 'next':
           if (currentIndex < focusableElements.length - 1) {
             const nextElement = focusableElements[currentIndex + 1];
-            nextElement?.focus();
+            (nextElement as HTMLElement)?.focus();
           }
           break;
         case 'previous':
           if (currentIndex > 0) {
             const prevElement = focusableElements[currentIndex - 1];
-            prevElement?.focus();
+            (prevElement as HTMLElement)?.focus();
           }
           break;
       }

@@ -36,25 +36,26 @@ interface ABTestConfigProps {
 }
 
 // Component to conditionally render based on A/B test variant
-export function ABTestVariant({ 
-  testId, 
-  variantId, 
-  children, 
-  userId, 
-  sessionId, 
-  fallback = null 
+export function ABTestVariant({
+  testId,
+  variantId,
+  children,
+  userId,
+  sessionId,
+  fallback = null
 }: ABTestVariantProps) {
   const [shouldShow, setShouldShow] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
+    setHasMounted(true);
     const show = shouldShowVariant(testId, variantId, userId, sessionId);
     setShouldShow(show);
-    setIsLoading(false);
   }, [testId, variantId, userId, sessionId]);
 
-  if (isLoading) {
-    return fallback as React.ReactElement;
+  // Always render fallback on server and before hydration
+  if (!hasMounted) {
+    return <div suppressHydrationWarning>{fallback as React.ReactElement}</div>;
   }
 
   return shouldShow ? (children as React.ReactElement) : (fallback as React.ReactElement);
@@ -126,7 +127,7 @@ export function withABTest<P extends object>(
 // Product Card A/B Test Component - using imported type
 
 export function ProductCardABTest({ product, userId, sessionId }: ProductCardABTestProps) {
-  const { variant, trackConversion, trackEvent } = useABTestWithTracking(
+  const { trackConversion, trackEvent } = useABTestWithTracking(
     'product_card_v1',
     userId,
     sessionId
@@ -198,7 +199,7 @@ interface LocalSearchInterfaceABTestProps {
 }
 
 export function SearchInterfaceABTest({ onSearch, userId, sessionId }: LocalSearchInterfaceABTestProps) {
-  const { variant, trackConversion, trackEvent } = useABTestWithTracking(
+  const { trackConversion, trackEvent } = useABTestWithTracking(
     'search_ui_v1',
     userId,
     sessionId
@@ -287,18 +288,18 @@ export function RecommendationABTest({
   );
 
   useEffect(() => {
-    const config = getVariantConfig('rec_algo_v1', userId, sessionId) as Record<string, unknown>;
+    const config = getVariantConfig('rec_algo_v1', userId, sessionId);
     
     const fetchRecommendations = async () => {
       try {
         const algorithm = (config.algorithm as string) ?? 'collaborative';
         const response = await fetch(`/api/recommendations?productId=${productId}&algorithm=${algorithm}`);
-        const data = await response.json() as { recommendations?: RecommendationItem[] };
+        const data = await response.json();
         setRecommendations(data.recommendations ?? []);
-        
-        trackEvent('recommendations_loaded', { 
-          algorithm, 
-          count: data.recommendations?.length ?? 0 
+
+        trackEvent('recommendations_loaded', {
+          algorithm,
+          count: data.recommendations?.length ?? 0
         });
       } catch (error) {
         logger.error('Failed to fetch recommendations:', error as Record<string, unknown>);
@@ -309,8 +310,8 @@ export function RecommendationABTest({
   }, [productId, userId, sessionId, trackEvent]);
 
   const handleRecommendationClick = (recommendedProductId: number) => {
-    const config = getVariantConfig('rec_algo_v1', userId, sessionId) as Record<string, unknown>;
-    trackEvent('recommendation_clicked', { 
+    const config = getVariantConfig('rec_algo_v1', userId, sessionId);
+    trackEvent('recommendation_clicked', {
       productId: recommendedProductId,
       algorithm: config.algorithm as string,
       sourceProductId: productId
@@ -320,7 +321,7 @@ export function RecommendationABTest({
   };
 
   // Get algorithm for development display
-  const devConfig = getVariantConfig('rec_algo_v1', userId, sessionId) as Record<string, unknown>;
+  const devConfig = getVariantConfig('rec_algo_v1', userId, sessionId);
   const devAlgorithm = devConfig.algorithm as string;
 
   return (

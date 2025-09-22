@@ -12,6 +12,7 @@ import { safePriceMultiply } from '@/lib/price-validation';
 import { CheckoutData, WCAddress } from '@/types/woocommerce';
 import HeroSection from '@/components/HeroSection';
 import { PlantGrowingLoader } from '@/components/OrganicLoadingStates';
+import SafeLocalStorage from '@/lib/safe-localstorage';
 
 interface FormErrors {
   [key: string]: string;
@@ -21,6 +22,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { state, clearCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [billingData, setBillingData] = useState<WCAddress>({
     first_name: '',
@@ -50,12 +52,12 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState('cod'); // Cash on delivery as default
   const [customerNote, setCustomerNote] = useState('');
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty (but not if order is being processed)
   useEffect(() => {
-    if (state.items.length === 0) {
+    if (state.items.length === 0 && !isProcessing && !isOrderComplete) {
       router.push('/cart');
     }
-  }, [state.items.length, router]);
+  }, [state.items.length, router, isProcessing, isOrderComplete]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -132,11 +134,17 @@ export default function CheckoutPage() {
         throw new Error(errorData.error || 'Failed to create order');
       }
 
-      const order = await response.json();
-      
+      await response.json();
+
+      // Mark order as complete to prevent cart redirect
+      setIsOrderComplete(true);
+
+      // Set success flag for secure access to success page
+      SafeLocalStorage.setItem('order_success', 'true');
+
       // Clear the cart
       clearCart();
-      
+
       // Redirect to success page (order details sent via email for static export deployment)
       router.push('/success');
     } catch (error) {
@@ -226,8 +234,11 @@ export default function CheckoutPage() {
           {/* Billing & Shipping Information */}
           <div className="lg:col-span-2 space-y-8">
             {/* Billing Information */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-slideInFromLeft animation-delay-100">
-              <h2 className="text-heading-2 text-gray-900 mb-6">Billing Information</h2>
+            <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-8 hover:shadow-xl transition-all duration-300">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <span className="text-2xl">📋</span>
+                Billing Information
+              </h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -423,9 +434,12 @@ export default function CheckoutPage() {
             </div>
 
             {/* Shipping Information */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-slideInFromLeft animation-delay-200">
+            <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-8 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-heading-2 text-gray-900">Shipping Information</h2>
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <span className="text-2xl">📦</span>
+                  Shipping Information
+                </h2>
                 <label className="flex items-center">
                   <input
                     type="checkbox"
@@ -558,8 +572,11 @@ export default function CheckoutPage() {
             </div>
 
             {/* Payment Method */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-slideInFromLeft animation-delay-300">
-              <h2 className="text-heading-2 text-gray-900 mb-6">Payment Method</h2>
+            <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-8 hover:shadow-xl transition-all duration-300">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <span className="text-2xl">💳</span>
+                Payment Method
+              </h2>
               
               <div className="space-y-4">
                 <label className="flex items-start">
@@ -595,8 +612,11 @@ export default function CheckoutPage() {
             </div>
 
             {/* Order Notes */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-slideInFromLeft animation-delay-400">
-              <h2 className="text-heading-2 text-gray-900 mb-6">Order Notes (Optional)</h2>
+            <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-8 hover:shadow-xl transition-all duration-300">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <span className="text-2xl">📝</span>
+                Order Notes (Optional)
+              </h2>
               <textarea
                 value={customerNote}
                 onChange={(e) => setCustomerNote(e.target.value)}
@@ -609,14 +629,17 @@ export default function CheckoutPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-6 animate-slideInFromRight animation-delay-100">
-              <h2 className="text-heading-2 text-gray-900 mb-6">Order Summary</h2>
+            <div className="bg-white rounded-xl shadow-xl border-2 border-gray-100 p-8 sticky top-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <span className="text-2xl">🛒</span>
+                Order Summary
+              </h2>
               
               {/* Order Items */}
               <div className="space-y-4 mb-6">
                 {state.items.map((item) => {
                   const itemKey = `${item.product.id}-${item.variation?.id || 'no-variation'}`;
-                  const itemTotalResult = safePriceMultiply(item.product.price, item.quantity, `checkout-item-${item.product.id}`);
+                  const itemTotalResult = safePriceMultiply(item.product.price as string | number, item.quantity, `checkout-item-${item.product.id}`);
                   const itemTotal = itemTotalResult.success ? itemTotalResult.value : 0;
 
                   return (
@@ -635,7 +658,7 @@ export default function CheckoutPage() {
                           {item.product.name}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          Qty: {item.quantity} × {formatPrice(item.product.price)}
+                          Qty: {item.quantity} × {formatPrice(item.product.price as string | number)}
                         </p>
                         <p className="text-sm font-medium text-gray-900">
                           {formatPrice(itemTotal)}
@@ -673,7 +696,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full bg-primary-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary-700 disabled:bg-primary-400 transition-colors mt-6 flex items-center justify-center active:animate-jiggle hover:animate-glow transform hover:scale-105"
+                className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-4 px-6 rounded-xl font-bold hover:from-red-700 hover:to-red-800 disabled:from-gray-400 disabled:to-gray-500 transition-all duration-300 mt-6 flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 {isProcessing ? (
                   <>
@@ -688,7 +711,7 @@ export default function CheckoutPage() {
               {/* Back to Cart */}
               <Link
                 href="/cart"
-                className="block text-center text-sm text-primary-600 hover:text-primary-700 mt-4"
+                className="block text-center text-sm text-green-600 hover:text-green-700 mt-4 font-medium transition-colors duration-200"
               >
                 ← Back to Cart
               </Link>

@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
-import { findSimilarProducts, getProductsByHealthBenefit, getProductsByCategory } from '@/lib/memgraph';
+import {
+  findSimilarProducts,
+  getProductsByHealthBenefit,
+  getProductsByCategory,
+  getComplementaryProducts,
+  getFrequentlyBoughtTogether
+} from '@/lib/memgraph';
 
 // GET /api/graph/recommendations - Get product recommendations
 export async function GET(request: NextRequest) {
@@ -12,8 +18,10 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const limit = parseInt(searchParams.get('limit') || '5');
     const type = searchParams.get('type') || 'similar';
+    const includeExplanation = searchParams.get('explain') === 'true';
 
     let recommendations = [];
+    let explanation = '';
 
     switch (type) {
       case 'similar':
@@ -24,6 +32,18 @@ export async function GET(request: NextRequest) {
           }, { status: 400 });
         }
         recommendations = await findSimilarProducts(parseInt(productId), limit);
+        explanation = 'Products with similar health benefits and categories';
+        break;
+
+      case 'complementary':
+        if (!productId) {
+          return NextResponse.json({
+            success: false,
+            error: 'Product ID is required for complementary recommendations'
+          }, { status: 400 });
+        }
+        recommendations = await getComplementaryProducts(parseInt(productId), limit);
+        explanation = 'Products that work well together with your selection';
         break;
 
       case 'health-benefit':
@@ -34,6 +54,7 @@ export async function GET(request: NextRequest) {
           }, { status: 400 });
         }
         recommendations = await getProductsByHealthBenefit(healthBenefit, limit);
+        explanation = `Products that support ${healthBenefit}`;
         break;
 
       case 'category':
@@ -44,12 +65,24 @@ export async function GET(request: NextRequest) {
           }, { status: 400 });
         }
         recommendations = await getProductsByCategory(category, limit);
+        explanation = `More products in ${category}`;
+        break;
+
+      case 'frequently-bought':
+        if (!productId) {
+          return NextResponse.json({
+            success: false,
+            error: 'Product ID is required for frequently-bought recommendations'
+          }, { status: 400 });
+        }
+        recommendations = await getFrequentlyBoughtTogether(parseInt(productId), limit);
+        explanation = 'Customers who bought this also bought';
         break;
 
       default:
         return NextResponse.json({
           success: false,
-          error: 'Invalid recommendation type. Use: similar, health-benefit, or category'
+          error: 'Invalid recommendation type. Use: similar, complementary, health-benefit, category, or frequently-bought'
         }, { status: 400 });
     }
 
@@ -58,7 +91,8 @@ export async function GET(request: NextRequest) {
       data: {
         type,
         recommendations,
-        count: recommendations.length
+        count: recommendations.length,
+        ...(includeExplanation && { explanation })
       }
     });
 

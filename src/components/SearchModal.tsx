@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 import { WCProduct } from '@/types/woocommerce';
 import { formatPrice, getProductMainImage, stripHtml } from '@/lib/utils';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useProductFilters } from '@/hooks/useProductFilters';
-import SearchFiltersComponent, { SearchFilters } from '@/components/SearchFilters';
+import SearchFiltersComponent from '@/components/SearchFilters';
 import SearchAutocomplete from '@/components/SearchAutocomplete';
 import Button from '@/components/Button';
 import SearchLoadingState from '@/components/SearchLoadingState';
+import { logger } from '@/lib/logger';
+import { ecommerceEvent, behaviorEvent } from '@/lib/gtag';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -23,11 +24,15 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
   const [query, setQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [semanticResults, setSemanticResults] = useState<WCProduct[]>([]);
+  const [useSemanticSearch, setUseSemanticSearch] = useState(true);
+  const [searchType, setSearchType] = useState<'semantic' | 'keyword'>('semantic');
   const inputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const searchAbortController = useRef<AbortController | null>(null);
 
-  // Enhanced product filtering
+  // Enhanced product filtering (fallback for keyword search)
   const {
     filters,
     filteredProducts,
@@ -39,7 +44,7 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
   } = useProductFilters({ products });
 
   // Enhanced focus management with focus trap
-  const { focusFirst } = useFocusTrap(modalRef, {
+  useFocusTrap(modalRef, {
     isActive: isOpen,
     initialFocus: inputRef,
     escapeDeactivates: true,
@@ -53,9 +58,80 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
     }
   }, [isOpen]);
 
+  // Semantic search function
+  const performSemanticSearch = useCallback(async (searchQuery: string) => {
+    // Cancel previous request if any
+    if (searchAbortController.current) {
+      searchAbortController.current.abort();
+    }
+
+    // Create new abort controller
+    searchAbortController.current = new AbortController();
+
+    try {
+      setIsLoading(true);
+
+      const params = new URLSearchParams({
+        q: searchQuery,
+        limit: '12',
+        type: 'general'
+      });
+
+      // Add filters if active
+      if (filters.category) {
+        const categoryValue = Array.isArray(filters.category)
+          ? filters.category.join(',')
+          : filters.category;
+        params.append('category', categoryValue);
+      }
+      if (filters.inStock) params.append('inStock', 'true');
+
+      const response = await fetch(`/api/search/semantic?${params}`, {
+        signal: searchAbortController.current.signal
+      });
+
+      if (!response.ok) {
+        throw new Error('Search failed');
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.results) {
+        setSemanticResults(data.results);
+        setSearchType('semantic');
+
+        // Track search query with Google Analytics
+        if (searchQuery.trim()) {
+          ecommerceEvent.search(searchQuery, data.results.length);
+          behaviorEvent.siteSearch(searchQuery, data.results.length, 'semantic');
+        }
+      } else {
+        // Fallback to keyword search
+        setUseSemanticSearch(false);
+        setSearchQuery(searchQuery);
+
+        // Track keyword search fallback with Google Analytics
+        if (searchQuery.trim()) {
+          ecommerceEvent.search(searchQuery, 0);
+          behaviorEvent.siteSearch(searchQuery, 0, 'traditional');
+        }
+      }
+    } catch (error: unknown) {
+      if ((error as { name?: string }).name !== 'AbortError') {
+        logger.error('Semantic search error:', error as Record<string, unknown>);
+        // Fallback to keyword search
+        setUseSemanticSearch(false);
+        setSearchQuery(searchQuery);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filters, setSearchQuery]);
+
   // Handle search with debouncing
   useEffect(() => {
     if (!query.trim()) {
+      setSemanticResults([]);
       setSearchQuery('');
       setIsLoading(false);
       return;
@@ -69,17 +145,35 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
 
     // Debounce search
     const timeoutId = setTimeout(() => {
-      setSearchQuery(query);
-      setIsLoading(false);
+      if (useSemanticSearch && query.length > 2) {
+        performSemanticSearch(query);
+      } else {
+        setSearchQuery(query);
+        setSearchType('keyword');
+        setIsLoading(false);
+      }
     }, 300);
 
-    return () => clearTimeout(timeoutId);
-  }, [query, setSearchQuery]);
+    return () => {
+      clearTimeout(timeoutId);
+      // Cancel any pending requests
+      if (searchAbortController.current) {
+        searchAbortController.current.abort();
+      }
+    };
+  }, [query, useSemanticSearch, performSemanticSearch, setSearchQuery]);
 
   // Get display results (limit for modal view)
-  const displayResults = filteredProducts.slice(0, 8);
+  const displayResults = useSemanticSearch && semanticResults.length > 0
+    ? semanticResults.slice(0, 8)
+    : filteredProducts.slice(0, 8);
 
-  // Handle click outside
+  // Determine total results
+  const totalResults = useSemanticSearch && semanticResults.length > 0
+    ? semanticResults.length
+    : filteredProducts.length;
+
+  // Handle click outside with hydration-safe body overflow control
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -89,14 +183,15 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'hidden';
+      // Use CSS class instead of direct style manipulation to prevent hydration issues
+      document.documentElement.classList.add('overflow-hidden');
     } else {
-      document.body.style.overflow = 'unset';
+      document.documentElement.classList.remove('overflow-hidden');
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'unset';
+      document.documentElement.classList.remove('overflow-hidden');
     };
   }, [isOpen, onClose]);
 
@@ -117,7 +212,12 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
     // Create URL with search params
     const params = new URLSearchParams();
     if (query) params.set('search', query);
-    if (filters.category) params.set('category', filters.category);
+    if (filters.category) {
+      const categoryValue = Array.isArray(filters.category)
+        ? filters.category.join(',')
+        : filters.category;
+      params.set('category', categoryValue);
+    }
     if (filters.minPrice) params.set('minPrice', filters.minPrice.toString());
     if (filters.maxPrice) params.set('maxPrice', filters.maxPrice.toString());
     if (filters.sortBy) params.set('sortBy', filters.sortBy);
@@ -197,14 +297,33 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
             {/* Results Summary */}
             {(query || hasActiveFilters) && (
               <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-                <div>
+                <div className="flex items-center gap-3">
                   {isLoading ? (
                     <span>Searching...</span>
                   ) : (
-                    <span>
-                      {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
-                      {query && ` for "${query}"`}
-                    </span>
+                    <>
+                      <span>
+                        {totalResults} product{totalResults !== 1 ? 's' : ''} found
+                        {query && ` for "${query}"`}
+                      </span>
+                      {/* Semantic Search Indicator */}
+                      {query && searchType === 'semantic' && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" />
+                          </svg>
+                          AI Search
+                        </span>
+                      )}
+                      {query && searchType === 'keyword' && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                          </svg>
+                          Keyword Search
+                        </span>
+                      )}
+                    </>
                   )}
                 </div>
                 {hasActiveFilters && (
@@ -259,15 +378,23 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
                   </div>
                 ) : displayResults.length > 0 ? (
                   <div className="p-4 space-y-3">
-                    {displayResults.map((product, index) => (
+                    {displayResults.map((product: WCProduct, _index) => (
                       <button
                         key={product.id}
                         onClick={() => handleProductClick(product.slug)}
-                        className="w-full text-left p-4 hover:bg-gray-50 rounded-xl transition-colors group"
+                        className="w-full text-left p-4 hover:bg-gray-50 rounded-xl transition-colors group relative"
                         role="option"
                         aria-selected="false"
-                        aria-label={`${product.name}, ${formatPrice(product.price)}`}
+                        aria-label={`${product.name}, ${formatPrice(product.price as string | number)}`}
                       >
+                        {/* Search result indicator for semantic search */}
+                        {useSemanticSearch && semanticResults.length > 0 && (
+                          <div className="absolute top-2 right-2">
+                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                              Match
+                            </span>
+                          </div>
+                        )}
                         <div className="flex items-center space-x-4">
                           <div className="flex-shrink-0">
                             <Image
@@ -287,7 +414,7 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
                             </p>
                             <div className="flex items-center justify-between mt-2">
                               <span className="font-semibold text-primary-700">
-                                {formatPrice(product.price)}
+                                {formatPrice(product.price as string | number)}
                               </span>
                               <div className="flex items-center gap-2">
                                 {product.stock_status === 'instock' ? (
@@ -299,11 +426,17 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
                                     Out of Stock
                                   </span>
                                 )}
-                                {product.categories?.slice(0, 1).map((category) => (
-                                  <span key={category.id} className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
-                                    {category.name}
-                                  </span>
-                                ))}
+                                {product.categories && product.categories.length > 0 && product.categories[0] && (
+                                  typeof product.categories[0] === 'string' ? (
+                                    <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                                      {product.categories[0]}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                                      {product.categories[0].name}
+                                    </span>
+                                  )
+                                )}
                               </div>
                             </div>
                           </div>
@@ -341,7 +474,7 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
               </div>
 
               {/* Footer */}
-              {(query || hasActiveFilters) && filteredProducts.length > displayResults.length && (
+              {(query || hasActiveFilters) && totalResults > displayResults.length && (
                 <div className="p-4 border-t border-gray-200 bg-gray-50">
                   <Button
                     onClick={handleViewAllResults}

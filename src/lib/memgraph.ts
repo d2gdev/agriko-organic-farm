@@ -1,7 +1,8 @@
-import neo4j, { Driver, Session, Integer } from 'neo4j-driver';
+import neo4j, { Driver, Session } from 'neo4j-driver';
 
 import { logger } from '@/lib/logger';
 import { handleError } from '@/lib/error-sanitizer';
+// Removed APP_CONSTANTS import due to dependency issues
 
 // Neo4j type interfaces
 interface Neo4jValue {
@@ -20,29 +21,6 @@ interface Neo4jRecord {
 }
 
 // Helper functions for safe Neo4j record access
-function getNodeFromRecord(record: Neo4jRecord, key: string): Neo4jNode {
-  const value = record.get(key);
-  // Add proper type checking before casting
-  if (typeof value === 'object' && value !== null && 'properties' in value && 'labels' in value) {
-    return value as Neo4jNode;
-  }
-  // Return a default Neo4jNode structure if type check fails
-  return {
-    labels: [],
-    properties: {}
-  };
-}
-
-function getValueFromRecord(record: Neo4jRecord, key: string): Neo4jValue {
-  const value = record.get(key);
-  // Ensure the value conforms to Neo4jValue interface
-  if (typeof value === 'object' && value !== null) {
-    return value as Neo4jValue;
-  }
-  // Return an empty object that conforms to Neo4jValue if type check fails
-  return {};
-}
-
 function getStringProperty(properties: Record<string, unknown>, key: string, fallback: string = 'Unknown'): string {
   const value = properties[key];
   return typeof value === 'string' ? value : fallback;
@@ -50,7 +28,12 @@ function getStringProperty(properties: Record<string, unknown>, key: string, fal
 
 function getNumberProperty(properties: Record<string, unknown>, key: string, fallback: number = 0): number {
   const value = properties[key];
-  return typeof value === 'number' ? value : fallback;
+  if (typeof value === 'number') return value;
+  // Handle Neo4j Integer type
+  if (value && typeof value === 'object' && 'toNumber' in value) {
+    return (value as Neo4jValue).toNumber?.() ?? fallback;
+  }
+  return fallback;
 }
 
 function getBooleanProperty(properties: Record<string, unknown>, key: string, fallback: boolean = false): boolean {
@@ -75,7 +58,7 @@ function safeExtractProductFromRecord(record: Neo4jRecord, key: string): GraphPr
       return null;
     }
     
-    const node = nodeValue as Neo4jNode;
+    const node = nodeValue as unknown as Neo4jNode;
     const props = node.properties as Record<string, unknown> | undefined;
     
     // Handle case where properties might be undefined
@@ -111,8 +94,8 @@ function safeExtractProductFromRecord(record: Neo4jRecord, key: string): GraphPr
 
 // Memgraph connection configuration
 const MEMGRAPH_URL = process.env.MEMGRAPH_URL ?? 'bolt://localhost:7687';
-const MEMGRAPH_USER = process.env.MEMGRAPH_USER ?? '';
-const MEMGRAPH_PASSWORD = process.env.MEMGRAPH_PASSWORD ?? '';
+const MEMGRAPH_USER = process.env.MEMGRAPH_USER ?? 'memgraph';
+const MEMGRAPH_PASSWORD = process.env.MEMGRAPH_PASSWORD ?? 'memgraph';
 
 let driver: Driver | null = null;
 let isShuttingDown = false;
@@ -173,9 +156,9 @@ async function initializeDriver(): Promise<Driver> {
     }
 
     // Check if Memgraph is configured
-    if (!MEMGRAPH_URL || MEMGRAPH_URL === 'bolt://localhost:7687') {
-      logger.warn('⚠️ Memgraph not configured, using fallback mode');
-      throw new Error('Memgraph not configured - missing MEMGRAPH_URL');
+    // Allow default localhost connection
+    if (!MEMGRAPH_URL) {
+      logger.warn('⚠️ No MEMGRAPH_URL, using default localhost');
     }
 
     logger.info('🔌 Initializing Memgraph connection...');
@@ -438,9 +421,10 @@ export async function findSimilarProducts(productId: number, limit: number = 5):
     return await withSession(
       async (session) => {
         const result = await session.run(`
-          MATCH (p:Product {id: $productId})-[:BELONGS_TO]->(c:Category)
+          MATCH (p:Product)-[:BELONGS_TO]->(c:Category)
+          WHERE toInteger(p.id) = $productId
           MATCH (similar:Product)-[:BELONGS_TO]->(c)
-          WHERE similar.id <> $productId
+          WHERE toInteger(similar.id) <> $productId
           WITH similar, COUNT(c) as commonCategories
           ORDER BY commonCategories DESC, similar.featured DESC
           LIMIT $limit
@@ -589,10 +573,10 @@ export async function getGraphStats(): Promise<{
         const relationshipCountValue = results[3]?.records[0]?.get('count') as Neo4jValue | undefined;
 
         return {
-          productCount: productCountValue ? getNumberFromValue(productCountValue as Neo4jValue) : 0,
-          categoryCount: categoryCountValue ? getNumberFromValue(categoryCountValue as Neo4jValue) : 0,
-          healthBenefitCount: healthBenefitCountValue ? getNumberFromValue(healthBenefitCountValue as Neo4jValue) : 0,
-          relationshipCount: relationshipCountValue ? getNumberFromValue(relationshipCountValue as Neo4jValue) : 0,
+          productCount: productCountValue ? getNumberFromValue(productCountValue) : 0,
+          categoryCount: categoryCountValue ? getNumberFromValue(categoryCountValue) : 0,
+          healthBenefitCount: healthBenefitCountValue ? getNumberFromValue(healthBenefitCountValue) : 0,
+          relationshipCount: relationshipCountValue ? getNumberFromValue(relationshipCountValue) : 0,
         };
       },
       async () => {
@@ -613,6 +597,120 @@ export async function getGraphStats(): Promise<{
       healthBenefitCount: 0,
       relationshipCount: 0,
     };
+  }
+}
+
+// Get complementary products (products that work well together)
+export async function getComplementaryProducts(productId: number, limit: number = 5): Promise<GraphProduct[]> {
+  try {
+    // Import cache dynamically to avoid circular dependencies
+    const { graphCache } = await import('./graph-cache');
+
+    // Try cache first
+    const cached = await graphCache.get<GraphProduct[]>('complementary', productId, limit);
+    if (cached) {
+      return cached;
+    }
+
+    logger.info(`Getting complementary products for productId: ${productId} (type: ${typeof productId}), limit: ${limit}`);
+
+    const result = await withSession(
+      async (session) => {
+        const result = await session.run(
+          `
+          MATCH (p:Product)
+          WHERE toInteger(p.id) = $productId
+          MATCH (p)-[:COMPLEMENTS|:FREQUENTLY_BOUGHT_WITH]-(complement:Product)
+          WHERE toInteger(complement.id) <> $productId
+          RETURN DISTINCT complement
+          LIMIT $limit
+          `,
+          { productId: neo4j.int(productId), limit: neo4j.int(limit) }
+        );
+
+        logger.info(`Query returned ${result.records.length} records`);
+
+        const products = result.records.map(record => {
+          const product = safeExtractProductFromRecord(record as Neo4jRecord, 'complement');
+          return product;
+        }).filter((p): p is GraphProduct => p !== null);
+
+        logger.info(`Found ${products.length} complementary products for product ${productId}`);
+
+        // Cache the results
+        await graphCache.set('complementary', productId, products, limit);
+
+        return products;
+      },
+      async () => {
+        logger.warn('⚠️ Memgraph unavailable - returning empty complementary products');
+        return [];
+      }
+    );
+
+    return result;
+  } catch (error) {
+    logger.error('❌ Failed to get complementary products:', error as Record<string, unknown>);
+    return [];
+  }
+}
+
+// Get frequently bought together products
+export async function getFrequentlyBoughtTogether(productId: number, limit: number = 5): Promise<GraphProduct[]> {
+  try {
+    // Import cache dynamically to avoid circular dependencies
+    const { graphCache } = await import('./graph-cache');
+
+    // Try cache first
+    const cached = await graphCache.get<GraphProduct[]>('frequently-bought', productId, limit);
+    if (cached) {
+      return cached;
+    }
+
+    const result = await withSession(
+      async (session) => {
+        const result = await session.run(
+          `
+          MATCH (p:Product)
+          WHERE toInteger(p.id) = $productId
+          MATCH (p)-[r:FREQUENTLY_BOUGHT_WITH]-(other:Product)
+          WHERE toInteger(other.id) <> $productId
+          RETURN DISTINCT other, r.confidence as confidence
+          ORDER BY confidence DESC
+          LIMIT $limit
+          `,
+          { productId: neo4j.int(productId), limit: neo4j.int(limit) }
+        );
+
+        const products = result.records.map(record => {
+          const product = safeExtractProductFromRecord(record, 'other');
+          return product || {
+            id: 0,
+            name: 'Unknown',
+            slug: '',
+            price: 0,
+            categories: [],
+            description: '',
+            inStock: false,
+            featured: false
+          };
+        }).filter(p => p.id !== 0);
+
+        // Cache the results
+        await graphCache.set('frequently-bought', productId, products, limit);
+
+        return products;
+      },
+      async () => {
+        logger.warn('⚠️ Memgraph unavailable - returning empty frequently bought products');
+        return [];
+      }
+    );
+
+    return result;
+  } catch (error) {
+    logger.error('❌ Failed to get frequently bought together products:', error as Record<string, unknown>);
+    return [];
   }
 }
 

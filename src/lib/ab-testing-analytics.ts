@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { realAnalytics } from '@/lib/real-analytics';
-import { abTesting, ABTest, ABTestVariant } from '@/lib/ab-testing';
+import { abTesting, ABTest } from '@/lib/ab-testing';
 
 // A/B Testing Analytics Service - Real conversion tracking and statistical analysis
 export interface ABTestParticipant {

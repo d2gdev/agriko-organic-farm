@@ -1,7 +1,7 @@
 // Performance Monitoring API endpoints
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
-import { performanceMonitor, BundleAnalyzer } from '@/lib/performance';
+import { performanceMonitor } from '@/lib/performance';
 import { coreWebVitalsService } from '@/lib/core-web-vitals';
 
 export async function GET(request: NextRequest) {

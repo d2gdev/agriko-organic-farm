@@ -3,7 +3,7 @@ import { logger } from '@/lib/logger';
 
 import { getProductsByCategory } from '@/lib/woocommerce';
 import ProductCard from '@/components/ProductCard';
-import GraphRecommendations from '@/components/GraphRecommendations';
+import { GraphRecommendations } from '@/components/GraphRecommendations';
 
 interface RelatedProductsProps {
   categoryId: number;
@@ -46,10 +46,10 @@ export default function RelatedProducts({ categoryId, currentProductId }: Relate
   return (
     <div className="border-t border-gray-200 pt-16">
       <h2 className="text-heading-2 text-gray-900 mb-8 text-center">
-        Related Products
+        You May Also Like
       </h2>
-      
-      {/* Graph-Based Recommendations (Primary) */}
+
+      {/* Complementary Products - Products that work well together */}
       <Suspense fallback={
         <div className="mb-8">
           <div className="animate-pulse">
@@ -66,11 +66,36 @@ export default function RelatedProducts({ categoryId, currentProductId }: Relate
           </div>
         </div>
       }>
-        <GraphRecommendations 
-          productId={currentProductId} 
-          type="similar"
+        <GraphRecommendations
+          productId={currentProductId}
+          type="complementary"
           limit={4}
-          title="AI-Powered Recommendations"
+          title="Perfect Pairings"
+        />
+      </Suspense>
+
+      {/* Frequently Bought Together */}
+      <Suspense fallback={
+        <div className="mb-8">
+          <div className="animate-pulse">
+            <div className="h-6 bg-gray-300 rounded w-1/4 mb-4"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="space-y-3">
+                  <div className="aspect-square bg-gray-300 rounded-lg"></div>
+                  <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      }>
+        <GraphRecommendations
+          productId={currentProductId}
+          type="frequently-bought"
+          limit={4}
+          title="Frequently Bought Together"
         />
       </Suspense>
 

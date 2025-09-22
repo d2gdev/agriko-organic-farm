@@ -1,22 +1,22 @@
 import HeroSection from '@/components/HeroSection';
 import Link from 'next/link';
-import Image from 'next/image';
 import ContactForm from './ContactForm';
 import ScrollButton from './ScrollButton';
+import { URL_CONSTANTS, urlHelpers } from '@/lib/url-constants';
 // import Breadcrumb from '@/components/Breadcrumb';
 
 export default function ContactPage() {
 
   // Enhanced Organization Schema for Contact Page
   const organizationSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": ["Organization", "LocalBusiness", "Store"],
     "name": "Agriko Organic Farm",
     "alternateName": "Agriko Multi-Trade & Enterprise Corp.",
     "legalName": "Agriko Multi-Trade & Enterprise Corp.",
     "description": "Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm.",
-    "url": "https://shop.agrikoph.com",
-    "logo": "https://shop.agrikoph.com/images/Agriko-Logo.png",
+    "url": urlHelpers.getShopUrl(),
+    "logo": `${urlHelpers.getShopUrl()}/images/Agriko-Logo.png`,
     "founder": {
       "@type": "Person",
       "name": "Gerry Paglinawan",
@@ -25,7 +25,7 @@ export default function ContactPage() {
     "address": [
       {
         "@type": "PostalAddress",
-        "@id": "https://shop.agrikoph.com/contact#cebu-office",
+        "@id": `${urlHelpers.getShopUrl()}/contact#cebu-office`,
         "name": "Visayas Office",
         "streetAddress": "GF G&A Arcade, Wilson St., Lahug",
         "addressLocality": "Cebu City",
@@ -40,7 +40,7 @@ export default function ContactPage() {
       },
       {
         "@type": "PostalAddress",
-        "@id": "https://shop.agrikoph.com/contact#farm-location",
+        "@id": `${urlHelpers.getShopUrl()}/contact#farm-location`,
         "name": "Paglinawan Organic Eco Farm",
         "streetAddress": "Paglinawan Organic Eco Farm, Purok 6, Libertad",
         "addressLocality": "Dumingag",
@@ -70,27 +70,27 @@ export default function ContactPage() {
       }
     ],
     "sameAs": [
-      "https://www.facebook.com/AgrikoPH/",
-      "https://agrikoph.com"
+      URL_CONSTANTS.SOCIAL.FACEBOOK,
+      URL_CONSTANTS.COMPANY_BASE_URL
     ]
   };
 
   // Enhanced Breadcrumb Schema for Contact Page
   const breadcrumbSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": "BreadcrumbList",
     "itemListElement": [
       {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://shop.agrikoph.com"
+        "item": urlHelpers.getShopUrl()
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Contact Us",
-        "item": "https://shop.agrikoph.com/contact"
+        "item": `${urlHelpers.getShopUrl()}/contact`
       }
     ]
   };
@@ -207,7 +207,7 @@ export default function ContactPage() {
                     </div>
                   </div>
                   <blockquote className="text-lg text-gray-700 italic mb-4">
-                    &ldquo;From our family farm to your table, we&apos;re committed to bringing you the finest organic products with personal care.&rdquo;
+                    &ldquo;From our family farm to your cup, we&apos;re committed to bringing you the finest organic products with personal care.&rdquo;
                   </blockquote>
                   <cite className="text-gray-600 font-semibold">– Gerry Paglinawan, Founder</cite>
                 </div>

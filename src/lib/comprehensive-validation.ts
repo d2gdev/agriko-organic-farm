@@ -506,7 +506,8 @@ export function createValidationMiddleware<T>(
   } = {}
 ) {
   return (data: unknown): T => {
-    const { sanitize = true, validateConsistency = false, logValidationErrors = true } = options;
+    const { sanitize: _sanitize = true, validateConsistency = false, logValidationErrors = true } = options;
+    void _sanitize; // Mark as used for future implementation
     
     try {
       // First pass: Zod validation with built-in sanitization

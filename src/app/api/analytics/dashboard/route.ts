@@ -182,7 +182,7 @@ function generateEnhancedMockAnalytics(timeRange: string) {
 }
 
 // Basic fallback mock analytics (emergency fallback only)
-function generateBasicMockAnalytics(timeRange: string) {
+function generateBasicMockAnalytics(_timeRange: string) {
   return {
     overview: {
       totalVisitors: 750,

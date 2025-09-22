@@ -1,0 +1,41 @@
+// Production Environment Utilities
+export const isProd = process.env.NODE_ENV === 'production';
+export const isDev = process.env.NODE_ENV === 'development';
+
+// Production-safe logging
+export const prodLog = (message: string, data?: any) => {
+  if (!isProd) {
+    // eslint-disable-next-line no-console
+    console.log(message, data);
+  }
+};
+
+// Memory usage monitoring
+export const checkMemoryUsage = () => {
+  if (typeof process !== 'undefined' && process.memoryUsage) {
+    const usage = process.memoryUsage();
+    const usedMB = Math.round(usage.heapUsed / 1024 / 1024);
+
+    if (usedMB > 45) { // Warn at 45MB to stay under 50MB limit
+      if (!isProd) {
+        console.warn(`Memory usage high: ${usedMB}MB`);
+      }
+    }
+
+    return { usedMB, totalMB: Math.round(usage.heapTotal / 1024 / 1024) };
+  }
+  return null;
+};
+
+// Production-safe error handling
+export const prodError = (error: unknown, context?: string) => {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+
+  if (isProd) {
+    // In production, log sanitized errors only
+    console.error(`Error${context ? ` in ${context}` : ''}: ${errorMessage}`);
+  } else {
+    // In development, show full error details
+    console.error(`Error${context ? ` in ${context}` : ''}:`, error);
+  }
+};

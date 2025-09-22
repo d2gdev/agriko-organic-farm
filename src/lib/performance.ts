@@ -91,7 +91,7 @@ class PerformanceOptimizer {
 
       observer.observe({ entryTypes: ['largest-contentful-paint'] });
       this.observers.push(observer);
-    } catch (e) {
+    } catch {
       logger.warn('LCP observer not supported');
     }
   }
@@ -128,7 +128,7 @@ class PerformanceOptimizer {
 
       observer.observe({ entryTypes: ['first-input'] });
       this.observers.push(observer);
-    } catch (e) {
+    } catch {
       logger.warn('FID observer not supported');
     }
   }
@@ -169,7 +169,7 @@ class PerformanceOptimizer {
 
       observer.observe({ entryTypes: ['layout-shift'] });
       this.observers.push(observer);
-    } catch (e) {
+    } catch {
       logger.warn('CLS observer not supported');
     }
   }
@@ -189,7 +189,7 @@ class PerformanceOptimizer {
 
       observer.observe({ entryTypes: ['paint'] });
       this.observers.push(observer);
-    } catch (e) {
+    } catch {
       logger.warn('FCP observer not supported');
     }
   }
@@ -216,7 +216,7 @@ class PerformanceOptimizer {
 
       observer.observe({ entryTypes: ['navigation'] });
       this.observers.push(observer);
-    } catch (e) {
+    } catch {
       logger.warn('Navigation observer not supported');
     }
   }
@@ -400,7 +400,7 @@ export class PerformanceMonitor {
   }
 
   private calculateAverage(metrics: PerformanceMetrics[], key: keyof PerformanceMetrics): number {
-    const values = metrics.map(m => m[key]).filter(v => v !== undefined) as number[];
+    const values = metrics.map(m => m[key]).filter(v => v !== undefined && typeof v === 'number');
     return values.length > 0 ? values.reduce((sum: number, val) => sum + val, 0) / values.length : 0;
   }
 
@@ -443,7 +443,8 @@ export const BundleAnalyzer = {
   async analyzeBundleSize(): Promise<BundleAnalysis> {
     try {
       const performance = window.performance;
-      const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+      const _navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+      void _navigationEntries; // Preserved for future navigation timing analysis
       const resourceEntries = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
 
       const jsResources = resourceEntries.filter(entry => 
@@ -542,25 +543,120 @@ export const performanceMonitor = PerformanceMonitor.getInstance();
 
 // Resource preloading utilities
 export const ResourcePreloader = {
-  // Preload critical resources
+  // Preload critical resources based on current page
   preloadCriticalResources() {
-    const criticalResources = [
-      // Preload critical fonts
-      { href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@400;600&display=swap', as: 'style' },
-      // Preload hero images
-      { href: '/images/hero-organic-farm.jpg', as: 'image' },
-      { href: '/images/products-hero.jpg', as: 'image' }
-    ];
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+
+    // Clean up any legacy preload links first - run immediately and repeatedly
+    this.cleanupLegacyPreloads();
+
+    // Set up periodic cleanup to remove any legacy preloads that might get added
+    if (typeof window !== 'undefined') {
+      setTimeout(() => this.cleanupLegacyPreloads(), 1000);
+      setTimeout(() => this.cleanupLegacyPreloads(), 3000);
+    }
+
+    // Always preload critical fonts
+    const fontResource = {
+      href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@400;600&display=swap',
+      as: 'style'
+    };
+
+    // Only preload images if they're likely to be used on the current page
+    const criticalResources = [fontResource];
+
+    // Add page-specific image preloads based on actual usage
+    if (currentPath === '/' || currentPath === '/about') {
+      // Main hero image used on home and about pages
+      criticalResources.push({ href: '/images/hero.png', as: 'image' });
+    }
+
+    if (currentPath === '/') {
+      // Featured product images on home page
+      criticalResources.push({ href: '/images/agriko-turmeric-5in1-blend-500g-health-supplement.jpg', as: 'image' });
+    }
+
+    if (currentPath === '/products') {
+      // Products page specific images
+      criticalResources.push({ href: '/images/organic-rice-varieties.jpg', as: 'image' });
+    }
+
+    // Debug logging to track what's being preloaded
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug('🔄 Preloading resources for path:', currentPath, criticalResources.map(r => r.href));
+    }
 
     criticalResources.forEach(resource => {
+      // Check if resource is already preloaded to avoid duplicates
+      const existingLink = document.head.querySelector(`link[rel="preload"][href="${resource.href}"]`);
+      if (existingLink) {
+        if (process.env.NODE_ENV === 'development') {
+          logger.debug('⏭️ Skipping duplicate preload:', resource.href);
+        }
+        return;
+      }
+
+      // Explicitly prevent preloading of unused legacy images
+      if (resource.href.includes('hero-organic-farm.jpg') || resource.href.includes('products-hero.jpg')) {
+        console.warn('🚫 Blocked legacy image preload:', resource.href);
+        return;
+      }
+
       const link = document.createElement('link');
       link.rel = 'preload';
       link.href = resource.href;
       link.as = resource.as;
-      if (resource.as === 'style') link.onload = () => link.rel = 'stylesheet';
+      if (resource.as === 'style') {
+        link.onload = () => {
+          link.rel = 'stylesheet';
+        };
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        logger.debug('✅ Preloading:', resource.href);
+      }
+
       document.head.appendChild(link);
     });
   },
+
+  // Clean up legacy preload links that shouldn't be there
+  cleanupLegacyPreloads() {
+    const legacyImages = ['hero-organic-farm.jpg', 'products-hero.jpg'];
+    legacyImages.forEach(imageName => {
+      // Check both head and body for preload links
+      const allLinks = document.querySelectorAll(`link[rel="preload"][href*="${imageName}"]`);
+      allLinks.forEach(link => {
+        console.warn('🗑️ Removing legacy preload:', link.getAttribute('href'));
+        link.remove();
+      });
+    });
+
+    // Set up mutation observer to prevent future legacy preloads
+    if (typeof window !== 'undefined' && !this._cleanupObserver) {
+      this._cleanupObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1 && node.nodeName === 'LINK') {
+              const link = node as HTMLLinkElement;
+              if (link.rel === 'preload' &&
+                  (link.href.includes('hero-organic-farm.jpg') || link.href.includes('products-hero.jpg'))) {
+                console.warn('🚫 Blocked dynamic legacy preload:', link.href);
+                link.remove();
+              }
+            }
+          });
+        });
+      });
+
+      this._cleanupObserver.observe(document.head, {
+        childList: true,
+        subtree: true
+      });
+    }
+  },
+
+  _cleanupObserver: null as MutationObserver | null,
 
   // Prefetch next page resources
   prefetchNextPageResources() {
@@ -581,7 +677,7 @@ export const ResourcePreloader = {
   // Preconnect to external domains
   preconnectExternalDomains() {
     const domains = [
-      'https://agrikoph.com',
+      'URL_CONSTANTS.COMPANY_BASE_URL',
       'https://www.googletagmanager.com',
       'https://fonts.googleapis.com',
       'https://fonts.gstatic.com'
@@ -630,7 +726,7 @@ export const ImageOptimizer = {
         });
       });
 
-      document.querySelectorAll('img[data-src]').forEach(img => {
+      Array.from(document.querySelectorAll('img[data-src]')).forEach(img => {
         imageObserver.observe(img);
       });
     }

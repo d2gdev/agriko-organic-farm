@@ -12,14 +12,14 @@ export enum VulnerabilityLevel {
 }
 
 // Package audit result
-interface PackageAudit {
-  name: string;
-  version: string;
-  vulnerabilities: Vulnerability[];
-  isOutdated: boolean;
-  latestVersion?: string;
-  directDependency: boolean;
-}
+// interface PackageAudit {
+//   name: string;
+//   version: string;
+//   vulnerabilities: Vulnerability[];
+//   isOutdated: boolean;
+//   latestVersion?: string;
+//   directDependency: boolean;
+// }
 
 interface Vulnerability {
   id: string;
@@ -32,15 +32,15 @@ interface Vulnerability {
 }
 
 // Package metadata
-interface PackageInfo {
-  name: string;
-  version: string;
-  license: string;
-  description?: string;
-  maintainers: string[];
-  lastPublished: string;
-  dependencies?: Record<string, string>;
-}
+// interface PackageInfo {
+//   name: string;
+//   version: string;
+//   license: string;
+//   description?: string;
+//   maintainers: string[];
+//   lastPublished: string;
+//   dependencies?: Record<string, string>;
+// }
 
 // Critical packages that require special attention
 const CRITICAL_PACKAGES = [
@@ -55,16 +55,16 @@ const CRITICAL_PACKAGES = [
 ];
 
 // Packages with known security implications
-const SECURITY_SENSITIVE_PACKAGES = [
-  'jsonwebtoken',
-  'bcryptjs',
-  'crypto',
-  'node-fetch',
-  'axios',
-  'express',
-  'cors',
-  'helmet'
-];
+// const SECURITY_SENSITIVE_PACKAGES = [
+//   'jsonwebtoken',
+//   'bcryptjs',
+//   'crypto',
+//   'node-fetch',
+//   'axios',
+//   'express',
+//   'cors',
+//   'helmet'
+// ];
 
 // License compatibility matrix
 const LICENSE_COMPATIBILITY = {
@@ -128,7 +128,7 @@ export class DependencySecurityManager {
       try {
         const lockFileContent = readFileSync(this.lockfilePath, 'utf-8');
         this.lockfile = JSON.parse(lockFileContent) as PackageLock;
-      } catch (error) {
+      } catch {
         logger.warn('Package lock file not found or invalid, some features will be limited');
         this.lockfile = null;
       }
@@ -151,7 +151,7 @@ export class DependencySecurityManager {
     };
 
     for (const [name, version] of Object.entries(directDeps)) {
-      deps.set(name, version as string);
+      deps.set(name, version);
     }
 
     // Transitive dependencies from lockfile
@@ -159,8 +159,8 @@ export class DependencySecurityManager {
       for (const [path, info] of Object.entries(this.lockfile.packages)) {
         if (path.startsWith('node_modules/')) {
           const name = path.replace('node_modules/', '');
-          if (!deps.has(name) && (info as PackageLockInfo).version) {
-            deps.set(name, (info as PackageLockInfo).version as string);
+          if (!deps.has(name) && info.version) {
+            deps.set(name, info.version);
           }
         }
       }

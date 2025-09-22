@@ -117,8 +117,8 @@ export const serviceHealthChecks = {
       timeout: 15000,
       retries: 1,
     },
-    pinecone: {
-      enabled: !!config.apis.pinecone?.apiKey,
+    qdrant: {
+      enabled: !!config.apis.qdrant?.apiKey,
       timeout: 10000,
       retries: 1,
     },

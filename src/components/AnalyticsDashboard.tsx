@@ -1,16 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { logger } from '@/lib/logger';
 
-import { 
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
-} from 'recharts';
-import { 
-  TrendingUp, TrendingDown, Users, ShoppingCart, 
-  Search, Eye, MousePointer, DollarSign, Clock, Target 
-} from 'lucide-react';
+// import {
+//   ResponsiveContainer
+// } from 'recharts';
+// import {
+//   TrendingUp, TrendingDown, Users, ShoppingCart,
+//   Search, Eye, MousePointer, DollarSign, Clock, Target
+// } from 'lucide-react';
 import { behaviorEvent } from '@/lib/gtag';
 
 interface AnalyticsData {

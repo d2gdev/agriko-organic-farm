@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
@@ -82,7 +81,7 @@ export default function CartPage() {
             <div className="space-y-4">
               <Link
                 href="/"
-                className="inline-block bg-primary-700 text-white px-8 py-4 rounded-lg font-semibold hover:bg-primary-800 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 duration-200"
+                className="inline-block bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-4 rounded-xl font-bold hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 Explore Our Products
               </Link>
@@ -121,7 +120,7 @@ export default function CartPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
+          <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
             {/* Desktop Header */}
             <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-neutral-50 border-b border-neutral-200 text-sm font-medium text-neutral-700">
               <div className="col-span-6">Product</div>
@@ -134,7 +133,7 @@ export default function CartPage() {
             <div className="divide-y divide-gray-200">
               {state.items.map((item) => {
                 const itemKey = `${item.product.id}-${item.variation?.id || 'no-variation'}`;
-                const itemTotalResult = safePriceMultiply(item.product.price, item.quantity, `cart-item-${item.product.id}`);
+                const itemTotalResult = safePriceMultiply(item.product.price as string | number, item.quantity, `cart-item-${item.product.id}`);
                 const itemTotal = itemTotalResult.success ? itemTotalResult.value : 0;
 
                 return (
@@ -179,7 +178,7 @@ export default function CartPage() {
 
                           <button
                             onClick={() => removeItem(item.product.id, item.variation?.id)}
-                            className="text-sm text-red-600 hover:text-red-800 mt-2 transition-colors md:hidden"
+                            className="text-sm text-red-600 hover:text-red-700 mt-2 transition-colors font-medium md:hidden"
                           >
                             Remove
                           </button>
@@ -191,7 +190,7 @@ export default function CartPage() {
                         <div className="flex items-center justify-between md:justify-center">
                           <span className="text-sm text-neutral-500 md:hidden">Price:</span>
                           <span className="font-medium text-neutral-900">
-                            {formatPrice(item.product.price)}
+                            {formatPrice(item.product.price as string | number)}
                           </span>
                         </div>
                       </div>
@@ -244,7 +243,7 @@ export default function CartPage() {
                             </span>
                             <button
                               onClick={() => removeItem(item.product.id, item.variation?.id)}
-                              className="hidden md:block text-sm text-red-600 hover:text-red-800 mt-1 transition-colors"
+                              className="hidden md:block text-sm text-red-600 hover:text-red-700 mt-1 transition-colors font-medium"
                             >
                               Remove
                             </button>
@@ -262,9 +261,9 @@ export default function CartPage() {
           <div className="mt-6">
             <Link
               href="/"
-              className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors"
+              className="inline-flex items-center text-green-600 hover:text-green-700 font-semibold transition-colors duration-200 group"
             >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Continue Shopping
@@ -274,15 +273,18 @@ export default function CartPage() {
 
         {/* Order Summary */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-6 sticky top-6">
-            <h2 className="text-heading-2 text-neutral-900 mb-6">Order Summary</h2>
+          <div className="bg-white rounded-xl shadow-xl border-2 border-gray-100 p-8 sticky top-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <span className="text-2xl">📋</span>
+              Order Summary
+            </h2>
             
             <div className="space-y-4">
               {/* Items breakdown */}
               <div className="space-y-2 pb-2">
-                {state.items.slice(0, 3).map((item, index) => {
+                {state.items.slice(0, 3).map((item) => {
                   const itemKey = `${item.product.id}-${item.variation?.id || 'no-variation'}`;
-                  const itemTotalResult = safePriceMultiply(item.product.price, item.quantity, `cart-summary-${item.product.id}`);
+                  const itemTotalResult = safePriceMultiply(item.product.price as string | number, item.quantity, `cart-summary-${item.product.id}`);
                   const itemTotal = itemTotalResult.success ? itemTotalResult.value : 0;
                   return (
                     <div key={itemKey} className="flex justify-between text-sm">
@@ -315,7 +317,7 @@ export default function CartPage() {
               {/* Shipping */}
               <div className="flex justify-between">
                 <span className="text-neutral-600">Shipping</span>
-                <span className="font-medium text-primary-600">Free delivery*</span>
+                <span className="font-medium text-green-600">Free delivery*</span>
               </div>
 
               {/* Tax */}
@@ -329,11 +331,11 @@ export default function CartPage() {
               {/* Total */}
               <div className="flex justify-between">
                 <span className="text-lg font-semibold text-neutral-900">Total</span>
-                <span className="text-xl font-bold text-primary-700">{formatPrice(state.total)}</span>
+                <span className="text-xl font-bold text-red-600">{formatPrice(state.total)}</span>
               </div>
 
               {/* Savings indicator */}
-              <div className="text-center text-sm text-primary-600 bg-primary-50 rounded-lg p-2">
+              <div className="text-center text-sm text-green-700 bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
                 <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
@@ -344,16 +346,14 @@ export default function CartPage() {
             {/* Checkout Button */}
             <Link
               href="/checkout"
-              className="w-full bg-primary-600 text-white py-4 px-6 rounded-lg font-semibold text-center hover:bg-primary-700 transition-colors mt-6 block"
+              className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-4 px-6 rounded-xl font-bold text-center hover:from-red-700 hover:to-red-800 transition-all duration-300 mt-6 block transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               Proceed to Checkout
             </Link>
 
             {/* Secure Checkout Notice */}
-            <div className="flex items-center justify-center mt-4 text-sm text-neutral-500">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
+            <div className="flex items-center justify-center mt-4 text-sm text-gray-600 font-medium">
+              <span className="text-lg mr-1">🔒</span>
               Secure Checkout
             </div>
           </div>

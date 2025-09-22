@@ -1,7 +1,7 @@
 // Google Search Console API integration for advanced SEO analytics
 import { event } from '@/lib/gtag';
 import { logger } from '@/lib/logger';
-import { config } from '@/lib/unified-config';
+// import { config } from '@/lib/unified-config'; // Preserved for future Search Console configuration
 
 // Search Console metrics interface
 export interface SearchConsoleMetrics {
@@ -76,7 +76,7 @@ class GoogleSearchConsoleService {
   private readonly CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
 
   constructor() {
-    this.siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shop.agrikoph.com';
+    this.siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'urlHelpers.getShopUrl()';
   }
 
   static getInstance(): GoogleSearchConsoleService {
@@ -116,7 +116,7 @@ class GoogleSearchConsoleService {
   }
 
   // Get service account access token (simplified - would use proper JWT library in production)
-  private async getServiceAccountToken(serviceAccount: string): Promise<string | null> {
+  private async getServiceAccountToken(_serviceAccount: string): Promise<string | null> {
     try {
       // In production, this would create a proper JWT token and exchange it for an access token
       // For now, return null to use fallback data
@@ -541,7 +541,7 @@ export const webVitalsTracking = {
 
       try {
         observer.observe({ entryTypes: ['largest-contentful-paint'] });
-      } catch (e) {
+      } catch {
         // LCP not supported
       }
 
@@ -572,7 +572,7 @@ export const webVitalsTracking = {
 
       try {
         fidObserver.observe({ entryTypes: ['first-input'] });
-      } catch (e) {
+      } catch {
         // FID not supported
       }
 
@@ -604,7 +604,7 @@ export const webVitalsTracking = {
 
       try {
         clsObserver.observe({ entryTypes: ['layout-shift'] });
-      } catch (e) {
+      } catch {
         // CLS not supported
       }
     } catch (error) {

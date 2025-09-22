@@ -14,6 +14,8 @@ import { useCart } from '@/context/CartContext';
 export default function NavbarWrapper() {
   const [products, setProducts] = useState<WCProduct[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const { toggleCart } = useCart();
 
@@ -26,32 +28,58 @@ export default function NavbarWrapper() {
     enabled: true
   });
 
+  // Track mounted state first
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Load products effect with proper dependency handling
+  useEffect(() => {
+    // Only load products after mounting to prevent SSR/client mismatch
+    if (!isMounted || isLoading) return;
+
+    let cancelled = false;
+
     // Fetch products for search functionality with fallback for static export
     const loadProducts = async () => {
+      setIsLoading(true);
       try {
         // Try API route first (works in development and server deployment)
         const response = await reliableFetch('/api/products?per_page=100&status=publish', {
           timeoutLevel: 'standard'
         });
-        if (response.ok) {
+        if (!cancelled && response.ok) {
           const data = await response.json();
           setProducts(Array.isArray(data) ? data : []);
+          logger.info(`Loaded ${Array.isArray(data) ? data.length : 0} products for search`);
           return;
         }
-        
+
         // Fallback for static export builds - skip product loading
-        logger.info('API routes not available in static export, skipping product preload');
-        setProducts([]);
+        if (!cancelled) {
+          logger.info('API routes not available in static export, skipping product preload');
+          setProducts([]);
+        }
       } catch (error) {
-        logger.error('Error fetching products for search:', error as Record<string, unknown>);
-        // Set empty array on error to prevent UI issues
-        setProducts([]);
+        if (!cancelled) {
+          logger.error('Error fetching products for search:', error as Record<string, unknown>);
+          // Set empty array on error to prevent UI issues
+          setProducts([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
     loadProducts();
-  }, []);
+
+    // Cleanup function
+    return () => {
+      cancelled = true;
+    };
+  }, [isMounted, isLoading]); // Include isLoading in dependencies
 
   return (
     <Navbar 

@@ -1,10 +1,25 @@
-import { pipeline, env } from '@xenova/transformers';
+// Only import Transformers.js on server side to prevent worker spawning
+let pipeline: any = null;
+let env: any = null;
+
+// Prevent any execution on client side
+if (typeof window === 'undefined' && typeof process !== 'undefined') {
+  try {
+    const transformers = require('@xenova/transformers');
+    pipeline = transformers.pipeline;
+    env = transformers.env;
+
+    // Disable remote models fallback to ensure local-only operation
+    if (env) {
+      env.allowRemoteModels = false;
+      env.allowLocalModels = true;
+    }
+  } catch (error) {
+    console.warn('Transformers.js not available:', error);
+  }
+}
 
 import { logger } from '@/lib/logger';
-
-// Disable remote models fallback to ensure local-only operation
-env.allowRemoteModels = false;
-env.allowLocalModels = true;
 
 // Interface for the Xenova embedder
 interface XenovaEmbedder {
@@ -25,8 +40,8 @@ class EmbeddingManager {
   private readonly RETRY_DELAY = 5000; // 5 seconds
 
   constructor() {
-    // Start preloading the model immediately when the module loads
-    if (typeof window === 'undefined') {
+    // Only initialize on server-side and when pipeline is available
+    if (typeof window === 'undefined' && typeof process !== 'undefined' && pipeline) {
       // Only preload in Node.js environment (server-side)
       this.preloadModel();
     }
@@ -51,6 +66,15 @@ class EmbeddingManager {
    * Get the embedder with proper initialization handling
    */
   async getEmbedder(): Promise<XenovaEmbedder> {
+    // Prevent execution on client side
+    if (typeof window !== 'undefined') {
+      throw new Error('Embedding generation is not available on client side');
+    }
+
+    if (!pipeline) {
+      throw new Error('Transformers.js pipeline not available');
+    }
+
     // If we already have an initialized embedder, return it
     if (this.embedder) {
       return this.embedder;
@@ -115,12 +139,13 @@ class EmbeddingManager {
     this.isInitializing = true;
     
     try {
-      logger.info('Loading local embedding model...', undefined, 'embeddings');
-      
+      logger.info('Loading enhanced MPNet embedding model...', undefined, 'embeddings');
+
       // Set a reasonable timeout for model loading
-      const modelLoadPromise = pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2') as Promise<XenovaEmbedder>;
+      // Using all-mpnet-base-v2 for better quality embeddings (768 dimensions)
+      const modelLoadPromise = pipeline('feature-extraction', 'Xenova/all-mpnet-base-v2') as Promise<XenovaEmbedder>;
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Model loading timeout after 60 seconds')), 60000);
+        setTimeout(() => reject(new Error('Model loading timeout after 90 seconds')), 90000);
       });
       
       const embedder = await Promise.race([modelLoadPromise, timeoutPromise]);
@@ -176,109 +201,67 @@ class EmbeddingManager {
   }
 }
 
-// Create singleton instance
-const embeddingManager = new EmbeddingManager();
+// Create singleton instance only on server side
+const embeddingManager = typeof window === 'undefined' ? new EmbeddingManager() : null;
 
 // Export the main function that applications should use
 export async function initializeEmbedder() {
+  if (typeof window !== 'undefined') {
+    throw new Error('Embedding initialization is not available on client side');
+  }
+
+  if (!embeddingManager) {
+    throw new Error('Embedding manager not available');
+  }
+
   return embeddingManager.getEmbedder();
 }
 
 // Export additional utility functions
 export function isEmbedderReady(): boolean {
+  if (typeof window !== 'undefined' || !embeddingManager) {
+    return false;
+  }
   return embeddingManager.isReady();
 }
 
 export function isEmbedderLoading(): boolean {
+  if (typeof window !== 'undefined' || !embeddingManager) {
+    return false;
+  }
   return embeddingManager.isLoading();
 }
 
 export function getEmbedderStatus() {
+  if (typeof window !== 'undefined' || !embeddingManager) {
+    return { status: 'unavailable', reason: 'Client side or manager not available' };
+  }
   return embeddingManager.getStatus();
 }
 
 export async function reinitializeEmbedder(): Promise<XenovaEmbedder> {
+  if (typeof window !== 'undefined') {
+    throw new Error('Embedding reinitialization is not available on client side');
+  }
+
+  if (!embeddingManager) {
+    throw new Error('Embedding manager not available');
+  }
+
   return embeddingManager.reinitialize();
 }
 
-// Cache for dimension transformation matrix
-let transformationMatrix: number[][] | null = null;
 
-function generateTransformationMatrix(inputDim: number, outputDim: number): number[][] {
-  // Generate a random orthogonal matrix for dimension transformation
-  // This preserves more semantic information than zero-padding/truncation
-  const matrix: number[][] = [];
-  
-  // Create random matrix
-  for (let i = 0; i < outputDim; i++) {
-    const row: number[] = [];
-    for (let j = 0; j < inputDim; j++) {
-      row.push((Math.random() - 0.5) * 2); // Random values between -1 and 1
-    }
-    matrix.push(row);
-  }
-  
-  // Apply Gram-Schmidt process for orthogonalization (simplified)
-  for (let i = 0; i < outputDim; i++) {
-    // Normalize current row
-    const row = matrix[i];
-    if (row !== undefined) {
-      const norm = Math.sqrt(row.reduce((sum, val) => sum + val * val, 0));
-      if (norm > 0) {
-        for (let j = 0; j < inputDim; j++) {
-          const val = row[j];
-          if (val !== undefined) {
-            row[j] = val / norm;
-          }
-        }
-      }
-    }
-  }
-  
-  return matrix;
-}
 
-function transformEmbedding(embedding: number[], targetDimensions: number): number[] {
-  const inputDim = embedding.length;
-  
-  // If dimensions match, return as-is
-  if (inputDim === targetDimensions) {
-    return embedding;
+export async function generateEmbedding(text: string, dimensions: number = 768): Promise<number[]> {
+  if (typeof window !== 'undefined') {
+    throw new Error('Embedding generation is not available on client side');
   }
-  
-  // Generate or reuse transformation matrix
-  if (!transformationMatrix || transformationMatrix.length !== targetDimensions || transformationMatrix[0]?.length !== inputDim) {
-    // Use synchronous logging for build compatibility
-    if (process.env.NODE_ENV !== 'production') {
-      logger.debug(`Generating transformation matrix: ${inputDim} -> ${targetDimensions} dimensions`);
-    }
-    transformationMatrix = generateTransformationMatrix(inputDim, targetDimensions);
-  }
-  
-  // Apply linear transformation
-  const transformedEmbedding: number[] = [];
-  for (let i = 0; i < targetDimensions; i++) {
-    let sum = 0;
-    for (let j = 0; j < inputDim; j++) {
-      sum += (transformationMatrix[i]?.[j] ?? 0) * (embedding[j] ?? 0);
-    }
-    transformedEmbedding[i] = sum;
-  }
-  
-  // Normalize the result to maintain vector properties
-  const norm = Math.sqrt(transformedEmbedding.reduce((sum, val) => sum + val * val, 0));
-  if (norm > 0) {
-    for (let i = 0; i < targetDimensions; i++) {
-      transformedEmbedding[i] = (transformedEmbedding[i] ?? 0) / norm;
-    }
-  }
-  
-  // Ensure we return a proper number array
-  return transformedEmbedding as number[];
 
-}
+  if (!embeddingManager) {
+    throw new Error('Embedding manager not available');
+  }
 
-export async function generateEmbedding(text: string, dimensions: number = 1536): Promise<number[]> {
   try {
     if (!embeddingManager.isReady()) {
       await initializeEmbedder();
@@ -305,8 +288,8 @@ export async function generateEmbedding(text: string, dimensions: number = 1536)
       embedding.push(Number(outputData[i]));
     }
     
-    // Pad or truncate to exactly 1536 dimensions for Pinecone compatibility
-    const targetDimensions = 1536;
+    // MPNet produces 768 dimensions natively
+    const targetDimensions = dimensions || 768;
     if (embedding.length < targetDimensions) {
       // Pad with zeros
       const padding = new Array(targetDimensions - embedding.length).fill(0);
@@ -638,17 +621,17 @@ function inferDomainContext(text: string): string[] {
 }
 
 // Enhanced embedding generation with text preprocessing
-export async function generateEnhancedEmbedding(text: string): Promise<number[]> {
+export async function generateEnhancedEmbedding(text: string, dimensions: number = 768): Promise<number[]> {
   try {
-    if (!embeddingManager.isReady()) {
+    if (!embeddingManager?.isReady()) {
       await initializeEmbedder();
     }
 
     // Text preprocessing for better embedding quality
     const processedText = preprocessText(text);
-    
+
     // Get the embedder from the manager
-    const embedder = await embeddingManager.getEmbedder();
+    const embedder = await embeddingManager?.getEmbedder();
     if (!embedder) {
       throw new Error('Embedder not initialized');
     }
@@ -668,8 +651,8 @@ export async function generateEnhancedEmbedding(text: string): Promise<number[]>
       embedding.push(Number(outputData[i]));
     }
     
-    // Pad or truncate to exactly 1536 dimensions for Pinecone compatibility
-    const targetDimensions = 1536;
+    // MPNet produces 768 dimensions natively
+    const targetDimensions = dimensions || 768;
     if (embedding.length < targetDimensions) {
       // Pad with zeros
       const padding = new Array(targetDimensions - embedding.length).fill(0);

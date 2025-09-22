@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { createValidationError, createConflictError, APIError, ErrorType } from '@/lib/error-handler';
+import { APIError, ErrorType } from '@/lib/error-handler';
 
 // Business rule violation types
 export enum BusinessRuleViolation {

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { logger } from '@/lib/logger';
 import { reviewDB } from '@/lib/review-database';
 import { createErrorResponse, createSuccessResponse, validateRequestBody, validateQueryParams } from '@/lib/api-helpers';
-import { Review, ReviewSubmission, ReviewFilters, ReviewListResponse, REVIEW_VALIDATION } from '@/types/reviews';
+import { ReviewListResponse, REVIEW_VALIDATION } from '@/types/reviews';
 import { checkEndpointRateLimit, createRateLimitResponse } from '@/lib/rate-limit';
 import { z } from 'zod';
 
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Apply rate limiting for review submissions
-    const { checkEndpointRateLimit, createRateLimitResponse } = await import('@/lib/rate-limit');
+    const { checkEndpointRateLimit } = await import('@/lib/rate-limit');
     const rateLimitCheck = checkEndpointRateLimit(request, 'public');
     
     if (!rateLimitCheck.success) {
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     // Apply rate limiting for admin operations
-    const { checkEndpointRateLimit, createRateLimitResponse } = await import('@/lib/rate-limit');
+    const { checkEndpointRateLimit } = await import('@/lib/rate-limit');
     const rateLimitCheck = checkEndpointRateLimit(request, 'admin');
     
     if (!rateLimitCheck.success) {

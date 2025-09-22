@@ -171,9 +171,10 @@ function scoreProduct(
   });
 
   // Boost popular/featured products
-  if ((product as any).featured) score *= 1.2;
-  if ((product as any).total_sales && (product as any).total_sales > 10) {
-    score *= (1 + Math.log10((product as any).total_sales) / 10);
+  const productWithExtras = product as unknown as Record<string, unknown>;
+  if (productWithExtras.featured) score *= 1.2;
+  if (productWithExtras.total_sales && (productWithExtras.total_sales as number) > 10) {
+    score *= (1 + Math.log10(productWithExtras.total_sales as number) / 10);
   }
 
   // Boost in-stock products
@@ -231,8 +232,8 @@ export async function improvedSearch(
       // Apply filters
       if (inStock !== undefined && (product.stock_status === 'instock') !== inStock) return false;
       if (category && !product.categories?.some(c => c.slug === category)) return false;
-      if (minPrice && parseFloat(product.price) < minPrice) return false;
-      if (maxPrice && parseFloat(product.price) > maxPrice) return false;
+      if (minPrice && product.price && parseFloat(product.price) < minPrice) return false;
+      if (maxPrice && product.price && parseFloat(product.price) > maxPrice) return false;
       return true;
     })
     .map(product => {
@@ -254,10 +255,10 @@ export async function improvedSearch(
   // Sort results
   switch (sortBy) {
     case 'price_asc':
-      results.sort((a, b) => parseFloat(a.product.price) - parseFloat(b.product.price));
+      results.sort((a, b) => parseFloat(a.product.price || '0') - parseFloat(b.product.price || '0'));
       break;
     case 'price_desc':
-      results.sort((a, b) => parseFloat(b.product.price) - parseFloat(a.product.price));
+      results.sort((a, b) => parseFloat(b.product.price || '0') - parseFloat(a.product.price || '0'));
       break;
     case 'name':
       results.sort((a, b) => a.product.name.localeCompare(b.product.name));

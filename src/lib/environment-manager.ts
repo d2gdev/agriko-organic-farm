@@ -36,7 +36,7 @@ const EnvironmentConfigSchema = z.object({
   // External service APIs
   DEEPSEEK_API_KEY: z.string().startsWith('sk-', 'DeepSeek API key invalid format').optional(),
   OPENAI_API_KEY: z.string().startsWith('sk-', 'OpenAI API key invalid format').optional(),
-  PINECONE_API_KEY: z.string().min(20, 'Pinecone API key invalid').optional(),
+  QDRANT_API_KEY: z.string().min(20, 'Qdrant API key invalid').optional(),
   PINECONE_ENVIRONMENT: z.string().optional(),
   PINECONE_INDEX: z.string().optional(),
   
@@ -204,7 +204,7 @@ export class EnvironmentManager {
             woocommerce: !!config.NEXT_PUBLIC_WC_API_URL,
             deepseek: !!config.DEEPSEEK_API_KEY,
             openai: !!config.OPENAI_API_KEY,
-            pinecone: !!config.PINECONE_API_KEY,
+            qdrant: !!config.QDRANT_API_KEY,
             sentry: !!config.SENTRY_DSN,
           }
         } as Record<string, unknown>);
@@ -287,8 +287,8 @@ export class EnvironmentManager {
     return {
       deepseek: this.config.DEEPSEEK_API_KEY,
       openai: this.config.OPENAI_API_KEY,
-      pinecone: {
-        apiKey: this.config.PINECONE_API_KEY,
+      qdrant: {
+        apiKey: this.config.QDRANT_API_KEY,
         environment: this.config.PINECONE_ENVIRONMENT,
         index: this.config.PINECONE_INDEX,
       },
@@ -403,7 +403,7 @@ export class EnvironmentManager {
     const sensitiveKeys = [
       'JWT_SECRET', 'NEXTAUTH_SECRET', 'SESSION_SECRET',
       'ADMIN_PASSWORD_HASH', 'WC_CONSUMER_SECRET', 'DEEPSEEK_API_KEY',
-      'OPENAI_API_KEY', 'PINECONE_API_KEY', 'DATABASE_URL',
+      'OPENAI_API_KEY', 'QDRANT_API_KEY', 'DATABASE_URL',
       'REDIS_URL', 'SENTRY_DSN', 'SMTP_PASSWORD',
       'AWS_SECRET_ACCESS_KEY'
     ];

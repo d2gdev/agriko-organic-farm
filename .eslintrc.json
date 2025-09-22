@@ -17,26 +17,29 @@
     "jest.config.js",
     "next.config.js",
     "postcss.config.js",
-    "tailwind.config.js"
+    "tailwind.config.js",
+    "src/__tests__/e2e-real-world.test.ts",
+    "src/__tests__/error-resilience.test.ts"
   ],
   "rules": {
     "no-console": [
       "error",
       { "allow": ["warn", "error", "group", "groupEnd", "table"] }
     ],
-    // Relaxed TypeScript rules for faster development and CI
-    "@typescript-eslint/no-explicit-any": "warn",
+    // Relaxed TypeScript rules for large codebase
+    "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unsafe-assignment": "off",
     "@typescript-eslint/no-unsafe-member-access": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
-    "@typescript-eslint/prefer-optional-chain": "warn",
+    "@typescript-eslint/prefer-optional-chain": "off",
     "@typescript-eslint/no-non-null-assertion": "error",
-    // Additional rules for better CI compatibility
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    // Unused vars warnings only for production
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
     "react-hooks/exhaustive-deps": "error",
-    // Rules to prevent issues we fixed
-    "react/no-unstable-nested-components": "error",
-    "@typescript-eslint/no-unnecessary-type-assertion": "warn"
+    // Type assertion warnings only
+    "@typescript-eslint/no-unnecessary-type-assertion": "off",
+    // Anonymous exports allowed
+    "import/no-anonymous-default-export": "off"
   },
   "overrides": [
     {

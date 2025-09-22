@@ -1,8 +1,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateApiAuthSecure, hasPermission } from '@/lib/secure-auth';
-import { generateTokenPair, generateServiceToken, TOKEN_CONFIGS } from '@/lib/token-management';
+import { generateTokenPair, generateServiceToken } from '@/lib/token-management';
 import { logger } from '@/lib/logger';
+import { urlHelpers } from '@/lib/url-constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,8 +57,8 @@ export async function POST(request: NextRequest) {
       // Generate access + refresh token pair (auto-refreshing)
       const tokenPair = generateTokenPair({
         userId: `${role}-${Date.now()}`,
-        role: role as string,
-        permissions: permissions[role as string] ?? []
+        role: role,
+        permissions: permissions[role] ?? []
       });
       
       return NextResponse.json({
@@ -66,12 +67,12 @@ export async function POST(request: NextRequest) {
         accessToken: tokenPair.accessToken,
         refreshToken: tokenPair.refreshToken,
         expiresIn: tokenPair.expiresIn,
-        role: role as string,
+        role: role,
         description: description ?? `Auto-refreshing token pair for ${role} access`,
-        permissions: permissions[role as string] ?? [],
+        permissions: permissions[role] ?? [],
         usage: {
-          initial: `curl -H "Authorization: Bearer ${tokenPair.accessToken}" http://localhost:3006/api/analytics/dashboard/`,
-          refresh: `curl -X POST -H "Content-Type: application/json" -d '{"refreshToken":"${tokenPair.refreshToken}"}' http://localhost:3006/api/auth/refresh`,
+          initial: `curl -H "Authorization: Bearer ${tokenPair.accessToken}" ${urlHelpers.getApiEndpoint('analytics/dashboard')}`,
+          refresh: `curl -X POST -H "Content-Type: application/json" -d '{"refreshToken":"${tokenPair.refreshToken}"}' ${urlHelpers.getApiEndpoint('auth/refresh')}`,
           note: 'Access token expires in 1 hour. Use refresh token to get new access tokens automatically.'
         },
         createdBy: authResult.user.userId,
@@ -81,8 +82,8 @@ export async function POST(request: NextRequest) {
       // Generate long-lived service token
       const serviceToken = generateServiceToken({
         userId: `${role}-${Date.now()}`,
-        role: role as string,
-        permissions: permissions[role as string] ?? [],
+        role: role,
+        permissions: permissions[role] ?? [],
         description: description ?? `Service token for ${role} access`,
         expiresIn: '1y' // 1 year for service tokens
       });
@@ -91,12 +92,12 @@ export async function POST(request: NextRequest) {
         success: true,
         type: 'service_token',
         token: serviceToken.token,
-        role: role as string,
+        role: role,
         description: serviceToken.description,
         expiresIn: serviceToken.expiresIn,
         permissions: serviceToken.permissions,
         usage: {
-          example: `curl -H "Authorization: Bearer ${serviceToken.token}" http://localhost:3006/api/analytics/dashboard/`,
+          example: `curl -H "Authorization: Bearer ${serviceToken.token}" ${urlHelpers.getApiEndpoint('analytics/dashboard')}`,
           note: 'This is a long-lived service token (1 year). Store it securely.'
         },
         createdBy: authResult.user.userId,

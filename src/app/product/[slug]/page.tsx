@@ -1,26 +1,36 @@
 import { notFound } from 'next/navigation';
 import { logger } from '@/lib/logger';
 
-import Image from 'next/image';
 import { Suspense } from 'react';
-import { 
-  getProductBySlug, 
-  getStaticProductSlugs, 
-  formatPrice, 
-  getProductMainImage, 
-  isProductInStock,
-  stripHtml 
+import dynamic from 'next/dynamic';
+import {
+  getProductBySlug,
+  getStaticProductSlugs,
+  formatPrice,
+  stripHtml
 } from '@/lib/woocommerce';
-import { createSafeHtml, sanitizeHtml } from '@/lib/sanitize';
+import { isProductInStock } from '@/lib/utils';
+import { createSafeHtml } from '@/lib/sanitize';
 import { WCProduct } from '@/types/woocommerce';
 import AddToCartButton from './AddToCartButton';
 import ProductGallery from './ProductGallery';
-import RelatedProducts from './RelatedProducts';
 import Link from 'next/link';
 import Breadcrumb from '@/components/Breadcrumb';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import ProductAnalytics from '@/components/ProductAnalytics';
-import ProductReviews from './ProductReviews';
+import { URL_CONSTANTS, urlHelpers } from '@/lib/url-constants';
+
+// Dynamically import heavy components to reduce initial bundle size
+const RelatedProducts = dynamic(() => import('./RelatedProducts'), {
+  loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-lg"></div>
+});
+
+const ProductAnalytics = dynamic(() => import('@/components/ProductAnalytics'), {
+  loading: () => null
+});
+
+const ProductReviews = dynamic(() => import('./ProductReviews'), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg"></div>
+});
 
 interface ProductPageProps {
   params: Promise<{
@@ -178,7 +188,7 @@ async function ProductContent({ slug }: { slug: string }) {
 
   // Enhanced JSON-LD structured data for SEO
   const jsonLd = {
-    '@context': 'https://schema.org/',
+    '@context': URL_CONSTANTS.SCHEMA.BASE,
     '@type': 'Product',
     name: product.name,
     image: product.images?.map(img => img.src) || [],
@@ -189,13 +199,13 @@ async function ProductContent({ slug }: { slug: string }) {
     brand: {
       '@type': 'Brand',
       name: 'Agriko Organic Farm',
-      url: 'https://shop.agrikoph.com',
-      logo: 'https://shop.agrikoph.com/images/Agriko-Logo.png'
+      url: urlHelpers.getShopUrl(),
+      logo: `${urlHelpers.getShopUrl()}/images/Agriko-Logo.png`
     },
     manufacturer: {
       '@type': 'Organization',
       name: 'Agriko Multi-Trade & Enterprise Corp.',
-      url: 'https://shop.agrikoph.com'
+      url: urlHelpers.getShopUrl()
     },
     category: product.categories?.[0]?.name || 'Organic Products',
     keywords: product.tags?.map(tag => tag.name).join(', ') || '',
@@ -203,14 +213,14 @@ async function ProductContent({ slug }: { slug: string }) {
       '@type': 'Offer',
       priceCurrency: 'PHP',
       price: product.price,
-      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      itemCondition: 'https://schema.org/NewCondition',
-      url: `https://shop.agrikoph.com/product/${product.slug}`,
+      priceValidUntil: '2024-04-15', // Static date to prevent hydration mismatch
+      availability: inStock ? `${URL_CONSTANTS.SCHEMA.BASE}/InStock` : `${URL_CONSTANTS.SCHEMA.BASE}/OutOfStock`,
+      itemCondition: `${URL_CONSTANTS.SCHEMA.BASE}/NewCondition`,
+      url: `${urlHelpers.getShopUrl()}/product/${product.slug}`,
       seller: {
         '@type': 'Organization',
         name: 'Agriko Organic Farm',
-        url: 'https://shop.agrikoph.com'
+        url: urlHelpers.getShopUrl()
       },
       shippingDetails: {
         '@type': 'OfferShippingDetails',
@@ -238,10 +248,10 @@ async function ProductContent({ slug }: { slug: string }) {
       hasMerchantReturnPolicy: {
         '@type': 'MerchantReturnPolicy',
         applicableCountry: 'PH',
-        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        returnPolicyCategory: `${URL_CONSTANTS.SCHEMA.BASE}/MerchantReturnFiniteReturnWindow`,
         merchantReturnDays: 30,
-        returnMethod: 'https://schema.org/ReturnByMail',
-        returnFees: 'https://schema.org/FreeReturn'
+        returnMethod: `${URL_CONSTANTS.SCHEMA.BASE}/ReturnByMail`,
+        returnFees: `${URL_CONSTANTS.SCHEMA.BASE}/FreeReturn`
       }
     },
     aggregateRating: product.average_rating && String(product.average_rating) !== '0' ? {
@@ -259,11 +269,11 @@ async function ProductContent({ slug }: { slug: string }) {
     isRelatedTo: product.categories?.map(category => ({
       '@type': 'Thing',
       name: category.name,
-      url: `https://shop.agrikoph.com/category/${category.slug}`
+      url: `${urlHelpers.getShopUrl()}/category/${category.slug}`
     })) || [],
     potentialAction: {
       '@type': 'BuyAction',
-      target: `https://shop.agrikoph.com/product/${product.slug}`,
+      target: `${urlHelpers.getShopUrl()}/product/${product.slug}`,
       object: {
         '@type': 'Product',
         name: product.name
@@ -294,6 +304,19 @@ async function ProductContent({ slug }: { slug: string }) {
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Hero-style product banner */}
+        <div className="relative mb-12 rounded-3xl overflow-hidden bg-gradient-to-br from-green-50 via-emerald-50 to-amber-50 p-8 shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-200/30 to-amber-200/30 rounded-full transform translate-x-16 -translate-y-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-red-200/20 to-orange-200/20 rounded-full transform -translate-x-12 translate-y-12"></div>
+          <div className="relative z-10">
+            <span className="inline-block bg-red-100 text-red-800 text-sm font-bold px-4 py-2 rounded-full mb-4">
+              ✨ Premium Organic Product
+            </span>
+            <h1 className="text-heading-1 text-gray-900 mb-4 font-[family-name:var(--font-crimson)]">
+              {product.name}
+            </h1>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
@@ -302,82 +325,119 @@ async function ProductContent({ slug }: { slug: string }) {
           </div>
 
           {/* Product Information */}
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-heading-1 text-gray-900 mb-2">
-                {product.name}
-              </h1>
-              
+          <div className="space-y-8">
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
               {product.sku && (
-                <p className="text-sm text-gray-500 mb-4">
-                  SKU: {product.sku}
-                </p>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <p className="text-sm text-gray-600 font-medium">
+                    Product ID: {product.sku}
+                  </p>
+                </div>
               )}
 
               {/* Price */}
-              <div className="flex items-center space-x-4 mb-4">
-                {product.on_sale && product.regular_price !== product.price ? (
-                  <>
-                    <span className="text-3xl font-bold text-primary-600">
-                      {formatPrice(product.price)}
-                    </span>
-                    <span className="text-xl text-gray-500 line-through">
-                      {formatPrice(product.regular_price)}
-                    </span>
-                    <span className="bg-red-100 text-red-800 text-sm px-2 py-1 rounded-full">
-                      Sale
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-3xl font-bold text-gray-900">
-                    {formatPrice(product.price)}
-                  </span>
-                )}
+              <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-6 mb-6 border border-red-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {product.on_sale && product.regular_price !== product.price ? (
+                      <>
+                        <div className="text-right">
+                          <div className="text-4xl font-bold text-red-600 font-[family-name:var(--font-crimson)]">
+                            {formatPrice(product.price as string | number)}
+                          </div>
+                          <div className="text-lg text-gray-500 line-through">
+                            {formatPrice((product.regular_price || product.price) as string | number)}
+                          </div>
+                        </div>
+                        <div className="bg-red-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg animate-pulse">
+                          🎉 On Sale!
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-4xl font-bold text-red-600 font-[family-name:var(--font-crimson)]">
+                        {formatPrice(product.price as string | number)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    📦 Free shipping on orders over ₱1,500
+                  </div>
+                </div>
               </div>
 
               {/* Stock Status */}
-              <div className="flex items-center mb-6">
+              <div className="flex items-center justify-between bg-gray-50 rounded-xl p-4 mb-6">
                 {inStock ? (
-                  <span className="flex items-center text-green-600">
-                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    In Stock
-                  </span>
+                  <div className="flex items-center text-green-600">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-semibold">In Stock & Ready to Ship</div>
+                      <div className="text-sm text-gray-600">Usually ships within 1-2 business days</div>
+                    </div>
+                  </div>
                 ) : (
-                  <span className="flex items-center text-red-600">
-                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                    Out of Stock
-                  </span>
+                  <div className="flex items-center text-red-600">
+                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-semibold">Currently Out of Stock</div>
+                      <div className="text-sm text-gray-600">Notify me when available</div>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
 
             {/* Short Description */}
             {product.short_description && (
-              <div 
-                className="prose prose-sm text-gray-700"
-                dangerouslySetInnerHTML={createSafeHtml(product.short_description, 'default')}
-              />
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-3 font-[family-name:var(--font-crimson)]">Why You&apos;ll Love This Product</h3>
+                <div
+                  className="prose prose-sm text-gray-700 leading-relaxed"
+                  dangerouslySetInnerHTML={createSafeHtml(product.short_description, 'default')}
+                />
+              </div>
             )}
 
             {/* Add to Cart */}
-            <div className="border-t border-gray-200 pt-6">
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 font-[family-name:var(--font-crimson)]">Ready to Order?</h3>
+                <p className="text-sm text-gray-600">Join thousands of satisfied customers who trust Agriko for premium organic products.</p>
+              </div>
               <AddToCartButton product={product} />
+              <div className="mt-4 grid grid-cols-3 gap-4 text-center">
+                <div className="text-sm">
+                  <div className="text-green-600 font-semibold">🌱 100% Organic</div>
+                </div>
+                <div className="text-sm">
+                  <div className="text-blue-600 font-semibold">🛡️ Quality Guaranteed</div>
+                </div>
+                <div className="text-sm">
+                  <div className="text-purple-600 font-semibold">📦 Fast Shipping</div>
+                </div>
+              </div>
             </div>
 
             {/* Product Categories */}
             {product.categories && product.categories.length > 0 && (
-              <div>
-                <h3 className="text-heading-3 text-gray-900 mb-2">Categories:</h3>
-                <div className="flex flex-wrap gap-2">
+              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 font-[family-name:var(--font-crimson)]">Product Categories</h3>
+                <div className="flex flex-wrap gap-3">
                   {product.categories.map((category) => (
                     <span
                       key={category.id}
-                      className="inline-block bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full"
+                      className="inline-flex items-center bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 text-sm font-medium px-4 py-2 rounded-full border border-green-200 hover:from-green-200 hover:to-emerald-200 transition-all duration-200"
                     >
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                       {category.name}
                     </span>
                   ))}
@@ -387,15 +447,16 @@ async function ProductContent({ slug }: { slug: string }) {
 
             {/* Product Tags */}
             {product.tags && product.tags.length > 0 && (
-              <div>
-                <h3 className="text-heading-3 text-gray-900 mb-2">Tags:</h3>
-                <div className="flex flex-wrap gap-2">
+              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 font-[family-name:var(--font-crimson)]">Product Benefits & Features</h3>
+                <div className="flex flex-wrap gap-3">
                   {product.tags.map((tag) => (
                     <span
                       key={tag.id}
-                      className="inline-block bg-primary-100 text-primary-700 text-sm px-3 py-1 rounded-full"
+                      className="inline-flex items-center bg-gradient-to-r from-red-100 to-orange-100 text-red-800 text-sm font-medium px-4 py-2 rounded-full border border-red-200 hover:from-red-200 hover:to-orange-200 transition-all duration-200"
                     >
-                      #{tag.name}
+                      <span className="text-red-500 mr-1">#</span>
+                      {tag.name}
                     </span>
                   ))}
                 </div>
@@ -406,31 +467,54 @@ async function ProductContent({ slug }: { slug: string }) {
 
         {/* Product Description */}
         {product.description && (
-          <div className="mt-16 border-t border-gray-200 pt-16">
-            <h2 className="text-heading-2 text-gray-900 mb-6">Product Details</h2>
-            <div 
-              className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={createSafeHtml(product.description, 'default')}
-            />
+          <div className="mt-16">
+            <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 rounded-3xl p-8 shadow-lg border border-orange-100">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold text-gray-900 mb-4 font-[family-name:var(--font-crimson)]">Product Details</h2>
+                <p className="text-gray-600 max-w-2xl mx-auto">Discover everything you need to know about this premium organic product, from its benefits to how it&apos;s made.</p>
+              </div>
+              <div className="bg-white rounded-2xl p-8 shadow-lg">
+                <div
+                  className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
+                  dangerouslySetInnerHTML={createSafeHtml(product.description, 'default')}
+                />
+              </div>
+            </div>
           </div>
         )}
 
         {/* Reviews Section */}
-        <div className="mt-16 border-t border-gray-200 pt-16">
-          <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg" />}>
-            <ProductReviews productId={product.id} productName={product.name} />
-          </Suspense>
+        <div className="mt-16">
+          <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-3xl p-8 shadow-lg border border-blue-100">
+            <div className="text-center mb-8">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4 font-[family-name:var(--font-crimson)]">Customer Reviews</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">See what our customers have to say about this product. Real reviews from real people who trust Agriko.</p>
+            </div>
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <Suspense fallback={<div className="h-64 bg-gradient-to-r from-gray-100 to-gray-200 animate-pulse" />}>
+                <ProductReviews productId={product.id} productName={product.name} />
+              </Suspense>
+            </div>
+          </div>
         </div>
 
         {/* Related Products */}
         {product.categories && product.categories.length > 0 && product.categories[0] && (
           <div className="mt-16">
-            <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse rounded-lg" />}>
-              <RelatedProducts 
-                categoryId={product.categories[0].id} 
-                currentProductId={product.id} 
-              />
-            </Suspense>
+            <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 rounded-3xl p-8 shadow-lg border border-emerald-100">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold text-gray-900 mb-4 font-[family-name:var(--font-crimson)]">You Might Also Like</h2>
+                <p className="text-gray-600 max-w-2xl mx-auto">Discover more premium organic products from the same category. Handpicked for quality and taste.</p>
+              </div>
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <Suspense fallback={<div className="h-64 bg-gradient-to-r from-gray-100 to-gray-200 animate-pulse" />}>
+                  <RelatedProducts
+                    categoryId={product.categories[0].id}
+                    currentProductId={product.id}
+                  />
+                </Suspense>
+              </div>
+            </div>
           </div>
         )}
       </div>

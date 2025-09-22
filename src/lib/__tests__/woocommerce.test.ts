@@ -327,7 +327,7 @@ describe('WooCommerce API', () => {
       const result = await freshGetAllProducts();
 
       expect(result).toHaveLength(3);
-      expect(result[0].name).toBe('Premium Organic Black Rice');
+      expect(result[0]?.name).toBe('Premium Organic Black Rice');
 
       // Restore the mock
       jest.dontMock('@/lib/unified-config');

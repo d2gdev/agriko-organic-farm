@@ -122,8 +122,8 @@ class ProductCache {
       
       const maxAge = cached.error ? this.errorMaxAge : this.maxAge;
       if (now - cached.timestamp > maxAge) {
-        // Type assertion to ensure key is string
-        this.cache.delete(key as string);
+        // Key is already string type from Map iteration
+        this.cache.delete(key);
       }
     }
   }

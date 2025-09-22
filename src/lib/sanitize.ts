@@ -110,7 +110,7 @@ export function sanitizeHtml(
   try {
     // Use the specific DOMPurifyConfig type instead of any
     const sanitized = DOMPurify.sanitize(html, config as DOMPurifyConfig);
-    return sanitized as string;
+    return sanitized;
   } catch (error) {
     logger.error('HTML sanitization error:', error as Record<string, unknown>);
     // Return empty string on error for security

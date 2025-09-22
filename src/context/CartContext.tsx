@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo, useState } from 'react';
 import { logger } from '@/lib/logger';
 import SafeLocalStorage from '@/lib/safe-localstorage';
 
@@ -48,7 +48,7 @@ const calculateTotals = (items: CartItem[]): { total: number; itemCount: number 
   
   const total = items.reduce((sum, item) => {
     const multiplyResult = safePriceMultiply(
-      item.product.price, 
+      item.product.price as string | number, 
       Math.min(item.quantity, MAX_SAFE_QUANTITY),
       `CartItem ${item.product.name}`
     );
@@ -236,9 +236,17 @@ interface CartProviderProps {
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Load cart from localStorage on mount with validation
+  // Track mounted state to prevent localStorage access during SSR
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Load cart from localStorage on mount with validation - only after mounting
+  useEffect(() => {
+    if (!isMounted) return;
+
     try {
       const savedCart = SafeLocalStorage.getItem('agriko-cart');
       if (savedCart) {
@@ -250,16 +258,18 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       // Clear corrupted cart data
       SafeLocalStorage.removeItem('agriko-cart');
     }
-  }, []);
+  }, [isMounted]);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes - only after mounting
   useEffect(() => {
+    if (!isMounted) return;
+
     try {
       SafeLocalStorage.setJSON('agriko-cart', state.items);
     } catch (error) {
       logger.error('Error saving cart to localStorage:', error as Record<string, unknown>);
     }
-  }, [state.items]);
+  }, [state.items, isMounted]);
 
   // Track cart view in funnel when cart is opened
   useEffect(() => {
@@ -268,7 +278,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   }, [state.isOpen, state.itemCount, state.total]);
 
-  const addItem = (product: WCProduct, quantity = 1, variation?: CartItem['variation']) => {
+  const addItem = useCallback((product: WCProduct, quantity = 1, variation?: CartItem['variation']) => {
     // Validate cart item before adding
     if (!validateCartItem(product, quantity, variation)) {
       logger.error('Invalid cart item, refusing to add');
@@ -276,7 +286,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
 
     dispatch({ type: 'ADD_ITEM', payload: { product, quantity, variation } });
-    
+
     // Track add to cart event in GA4
     const priceResult = parsePrice(product.price, `addToCart ${product.name}`);
     const price = priceResult.success ? priceResult.value : 0;
@@ -297,17 +307,20 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       product.name,
       totalPrice
     );
-  };
 
-  const removeItem = (productId: number, variationId?: number) => {
+    // Track add to cart with Google Analytics (already handled in ProductCard)
+    // No need to duplicate here as this is called from ProductCard
+  }, []);
+
+  const removeItem = useCallback((productId: number, variationId?: number) => {
     // Get item details before removing for GA tracking
-    const item = state.items.find(item => 
-      item.product.id === productId && 
+    const item = state.items.find(item =>
+      item.product.id === productId &&
       (variationId === undefined || item.variation?.id === variationId)
     );
-    
+
     dispatch({ type: 'REMOVE_ITEM', payload: { productId, variationId } });
-    
+
     // Track remove from cart event in GA4
     if (item) {
       const priceResult = parsePrice(item.product.price, `removeFromCart ${item.product.name}`);
@@ -320,45 +333,55 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         price,
         item.quantity
       );
+
+      // Google Analytics tracking already handled above
     }
-  };
+  }, [state.items]);
 
-  const updateQuantity = (productId: number, quantity: number, variationId?: number) => {
+  const updateQuantity = useCallback((productId: number, quantity: number, variationId?: number) => {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, quantity, variationId } });
-  };
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     dispatch({ type: 'CLEAR_CART' });
-  };
+  }, []);
 
-  const toggleCart = () => {
+  const toggleCart = useCallback(() => {
     dispatch({ type: 'TOGGLE_CART' });
-  };
 
-  const openCart = () => {
+    // Track cart view when opened
+    if (!state.isOpen) {
+      funnelEvent.viewCart(state.itemCount, state.total);
+    }
+  }, [state.isOpen, state.itemCount, state.total]);
+
+  const openCart = useCallback(() => {
     dispatch({ type: 'OPEN_CART' });
-  };
 
-  const closeCart = () => {
+    // Track cart view when opened
+    funnelEvent.viewCart(state.itemCount, state.total);
+  }, [state.itemCount, state.total]);
+
+  const closeCart = useCallback(() => {
     dispatch({ type: 'CLOSE_CART' });
-  };
+  }, []);
 
-  const isInCart = (productId: number, variationId?: number): boolean => {
-    return state.items.some(item => 
-      item.product.id === productId && 
+  const isInCart = useCallback((productId: number, variationId?: number): boolean => {
+    return state.items.some(item =>
+      item.product.id === productId &&
       (variationId === undefined || item.variation?.id === variationId)
     );
-  };
+  }, [state.items]);
 
-  const getItemQuantity = (productId: number, variationId?: number): number => {
-    const item = state.items.find(item => 
-      item.product.id === productId && 
+  const getItemQuantity = useCallback((productId: number, variationId?: number): number => {
+    const item = state.items.find(item =>
+      item.product.id === productId &&
       (variationId === undefined || item.variation?.id === variationId)
     );
     return item ? item.quantity : 0;
-  };
+  }, [state.items]);
 
-  const contextValue: CartContextType = {
+  const contextValue: CartContextType = useMemo(() => ({
     state,
     addItem,
     removeItem,
@@ -369,7 +392,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     closeCart,
     isInCart,
     getItemQuantity,
-  };
+  }), [state, addItem, removeItem, updateQuantity, clearCart, toggleCart, openCart, closeCart, isInCart, getItemQuantity]);
 
   return (
     <CartContext.Provider value={contextValue}>

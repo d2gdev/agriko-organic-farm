@@ -6,7 +6,17 @@ import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { usePathname } from 'next/navigation';
 import { WCProduct } from '@/types/woocommerce';
-import ClientOnly from './ClientOnly';
+import { useTracking } from '@/components/AutoTrackingProvider';
+import { EventType } from '@/lib/client-event-system';
+
+// Safe tracking hook
+const useSafeTracking = () => {
+  try {
+    return useTracking();
+  } catch {
+    return null;
+  }
+};
 
 // Import modals directly for debugging
 import SearchModal from './SearchModal';
@@ -24,7 +34,7 @@ export default function Navbar({
   setIsSearchOpen: externalSetIsSearchOpen 
 }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [_isScrolled, _setIsScrolled] = useState(false); // Prefixed with underscore to indicate it's intentionally unused
   const [hasMounted, setHasMounted] = useState(false);
   const [internalIsSearchOpen, setInternalIsSearchOpen] = useState(false);
   const [isSemanticSearchOpen, setIsSemanticSearchOpen] = useState(false);
@@ -33,9 +43,24 @@ export default function Navbar({
   const isSearchOpen = externalIsSearchOpen ?? internalIsSearchOpen;
   const setIsSearchOpen = externalSetIsSearchOpen ?? setInternalIsSearchOpen;
   const { state, toggleCart } = useCart();
+  const tracking = useSafeTracking();
 
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Track navigation clicks - hydration safe
+  const trackNavigation = (linkText: string, href: string, context: 'desktop' | 'mobile' = 'desktop') => {
+    if (tracking && hasMounted) {
+      tracking.trackCustomEvent(EventType.NAVIGATION_CLICK, {
+        linkText,
+        href,
+        context,
+        currentPage: pathname
+      }).catch(() => {
+        // Tracking failed silently - non-critical functionality
+      });
+    }
+  };
 
   // Handle mounting to prevent hydration mismatch
   useEffect(() => {
@@ -47,13 +72,11 @@ export default function Navbar({
     if (!hasMounted) return;
 
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const scrolled = window.scrollY > 20;
+      _setIsScrolled(scrolled);
     };
 
-    // Set initial scroll state
-    handleScroll();
-
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasMounted]);
 
@@ -110,12 +133,10 @@ export default function Navbar({
     { name: 'Visit Farm', href: 'https://www.booking.com/hotel/ph/paglinawan-organic-eco-farm.en-gb.html', icon: '🚜', external: true },
   ];
 
-  // Use data attributes to avoid hydration issues
-  const navBaseClassName = 'fixed top-0 left-0 right-0 z-50 transition-all duration-300';
-
+  // Fixed hydration issues by using CSS classes instead of dynamic inline styles
   return (
     <nav
-      className={`${navBaseClassName} ${hasMounted ? (isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-neutral-200/50' : 'bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200') : 'bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200'}`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200`}
       role="navigation"
       aria-label="Main navigation"
     >
@@ -124,15 +145,19 @@ export default function Navbar({
 
           {/* Logo */}
           <div className="flex-shrink-0 group">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link
+              href="/"
+              className="flex items-center space-x-2"
+              onClick={() => trackNavigation('Agriko Logo', '/', 'desktop')}
+            >
               <div className="relative">
                 <Image
                   src="/images/Agriko-Logo.png"
                   alt="Agriko Organic Farm"
                   width={120}
                   height={60}
-                  className="w-auto transition-all duration-300 group-hover:scale-105 h-12 data-[scrolled=true]:h-10"
-                  data-scrolled={hasMounted && isScrolled}
+                  className="h-12 w-auto transition-all duration-300 group-hover:scale-105"
+                  style={{ color: 'transparent' }}
                   priority
                 />
                 {/* Subtle glow effect */}
@@ -209,7 +234,16 @@ export default function Navbar({
             <div className="hidden md:flex items-center space-x-1">
               {/* Regular Search Button */}
               <button
-                onClick={() => setIsSearchOpen(true)}
+                onClick={() => {
+                  setIsSearchOpen(true);
+                  if (tracking) {
+                    tracking.trackCustomEvent(EventType.SEARCH_OPEN, {
+                      searchType: 'regular',
+                      context: 'navbar',
+                      currentPage: pathname
+                    }).catch(() => {});
+                  }
+                }}
                 className="p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hover:scale-110"
                 aria-label="Search products"
                 title="Traditional Search"
@@ -221,7 +255,16 @@ export default function Navbar({
 
               {/* Semantic Search Button */}
               <button
-                onClick={() => setIsSemanticSearchOpen(true)}
+                onClick={() => {
+                  setIsSemanticSearchOpen(true);
+                  if (tracking) {
+                    tracking.trackCustomEvent(EventType.SEARCH_OPEN, {
+                      searchType: 'semantic',
+                      context: 'navbar',
+                      currentPage: pathname
+                    }).catch(() => {});
+                  }
+                }}
                 className="p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hover:scale-110 relative group"
                 aria-label="Semantic AI search"
                 title="🧠 AI Smart Search"
@@ -236,33 +279,39 @@ export default function Navbar({
 
             {/* Enhanced Cart Button */}
             <button
-              onClick={toggleCart}
+              onClick={() => {
+                toggleCart();
+                if (tracking && hasMounted) {
+                  tracking.trackCustomEvent(EventType.CART_TOGGLE, {
+                    action: 'open',
+                    itemCount: state.itemCount,
+                    cartTotal: state.total,
+                    context: 'navbar'
+                  }).catch(() => {});
+                }
+              }}
               className="relative p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 group"
-              aria-label={`Shopping cart with ${state.itemCount} items`}
+              aria-label={hasMounted ? `Shopping cart with ${state.itemCount} items` : "Shopping cart"}
             >
               <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5" />
               </svg>
               
-              {/* Enhanced Cart Counter */}
-              <ClientOnly>
-                {state.itemCount > 0 && (
-                  <div className="absolute -top-1 -right-1">
-                    <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg animate-pulse">
-                      {state.itemCount > 99 ? '99+' : state.itemCount}
-                    </div>
-                    {/* Pulsing ring */}
-                    <div className="absolute inset-0 bg-primary-500 rounded-full animate-ping opacity-20"></div>
+              {/* Enhanced Cart Counter - hydration-safe rendering */}
+              {hasMounted && state.itemCount > 0 && (
+                <div className="absolute -top-1 -right-1">
+                  <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">
+                    {state.itemCount > 99 ? '99+' : state.itemCount}
                   </div>
-                )}
-              </ClientOnly>
-              
-              {/* Hover tooltip */}
-              <ClientOnly>
-                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-neutral-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                  {state.itemCount === 0 ? 'Cart is empty' : `${state.itemCount} item${state.itemCount === 1 ? '' : 's'}`}
+                  {/* Pulsing ring */}
+                  <div className="absolute inset-0 bg-primary-500 rounded-full animate-ping opacity-20"></div>
                 </div>
-              </ClientOnly>
+              )}
+
+              {/* Hover tooltip - hydration safe with suppressHydrationWarning */}
+              <div suppressHydrationWarning className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-neutral-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                {hasMounted ? (state.itemCount === 0 ? 'Cart is empty' : `${state.itemCount} item${state.itemCount === 1 ? '' : 's'}`) : 'Cart'}
+              </div>
             </button>
 
             {/* Enhanced Mobile Menu Button */}

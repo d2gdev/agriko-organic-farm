@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { logger } from '@/lib/logger';
 
 import { useSearchParams } from 'next/navigation';
@@ -60,7 +60,7 @@ function ReviewPageContent() {
 
       setOrderData({
         id: orderId,
-        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString(), // 7 days ago
+        date: 'March 8, 2024', // Static date to prevent hydration mismatch
         customerName: 'Valued Customer' // In production, get from order data
       });
 

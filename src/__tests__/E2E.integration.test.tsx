@@ -215,13 +215,13 @@ const createCartProvider = (initialState: CartState = { items: [], total: 0 }) =
           );
           return {
             items: updatedItems,
-            total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price) * item.quantity), 0),
+            total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price as string) * item.quantity), 0),
           };
         } else {
           const newItems = [...prevState.items, { product, quantity, variation: null }];
           return {
             items: newItems,
-            total: newItems.reduce((sum, item) => sum + (parseFloat(item.product.price) * item.quantity), 0),
+            total: newItems.reduce((sum, item) => sum + (parseFloat(item.product.price as string) * item.quantity), 0),
           };
         }
       });
@@ -237,7 +237,7 @@ const createCartProvider = (initialState: CartState = { items: [], total: 0 }) =
 
         return {
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price) * item.quantity), 0),
+          total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price as string) * item.quantity), 0),
         };
       });
     });
@@ -247,7 +247,7 @@ const createCartProvider = (initialState: CartState = { items: [], total: 0 }) =
         const updatedItems = prevState.items.filter(item => item.product.id !== productId);
         return {
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price) * item.quantity), 0),
+          total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price as string) * item.quantity), 0),
         };
       });
     });
@@ -349,7 +349,7 @@ describe('E2E Integration Tests', () => {
         // Note: In this test setup, both components show all products since filtering is mocked.
         // In a real scenario, both components would filter together or independently.
         // For now, we just verify that the search modal interaction works.
-        expect(searchInput.value).toBe('honey');
+        expect((searchInput as HTMLInputElement).value).toBe('honey');
       }, { timeout: 1000 });
 
       // 3. Navigate to product from search
@@ -361,10 +361,15 @@ describe('E2E Integration Tests', () => {
       const honeyLinks = screen.getAllByRole('button', { name: /organic honey/i });
       if (honeyLinks.length === 0) {
         // Fallback to any clickable element containing the product
-        const honeyLink = honeyProducts[0].closest('a, button') as HTMLElement;
-        await user.click(honeyLink);
+        const honeyLink = honeyProducts[0]?.closest('a, button');
+        if (honeyLink) {
+          await user.click(honeyLink);
+        }
       } else {
-        await user.click(honeyLinks[0]);
+        const firstLink = honeyLinks[0];
+        if (firstLink) {
+          await user.click(firstLink);
+        }
       }
 
       expect(mockRouterPush).toHaveBeenCalledWith('/product/organic-honey');
@@ -374,10 +379,15 @@ describe('E2E Integration Tests', () => {
   describe('Search to Checkout Flow', () => {
     it('should complete search to checkout integration', async () => {
       const user = userEvent.setup();
-      const initialCartState = {
+      const product = mockProducts[1];
+      if (!product) {
+        throw new Error('Mock product not found');
+      }
+
+      const initialCartState: CartState = {
         items: [
           {
-            product: mockProducts[1], // Organic Honey
+            product,
             quantity: 2,
             variation: null,
           },
@@ -496,10 +506,15 @@ describe('E2E Integration Tests', () => {
   describe('Error Handling Integration', () => {
     it('should handle API errors gracefully across components', async () => {
       const user = userEvent.setup();
+      const product = mockProducts[0];
+      if (!product) {
+        throw new Error('Mock product not found');
+      }
+
       const CartProvider = createCartProvider({
         items: [
           {
-            product: mockProducts[0],
+            product,
             quantity: 1,
             variation: null,
           },
@@ -564,12 +579,18 @@ describe('E2E Integration Tests', () => {
       const user = userEvent.setup();
 
       // Create large product list
-      const largeProductList = Array.from({ length: 100 }, (_, i) => ({
-        ...mockProducts[0],
+      const baseProduct = mockProducts[0];
+      if (!baseProduct) {
+        throw new Error('Base mock product not found');
+      }
+
+      const largeProductList: WCProduct[] = Array.from({ length: 100 }, (_, i) => ({
+        ...baseProduct,
         id: i + 1,
         name: `Product ${i + 1}`,
         slug: `product-${i + 1}`,
-        price: Math.random() * 50 + 10,
+        price: (Math.random() * 50 + 10).toFixed(2),
+        regular_price: (Math.random() * 50 + 10).toFixed(2),
       }));
 
       const startTime = performance.now();

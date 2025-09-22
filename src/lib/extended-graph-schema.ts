@@ -1,5 +1,4 @@
 // Extended Graph Schema - Advanced Relationship Modeling for MemGraph
-import { Session } from 'neo4j-driver';
 import { logger } from '@/lib/logger';
 
 import { getSession } from './memgraph';
@@ -145,7 +144,7 @@ export async function initializeExtendedSchema(): Promise<void> {
     for (const command of indexCommands) {
       try {
         await session.run(command);
-      } catch (error) {
+      } catch {
         // Index might already exist, continue
         logger.info(`Index creation skipped: ${command}`);
       }
@@ -166,7 +165,7 @@ export async function initializeExtendedSchema(): Promise<void> {
     for (const command of constraintCommands) {
       try {
         await session.run(command);
-      } catch (error) {
+      } catch {
         // Constraint might already exist, continue
       }
     }

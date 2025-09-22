@@ -3,8 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
 import { getAllProducts } from '@/lib/woocommerce';
-import { extractHealthKeywords } from '@/lib/embeddings';
-import { expandSearchQuery, getSeasonalBoost } from '@/lib/search-analytics';
+import { getSeasonalBoost } from '@/lib/search-analytics';
 import { autocompleteCache, generateAutocompleteCacheKey, queryOptimizer } from '@/lib/search-cache';
 
 interface AutocompleteSuggestion {
@@ -316,7 +315,7 @@ async function refreshProductSuggestionsCache(): Promise<void> {
     logger.info('🔄 Refreshing product suggestions cache...');
     const products = await getAllProducts({ per_page: 50 });
     
-    productSuggestionsCache = products.map((product, index) => ({
+    productSuggestionsCache = products.map((product) => ({
       id: `prod-${product.id}`,
       type: 'product' as const,
       text: product.name,
@@ -381,6 +380,6 @@ function calculateMatchScore(text: string, query: string): number {
 }
 
 // Health check endpoint
-export async function HEAD(request: NextRequest) {
+export async function HEAD(_request: NextRequest) {
   return new NextResponse(null, { status: 200 });
 }

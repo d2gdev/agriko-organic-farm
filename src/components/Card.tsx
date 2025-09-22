@@ -79,7 +79,7 @@ const Card = forwardRef<HTMLDivElement | HTMLButtonElement, CardProps | ButtonCa
     className
   );
 
-  const Component = clickable ? 'button' : 'div';
+  // const _Component = clickable ? 'button' : 'div';
 
   if (clickable) {
     return (

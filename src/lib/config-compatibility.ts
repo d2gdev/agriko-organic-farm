@@ -91,19 +91,19 @@ export const envConfig = {
     return config.monitoring.googleAnalyticsId;
   },
 
-  get pineconeApiKey() {
-    logDeprecationWarning('envConfig.pineconeApiKey', 'config.apis.pinecone.apiKey', 'env-config');
-    return config.apis.pinecone?.apiKey;
+  get qdrantApiKey() {
+    logDeprecationWarning('envConfig.qdrantApiKey', 'config.apis.qdrant.apiKey', 'env-config');
+    return config.apis.qdrant?.apiKey;
   },
 
-  get pineconeIndexName() {
-    logDeprecationWarning('envConfig.pineconeIndexName', 'config.apis.pinecone.indexName', 'env-config');
-    return config.apis.pinecone?.indexName;
+  get qdrantCollectionName() {
+    logDeprecationWarning('envConfig.qdrantCollectionName', 'config.apis.qdrant.indexName', 'env-config');
+    return config.apis.qdrant?.indexName;
   },
 
-  get pineconeHost() {
-    logDeprecationWarning('envConfig.pineconeHost', 'config.apis.pinecone.host', 'env-config');
-    return config.apis.pinecone?.host;
+  get qdrantHost() {
+    logDeprecationWarning('envConfig.qdrantHost', 'config.apis.qdrant.host', 'env-config');
+    return config.apis.qdrant?.host;
   },
 
   get deepseekApiKey() {

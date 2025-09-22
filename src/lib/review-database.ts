@@ -2,7 +2,9 @@ import { logger } from '@/lib/logger';
 import { productCacheSafe, apiCacheSafe } from '@/lib/thread-safe-cache';
 import { Review, ReviewSubmission, ReviewFilters, ReviewSummary, ReviewStatus } from '@/types/reviews';
 import { sanitizeStringParam } from '@/lib/api-helpers';
-import { config } from '@/lib/unified-config';
+// import * as nodemailer from 'nodemailer'; // Reverted due to import issues
+// import { APP_CONSTANTS } from '@/lib/unified-config'; // Reverted due to import issues
+// import { config } from '@/lib/unified-config'; // Preserved for future database configuration
 
 // Review database interface using WooCommerce products and custom meta
 export class ReviewDatabase {
@@ -217,7 +219,7 @@ export class ReviewDatabase {
     await productCacheSafe.set(productCacheKey, productReviews, 60 * 60 * 1000); // 1 hour
   }
 
-  private async loadProductReviews(productId: number): Promise<Review[]> {
+  private async loadProductReviews(_productId: number): Promise<Review[]> {
     // In a real implementation, this would load from a database
     // For now, we'll return empty array and let initial reviews be generated
     return [];
@@ -404,52 +406,11 @@ export class ReviewDatabase {
       needsModeration: review.status === 'pending'
     });
     
-    // In production, send actual email notification
-    // TODO: Enable email notifications when nodemailer is installed
-    // if (env.isProd && env.email.from) {
-    //   try {
-    //     const transporter = nodemailer.createTransport({
-    //       host: env.email.host,
-    //       port: env.email.port,
-    //       secure: env.email.port === 465,
-    //       auth: {
-    //         user: env.email.user,
-    //         pass: env.email.pass,
-    //       },
-    //     });
-
-    //     const mailOptions = {
-    //       from: env.email.from,
-    //       to: env.email.to, // Assuming a 'to' address is configured
-    //       subject: `New Review for Moderation: ${review.title}`,
-    //       html: `
-    //         <h1>New Review for Moderation</h1>
-    //         <p>A new review has been submitted and is awaiting moderation.</p>
-    //         <ul>
-    //           <li><strong>Product ID:</strong> ${review.productId}</li>
-    //           <li><strong>Reviewer:</strong> ${review.customerName}</li>
-    //           <li><strong>Rating:</strong> ${review.rating} / 5</li>
-    //           <li><strong>Title:</strong> ${review.title}</li>
-    //           <li><strong>Content:</strong></li>
-    //         </ul>
-    //         <blockquote style="padding: 10px; border-left: 3px solid #ccc;">
-    //           ${review.content}
-    //         </blockquote>
-    //         <p>
-    //           <a href="${env.appUrl}/admin/reviews?reviewId=${review.id}">
-    //             Moderate Review
-    //           </a>
-    //         </p>
-    //       `,
-    //     };
-
-    //     await transporter.sendMail(mailOptions);
-    //     logger.info('📧 Moderation email sent successfully', { reviewId: review.id });
-    //   } catch (error) {
-    //     logger.error('❌ Failed to send moderation email:', error as Record<string, unknown>);
-    //   }
-    // }
+    // TODO: Enable email notifications when nodemailer is properly configured
+    // await this.sendModerationEmail(review);
   }
+
+  // Email method removed due to import issues - needs proper nodemailer configuration
 
   private async getAllReviewCacheKeys(): Promise<string[]> {
     const allKeys = await productCacheSafe.getAllKeys();

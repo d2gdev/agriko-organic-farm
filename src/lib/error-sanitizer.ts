@@ -326,7 +326,7 @@ function getErrorLogLevel(error: ErrorLike): 'error' | 'warn' | 'info' {
   return 'error';
 }
 
-async function sendToErrorTracking(logData: Record<string, unknown>): Promise<void> {
+async function sendToErrorTracking(_logData: Record<string, unknown>): Promise<void> {
   // Placeholder for error tracking service integration
   // In production, integrate with services like Sentry, LogRocket, etc.
   
@@ -337,7 +337,7 @@ async function sendToErrorTracking(logData: Record<string, unknown>): Promise<vo
     //   headers: { 'Content-Type': 'application/json' },
     //   body: JSON.stringify(logData),
     // });
-  } catch (error) {
+  } catch {
     // Fail silently to prevent error loops
   }
 }

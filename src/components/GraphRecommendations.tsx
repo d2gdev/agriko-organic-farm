@@ -19,22 +19,25 @@ interface GraphProduct {
 
 interface GraphRecommendationsProps {
   productId: number;
-  type?: 'similar' | 'health-benefit' | 'category';
+  type?: 'similar' | 'health-benefit' | 'category' | 'complementary' | 'frequently-bought';
   healthBenefit?: string;
   category?: string;
   limit?: number;
   title?: string;
+  showExplanation?: boolean;
 }
 
-export function GraphRecommendations({ 
-  productId, 
-  type = 'similar', 
+export function GraphRecommendations({
+  productId,
+  type = 'similar',
   healthBenefit,
   category,
   limit = 4,
-  title 
+  title,
+  showExplanation = false
 }: GraphRecommendationsProps) {
   const [recommendations, setRecommendations] = useState<GraphProduct[]>([]);
+  const [explanation, setExplanation] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,12 +51,16 @@ export function GraphRecommendations({
         limit: limit.toString()
       });
 
-      if (type === 'similar' && productId) {
+      if ((type === 'similar' || type === 'complementary' || type === 'frequently-bought') && productId) {
         params.append('productId', productId.toString());
       } else if (type === 'health-benefit' && healthBenefit) {
         params.append('healthBenefit', healthBenefit);
       } else if (type === 'category' && category) {
         params.append('category', category);
+      }
+
+      if (showExplanation) {
+        params.append('explain', 'true');
       }
 
       const response = await reliableFetch(`/api/graph/recommendations?${params}`, {
@@ -63,16 +70,25 @@ export function GraphRecommendations({
 
       if (result.success) {
         setRecommendations(result.data.recommendations ?? []);
+        if (showExplanation && result.data.explanation) {
+          setExplanation(result.data.explanation);
+        }
       } else {
         setError(result.error ?? 'Failed to load recommendations');
       }
     } catch (error) {
+      logger.error('Graph recommendations error details:', {
+        error,
+        productId,
+        type,
+        url: `/api/graph/recommendations?productId=${productId}&type=${type}&limit=${limit}${showExplanation ? '&explain=true' : ''}${healthBenefit ? `&healthBenefit=${healthBenefit}` : ''}${category ? `&category=${category}` : ''}`
+      });
       logger.error('Graph recommendations error:', error as Record<string, unknown>);
       setError('Unable to load recommendations');
     } finally {
       setLoading(false);
     }
-  }, [productId, type, healthBenefit, category, limit]);
+  }, [productId, type, healthBenefit, category, limit, showExplanation]);
 
   useEffect(() => {
     fetchRecommendations();
@@ -82,6 +98,10 @@ export function GraphRecommendations({
     switch (type) {
       case 'similar':
         return 'You Might Also Like';
+      case 'complementary':
+        return 'Works Well With This';
+      case 'frequently-bought':
+        return 'Frequently Bought Together';
       case 'health-benefit':
         return `More Products for ${healthBenefit}`;
       case 'category':
@@ -98,6 +118,22 @@ export function GraphRecommendations({
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
+  };
+
+  // Map product slugs to actual image filenames
+  const getProductImageSrc = (slug: string) => {
+    const imageMap: Record<string, string> = {
+      'honey': 'agriko-pure-organic-honey-jar.jpg',
+      'pure-salabat': 'agriko-pure-salabat-ginger-tea-100g.jpg',
+      '5n1-turmeric-tea-blend-180g': 'agriko-turmeric-5in1-blend-180g-organic.jpg',
+      '5n1-turmeric-tea-blend': 'agriko-turmeric-5in1-blend-500g-health-supplement.jpg',
+      'cacao-with-5n1-turmeric-blend': 'agriko-turmeric-5in1-blend-500g-health-supplement.jpg',
+      'roasted-black-rice': 'agriko-turmeric-5in1-blend-180g-organic.jpg', // placeholder
+      'agribata-kids-cereal': 'agriko-turmeric-5in1-blend-180g-organic.jpg', // placeholder
+      'pure-moringa': 'agriko-turmeric-5in1-blend-180g-organic.jpg', // placeholder
+    };
+
+    return `/images/${imageMap[slug] || 'placeholder-product.svg'}`;
   };
 
   if (loading) {
@@ -143,20 +179,38 @@ export function GraphRecommendations({
           {title ?? getDefaultTitle()}
         </h2>
         <div className="text-sm text-gray-500">
-          Powered by Knowledge Graph
+          {type === 'complementary' && (
+            <span className="inline-flex items-center">
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Curated Pairings
+            </span>
+          )}
+          {type === 'frequently-bought' && (
+            <span className="inline-flex items-center">
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Popular Combinations
+            </span>
+          )}
+          {type === 'similar' && 'Powered by Knowledge Graph'}
+          {type === 'health-benefit' && 'Health-Focused Recommendations'}
+          {type === 'category' && 'Category Suggestions'}
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {recommendations.map((product) => (
-          <div 
-            key={product.id} 
+        {recommendations.map((product, index) => (
+          <div
+            key={`${type}-${product.id}-${index}`}
             className="group bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
           >
             <Link href={`/product/${product.slug}`} className="block">
               <div className="aspect-square bg-gray-100 relative overflow-hidden">
                 <OptimizedImage
-                  src={`/images/products/${product.slug}.jpg`}
+                  src={getProductImageSrc(product.slug)}
                   alt={product.name}
                   width={300}
                   height={300}
@@ -200,6 +254,18 @@ export function GraphRecommendations({
           </div>
         ))}
       </div>
+
+      {/* Explanation Section */}
+      {showExplanation && explanation && (
+        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-primary-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-gray-600">{explanation}</p>
+          </div>
+        </div>
+      )}
 
       {/* Learn More Link */}
       <div className="mt-6 text-center">
@@ -246,6 +312,44 @@ export function CategoryRecommendations({ categoryName, limit = 4 }: CategoryRec
       category={categoryName}
       limit={limit}
       title={`More in ${categoryName}`}
+    />
+  );
+}
+
+// Complementary Products Component
+interface ComplementaryProductsProps {
+  productId: number;
+  limit?: number;
+  showExplanation?: boolean;
+}
+
+export function ComplementaryProducts({ productId, limit = 4, showExplanation = false }: ComplementaryProductsProps) {
+  return (
+    <GraphRecommendations
+      productId={productId}
+      type="complementary"
+      limit={limit}
+      title="Works Well With This Product"
+      showExplanation={showExplanation}
+    />
+  );
+}
+
+// Frequently Bought Together Component
+interface FrequentlyBoughtProps {
+  productId: number;
+  limit?: number;
+  showExplanation?: boolean;
+}
+
+export function FrequentlyBoughtTogether({ productId, limit = 4, showExplanation = false }: FrequentlyBoughtProps) {
+  return (
+    <GraphRecommendations
+      productId={productId}
+      type="frequently-bought"
+      limit={limit}
+      title="Frequently Bought Together"
+      showExplanation={showExplanation}
     />
   );
 }

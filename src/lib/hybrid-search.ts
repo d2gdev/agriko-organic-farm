@@ -1,410 +1,190 @@
-// Hybrid Search Implementation - Combines Semantic and Keyword Search
-import { searchByText } from './pinecone';
+/**
+ * Hybrid Search Module
+ * Combines semantic search with keyword search for better results
+ */
+
 import { logger } from '@/lib/logger';
-// Define specific interface for hybrid search analytics
-interface HybridSearchAnalytics {
-  query: string;
-  mode: string;
-  semanticResults: number;
-  keywordResults: number;
-  hybridResults: number;
-  executionTime: number;
-}
+import { getAllProducts } from '@/lib/woocommerce';
+import { WCProduct } from '@/types/woocommerce';
 
-import { keywordSearch, buildSearchIndex, KeywordSearchResult, SearchIndex, KeywordSearchOptions } from './keyword-search';
-import { getAllProducts } from './woocommerce';
-
-export interface HybridSearchOptions {
-  // Search mode configuration
-  mode?: 'hybrid' | 'semantic_only' | 'keyword_only';
-  
-  // Weight configuration for hybrid mode (should sum to 1.0)
-  semanticWeight?: number;
-  keywordWeight?: number;
-  
-  // Result configuration
-  maxResults?: number;
-  minSemanticScore?: number;
-  minKeywordScore?: number;
-  
-  // Filtering options
-  category?: string;
-  inStock?: boolean;
-  featured?: boolean;
-  priceRange?: { min: number; max: number };
-  
-  // Keyword search options
-  keywordOptions?: KeywordSearchOptions;
-  
-  // Semantic search options
-  semanticTopK?: number;
-  includeMetadata?: boolean;
-}
+// Simple synonym mapping for query expansion
+const SYNONYM_MAP: Record<string, string[]> = {
+  'organic': ['natural', 'pure', 'chemical-free'],
+  'fresh': ['farm-fresh', 'crisp', 'newly harvested'],
+  'vegetable': ['veggie', 'produce', 'greens'],
+  'fruit': ['produce', 'fresh fruit'],
+  'tomato': ['tomatoes', 'cherry tomato'],
+  'potato': ['potatoes', 'spud'],
+  'carrot': ['carrots'],
+  'apple': ['apples'],
+  'banana': ['bananas'],
+};
 
 export interface HybridSearchResult {
-  productId: number;
-  slug: string;
-  title: string;
-  price: string;
-  categories: string[];
-  inStock: boolean;
-  featured: boolean;
-  
-  // Scoring information
-  hybridScore: number;
-  semanticScore?: number;
-  keywordScore?: number;
-  
-  // Match information
-  searchMethod: 'semantic' | 'keyword' | 'hybrid';
-  matchedFields?: string[];
-  matchedTerms?: string[];
-  relevanceScore?: number; // For backwards compatibility
-  
-  // Additional metadata
-  timestamp?: string;
-  description?: string;
+  product: WCProduct;
+  score: number;
+  source: 'semantic' | 'keyword' | 'hybrid';
+  explanation?: string;
 }
 
-let searchIndexCache: SearchIndex[] | null = null;
-let searchIndexTimestamp: number = 0;
-const SEARCH_INDEX_TTL = 5 * 60 * 1000; // 5 minutes
+export interface HybridSearchOptions {
+  limit?: number;
+  expandQuery?: boolean;
+  category?: string;
+  inStockOnly?: boolean;
+}
 
-// Build or refresh search index
-async function getSearchIndex(): Promise<SearchIndex[]> {
-  const now = Date.now();
-  
-  if (searchIndexCache && (now - searchIndexTimestamp) < SEARCH_INDEX_TTL) {
-    return searchIndexCache;
+/**
+ * Expand query with synonyms
+ */
+function expandQuery(query: string): string[] {
+  const words = query.toLowerCase().split(' ');
+  const expanded = new Set<string>([query]);
+
+  words.forEach(word => {
+    if (SYNONYM_MAP[word]) {
+      SYNONYM_MAP[word].forEach(synonym => {
+        expanded.add(query.replace(word, synonym));
+      });
+    }
+  });
+
+  return Array.from(expanded).slice(0, 3); // Limit to 3 queries
+}
+
+/**
+ * Calculate relevance score for a product
+ */
+function calculateScore(product: WCProduct, query: string, semanticScore?: number): number {
+  let score = 0;
+  const queryLower = query.toLowerCase();
+
+  // Name match (0-40 points)
+  if (product.name.toLowerCase().includes(queryLower)) {
+    score += 40;
+  } else {
+    const words = queryLower.split(' ');
+    const matches = words.filter(w => product.name.toLowerCase().includes(w)).length;
+    score += (matches / words.length) * 25;
   }
 
-  logger.info('?? Rebuilding keyword search index...');
-  const products = await getAllProducts({ per_page: 100 }); // Get more products for comprehensive search
-  searchIndexCache = buildSearchIndex(products);
-  searchIndexTimestamp = now;
-  logger.info(`? Built search index with ${searchIndexCache.length} products`);
-  
-  return searchIndexCache;
+  // Description match (0-20 points)
+  if (product.description?.toLowerCase().includes(queryLower)) {
+    score += 20;
+  } else if (product.short_description?.toLowerCase().includes(queryLower)) {
+    score += 15;
+  }
+
+  // Semantic score (0-30 points)
+  if (semanticScore) {
+    score += semanticScore * 30;
+  }
+
+  // Popularity boost (0-10 points) - using average_rating as proxy
+  if (product.average_rating && parseFloat(product.average_rating) > 4) {
+    score += 10;
+  }
+
+  return Math.min(100, score);
 }
 
-// Main hybrid search function
-export async function hybridSearch(
+/**
+ * Perform hybrid search combining semantic and keyword search
+ */
+export async function performHybridSearch(
   query: string,
   options: HybridSearchOptions = {}
-): Promise<{ results: HybridSearchResult[]; searchStats: HybridSearchAnalytics }> {
-  const {
-    mode = 'hybrid',
-    semanticWeight = 0.6,
-    keywordWeight = 0.4,
-    maxResults = 20,
-    minSemanticScore = 0.3,
-    minKeywordScore = 0.1,
-    semanticTopK = 50,
-    includeMetadata = true,
-    keywordOptions = {}
-  } = options;
-
-  logger.info(`?? Hybrid search: "${query}" (mode: ${mode})`);
-  
-  const searchStats = {
-    query,
-    mode,
-    semanticResults: 0,
-    keywordResults: 0,
-    hybridResults: 0,
-    executionTime: 0
-  };
-
-  const startTime = Date.now();
-  let semanticResults: Array<{
-    score?: number;
-    metadata?: {
-      productId?: number;
-      slug?: string;
-      title?: string;
-      price?: string;
-      categories?: string[];
-      inStock?: boolean;
-      featured?: boolean;
-      timestamp?: string;
-      description?: string;
-    };
-  }> = [];
-  let keywordResults: KeywordSearchResult[] = [];
-
+): Promise<HybridSearchResult[]> {
   try {
-    // Execute searches based on mode
-    if (mode === 'semantic_only' || mode === 'hybrid') {
-      logger.info('  ?? Running semantic search...');
-      
-      // Build filter for semantic search
-      const filter: Record<string, { $in?: string[]; $eq?: boolean }> = {};
-      if (options.category) filter.categories = { $in: [options.category] };
-      if (options.inStock === true) filter.inStock = { $eq: true };
-      if (options.featured === true) filter.featured = { $eq: true };
+    const {
+      limit = 20,
+      expandQuery: shouldExpand = true,
+      category
+    } = options;
 
-      const semanticResponse = await searchByText(query, {
-        topK: semanticTopK,
-        filter: Object.keys(filter).length > 0 ? filter : undefined,
-        includeMetadata: true,
-        minScore: minSemanticScore,
-      });
+    const resultsMap = new Map<number, HybridSearchResult>();
 
-      if (semanticResponse.success && semanticResponse.matches) {
-        semanticResults = semanticResponse.matches.filter((match) => match.score && match.score >= minSemanticScore);
-        searchStats.semanticResults = semanticResults.length;
-        logger.info(`    ? Found ${semanticResults.length} semantic matches`);
+    // 1. Try semantic search through the API
+    try {
+      const response = await fetch(`/api/search/semantic?q=${encodeURIComponent(query)}&limit=${limit}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data?.results) {
+          data.data.results.forEach((result: { product: WCProduct; score: number }) => {
+            const score = calculateScore(result.product, query, result.score);
+            resultsMap.set(result.product.id, {
+              product: result.product,
+              score,
+              source: 'semantic',
+              explanation: `Semantic match: ${(result.score * 100).toFixed(1)}%`
+            });
+          });
+          logger.info(`✅ Semantic search found ${data.data.results.length} results`);
+        }
+      }
+    } catch (error) {
+      logger.warn('⚠️ Semantic search failed, continuing with keyword search', error as Record<string, unknown>);
+    }
+
+    // 2. Keyword search with query expansion
+    const queries = shouldExpand ? expandQuery(query) : [query];
+
+    for (const expandedQuery of queries) {
+      try {
+        const keywordResults = await getAllProducts({
+          search: expandedQuery,
+          per_page: 10,
+          category
+        });
+
+        keywordResults.forEach((product: WCProduct) => {
+          if (!resultsMap.has(product.id)) {
+            const score = calculateScore(product, query);
+            resultsMap.set(product.id, {
+              product,
+              score,
+              source: 'keyword',
+              explanation: `Keyword match: "${expandedQuery}"`
+            });
+          } else {
+            // Boost score if found in both searches
+            const existing = resultsMap.get(product.id);
+            if (!existing) return;
+            existing.score = Math.min(100, existing.score + 15);
+            existing.source = 'hybrid';
+            existing.explanation = 'Found in both semantic and keyword search';
+          }
+        });
+      } catch (error) {
+        logger.warn(`⚠️ Keyword search failed for query: ${expandedQuery}`, error as Record<string, unknown>);
       }
     }
 
-    if (mode === 'keyword_only' || mode === 'hybrid') {
-      logger.info('  ?? Running keyword search...');
-      const searchIndex = await getSearchIndex();
-      
-      keywordResults = keywordSearch(query, searchIndex, {
-        minScore: minKeywordScore,
-        ...keywordOptions
-      });
-      
-      // Apply filters to keyword results
-      keywordResults = applyFilters(keywordResults, options);
-      
-      searchStats.keywordResults = keywordResults.length;
-      logger.info(`    ? Found ${keywordResults.length} keyword matches`);
-    }
+    // Sort by score and limit results
+    const results = Array.from(resultsMap.values())
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
 
-    // Merge and rank results based on mode
-    let finalResults: HybridSearchResult[] = [];
+    logger.info(`✅ Hybrid search completed: ${results.length} results returned`);
 
-    if (mode === 'semantic_only') {
-      finalResults = semanticResults.map(result => ({
-        productId: result.metadata?.productId ?? 0,
-        slug: result.metadata?.slug ?? '',
-        title: result.metadata?.title ?? 'Untitled Product',
-        price: result.metadata?.price ?? '0',
-        categories: result.metadata?.categories ?? [],
-        inStock: result.metadata?.inStock ?? false,
-        featured: result.metadata?.featured ?? false,
-        hybridScore: result.score ?? 0,
-        semanticScore: result.score,
-        searchMethod: 'semantic' as const,
-        relevanceScore: result.score,
-        timestamp: result.metadata?.timestamp,
-        description: result.metadata?.description
-      })).filter(result => result.productId && result.productId > 0); // Filter out results without valid productId
-    } else if (mode === 'keyword_only') {
-      finalResults = keywordResults.map(result => ({
-        productId: result.productId,
-        slug: result.slug,
-        title: result.title,
-        price: result.price,
-        categories: result.categories,
-        inStock: result.inStock,
-        featured: result.featured,
-        hybridScore: result.score ?? 0,
-        keywordScore: result.score,
-        searchMethod: 'keyword' as const,
-        matchedFields: result.matchedFields,
-        matchedTerms: result.matchedTerms,
-        relevanceScore: result.score
-      }));
-    } else {
-      // Hybrid mode - merge and re-rank
-      finalResults = mergeSearchResults(semanticResults, keywordResults, semanticWeight, keywordWeight);
-    }
-
-    // Sort by hybrid score and limit results
-    finalResults.sort((a, b) => (b.hybridScore || 0) - (a.hybridScore || 0));
-    finalResults = finalResults.slice(0, maxResults);
-
-    searchStats.hybridResults = finalResults.length;
-    searchStats.executionTime = Date.now() - startTime;
-
-    logger.info(`  ? Hybrid search completed: ${finalResults.length} results in ${searchStats.executionTime}ms`);
-
-    return {
-      results: finalResults,
-      searchStats
-    };
-
+    return results;
   } catch (error) {
-    logger.error('? Hybrid search failed:', error as Record<string, unknown>);
+    logger.error('❌ Hybrid search error:', error as Record<string, unknown>);
     throw error;
   }
 }
 
-// Define semantic result type for better type safety
-type SemanticResult = {
-  score?: number;
-  metadata?: {
-    productId?: number;
-    slug?: string;
-    title?: string;
-    price?: string;
-    categories?: string[];
-    inStock?: boolean;
-    featured?: boolean;
-    timestamp?: string;
-    description?: string;
-  };
-};
-
-// Merge semantic and keyword results for hybrid ranking
-function mergeSearchResults(
-  semanticResults: SemanticResult[],
-  keywordResults: KeywordSearchResult[],
-  semanticWeight: number,
-  keywordWeight: number
-): HybridSearchResult[] {
-  const resultMap = new Map<number, HybridSearchResult>();
-
-  // Process semantic results
-  for (const semantic of semanticResults) {
-    const productId = semantic.metadata?.productId;
-    if (!productId) continue;
-
-    resultMap.set(productId, {
-      productId,
-      slug: semantic.metadata?.slug ?? '',
-      title: semantic.metadata?.title ?? 'Untitled Product',
-      price: semantic.metadata?.price ?? '0',
-      categories: semantic.metadata?.categories ?? [],
-      inStock: semantic.metadata?.inStock ?? false,
-      featured: semantic.metadata?.featured ?? false,
-      hybridScore: (semantic.score ?? 0) * semanticWeight,
-      semanticScore: semantic.score,
-      searchMethod: 'semantic' as const,
-      relevanceScore: semantic.score,
-      timestamp: semantic.metadata?.timestamp,
-      description: semantic.metadata?.description
-    });
-  }
-
-  // Process keyword results and merge with semantic
-  for (const keyword of keywordResults) {
-    const productId = keyword.productId;
-    
-    if (resultMap.has(productId)) {
-      // Product found in both - create hybrid result
-      const existing = resultMap.get(productId);
-      if (!existing) continue;
-      existing.hybridScore = (existing.semanticScore ?? 0) * semanticWeight + (keyword.score ?? 0) * keywordWeight;
-      existing.keywordScore = keyword.score;
-      existing.searchMethod = 'hybrid';
-      existing.matchedFields = keyword.matchedFields;
-      existing.matchedTerms = keyword.matchedTerms;
-      existing.relevanceScore = existing.hybridScore;
-    } else {
-      // Keyword-only result
-      resultMap.set(productId, {
-        productId: keyword.productId,
-        slug: keyword.slug,
-        title: keyword.title,
-        price: keyword.price,
-        categories: keyword.categories,
-        inStock: keyword.inStock,
-        featured: keyword.featured,
-        hybridScore: (keyword.score ?? 0) * keywordWeight,
-        keywordScore: keyword.score,
-        searchMethod: 'keyword' as const,
-        matchedFields: keyword.matchedFields,
-        matchedTerms: keyword.matchedTerms,
-        relevanceScore: keyword.score
-      });
-    }
-  }
-
-  return Array.from(resultMap.values());
-}
-
-// Apply filters to keyword search results
-function applyFilters(
-  results: KeywordSearchResult[],
-  options: HybridSearchOptions
-): KeywordSearchResult[] {
-  let filtered = results;
-
-  if (options.category) {
-    filtered = filtered.filter(result => 
-      result.categories.some(cat => cat.toLowerCase().includes(options.category?.toLowerCase() ?? ''))
-    );
-  }
-
-  if (options.inStock === true) {
-    filtered = filtered.filter(result => result.inStock);
-  }
-
-  if (options.featured === true) {
-    filtered = filtered.filter(result => result.featured);
-  }
-
-  if (options.priceRange) {
-    const { min, max } = options.priceRange;
-    filtered = filtered.filter(result => {
-      const price = parseFloat(result.price);
-      return !isNaN(price) && price >= min && price <= max;
-    });
-  }
-
-  return filtered;
-}
-
-// A/B testing support for search algorithms
-export async function runSearchExperiment(
+// Export a simplified function for other modules to avoid circular deps
+export async function hybridSearch(
   query: string,
-  experiments: Array<{ name: string; options: HybridSearchOptions }>,
-  maxResults: number = 10
-): Promise<{
-  experiments: Array<{
-    name: string;
-    results: HybridSearchResult[];
-    stats: HybridSearchAnalytics;
-  }>;
-  comparison: {
-    totalQuery: string;
-    experiments: Array<{
-      name: string;
-      resultCount: number;
-      avgScore: number;
-      executionTime: number;
-    }>;
+  options?: HybridSearchOptions
+): Promise<{ results: HybridSearchResult[]; searchStats?: { totalResults: number; searchType: string } }> {
+  const results = await performHybridSearch(query, options);
+  return {
+    results,
+    searchStats: {
+      totalResults: results.length,
+      searchType: 'hybrid'
+    }
   };
-}> {
-  const experimentResults = [];
-
-  for (const experiment of experiments) {
-    logger.info(`?? Running experiment: ${experiment.name}`);
-    const { results, searchStats } = await hybridSearch(query, {
-      ...experiment.options,
-      maxResults
-    });
-
-    experimentResults.push({
-      name: experiment.name,
-      results,
-      stats: searchStats
-    });
-  }
-
-  // Simple comparison metrics
-  const comparison = {
-    totalQuery: query,
-    experiments: experimentResults.map(exp => ({
-      name: exp.name,
-      resultCount: exp.results.length,
-      avgScore: exp.results.length > 0 ? 
-        exp.results.reduce((sum, r) => sum + (r.hybridScore ?? 0), 0) / exp.results.length : 0,
-      executionTime: exp.stats.executionTime
-    }))
-  };
-
-  return { experiments: experimentResults, comparison };
 }
-
-// Clear search index cache (useful for testing)
-export function clearSearchIndexCache(): void {
-  searchIndexCache = null;
-  searchIndexTimestamp = 0;
-  logger.info('??? Search index cache cleared');
-}
-

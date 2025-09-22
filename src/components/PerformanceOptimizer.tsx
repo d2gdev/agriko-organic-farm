@@ -3,11 +3,11 @@
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
 
-import { performanceOptimizer, ResourcePreloader } from '@/lib/performance';
+import { performanceOptimizer, ResourcePreloader, ImageOptimizer } from '@/lib/performance';
 import { initializePerformanceOptimizations } from '@/lib/service-worker';
 import { initializeBundleOptimizations } from '@/lib/bundle-optimizer';
-import { FIDOptimizer } from '@/lib/fid-optimizer';
-import { CLSOptimizer } from '@/lib/cls-optimizer';
+// import { FIDOptimizer } from '@/lib/fid-optimizer'; // temporarily disabled
+// import { CLSOptimizer } from '@/lib/cls-optimizer'; // temporarily disabled
 
 interface PerformanceOptimizerProps {
   enableResourcePreloading?: boolean;
@@ -33,12 +33,12 @@ export default function PerformanceOptimizer({
         // 2. Initialize bundle optimizations
         initializeBundleOptimizations();
 
-        // 3. Initialize FID optimizations
-        const fidCleanup = FIDOptimizer.initialize();
+        // 3. Initialize FID optimizations - temporarily disabled
+        // const fidCleanup = FIDOptimizer.initialize();
 
-        // 4. Initialize CLS optimizations
-        CLSOptimizer.initializeLayoutMonitoring();
-        CLSOptimizer.preloadCriticalFonts();
+        // 4. Initialize CLS optimizations - temporarily disabled
+        // CLSOptimizer.initializeLayoutMonitoring();
+        // CLSOptimizer.preloadCriticalFonts();
 
         // 5. Core Web Vitals monitoring (existing)
         if (enableResourcePreloading) {
@@ -48,11 +48,13 @@ export default function PerformanceOptimizer({
         // Preload critical resources after initial render
         setTimeout(() => {
           if (enableResourcePreloading) {
+            // First, aggressively clean up any existing legacy preloads
+            ResourcePreloader.cleanupLegacyPreloads();
+            // Then preload only what we actually need
             ResourcePreloader.preloadCriticalResources();
           }
           
           if (enableImageOptimization) {
-            const { ImageOptimizer } = require('@/lib/performance');
             ImageOptimizer.lazyLoadImages();
           }
         }, 100);
@@ -73,7 +75,7 @@ export default function PerformanceOptimizer({
         // Return cleanup function
         return () => {
           performanceOptimizer.cleanup();
-          fidCleanup();
+          // fidCleanup(); // temporarily disabled
         };
 
       } catch (error) {
@@ -100,7 +102,7 @@ export default function PerformanceOptimizer({
           
           // Log performance report for debugging
           if (process.env.NODE_ENV === 'development') {
-            console.group('🚀 Performance Report');
+            logger.group('🚀 Performance Report');
             logger.info('Overall Score:', { score: report.overallScore });
             logger.info('Core Web Vitals:', {
               LCP: report.metrics.lcp ? `${Math.round(report.metrics.lcp)}ms` : 'N/A',
@@ -108,14 +110,14 @@ export default function PerformanceOptimizer({
               CLS: report.metrics.cls ? report.metrics.cls.toFixed(3) : 'N/A'
             });
             logger.info('Recommendations:', { recommendations: report.recommendations });
-            console.groupEnd();
+            logger.groupEnd();
           }
 
           // Store report for analytics dashboard
           if (typeof window !== 'undefined') {
             try {
               localStorage.setItem('agriko_performance_report', JSON.stringify(report));
-            } catch (e) {
+            } catch {
               // Storage failed, continue silently
             }
           }

@@ -472,7 +472,7 @@ describe('Integration Tests - Core Functionality', () => {
       const mockFetch = jest.fn();
 
       const DataLoader = () => {
-        const [data, setData] = React.useState<unknown[]>([]);
+        const [data, setData] = React.useState<Array<{ name: string }>>([]);
         const [loading, setLoading] = React.useState(false);
         const [error, setError] = React.useState<string>('');
 

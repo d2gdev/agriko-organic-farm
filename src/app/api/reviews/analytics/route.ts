@@ -74,19 +74,9 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     logger.error('Review Analytics API error:', error as Record<string, unknown>);
-    
-    // Fallback to mock analytics if real service fails
-    try {
-      const mockAnalytics = generateReviewAnalytics();
-      return NextResponse.json({
-        success: true,
-        data: mockAnalytics,
-        source: 'fallback_mock',
-        warning: 'Review analytics service unavailable, showing fallback data',
-        timestamp: new Date().toISOString()
-      });
-    } catch (fallbackError) {
-      return NextResponse.json(
+
+    // Return error state instead of mock data
+    return NextResponse.json(
         { 
           success: false, 
           error: 'Failed to fetch review analytics',
@@ -94,13 +84,12 @@ export async function GET(request: NextRequest) {
         },
         { status: 500 }
       );
-    }
   }
 }
 
 function generateReviewAnalytics(productId?: number, timeframeDays: number = 30): ReviewAnalytics {
   const currentDate = new Date();
-  const startDate = new Date(currentDate.getTime() - timeframeDays * 24 * 60 * 60 * 1000);
+  // const startDate = new Date(currentDate.getTime() - timeframeDays * 24 * 60 * 60 * 1000);
 
   // Mock data generation - in production this would query actual database
   const totalReviews = Math.floor(Math.random() * 500) + 100;

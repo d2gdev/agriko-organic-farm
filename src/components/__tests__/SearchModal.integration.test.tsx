@@ -50,10 +50,8 @@ jest.mock('@/components/SearchAutocomplete', () => {
         type="text"
         value={value}
         onChange={(e) => {
-          onChange(e.target.value);
-          if (onSearch) {
-            onSearch(e.target.value);
-          }
+          onChange?.(e.target.value);
+          onSearch?.(e.target.value);
         }}
         placeholder={placeholder}
       />
@@ -66,7 +64,7 @@ jest.mock('@/components/SearchFilters', () => {
   return function MockSearchFilters({ filters, onFiltersChange }: { filters?: Record<string, unknown>; onFiltersChange?: (filters: Record<string, unknown>) => void }) {
     return (
       <div>
-        <button onClick={() => onFiltersChange({ category: '' })}>Clear filters</button>
+        <button onClick={() => onFiltersChange?.({ category: '' })}>Clear filters</button>
       </div>
     );
   };
@@ -107,15 +105,15 @@ jest.mock('@/hooks/useProductFilters', () => ({
         const query = searchQuery.toLowerCase();
         filtered = filtered.filter(product =>
           product.name.toLowerCase().includes(query) ||
-          product.description.toLowerCase().includes(query) ||
-          product.short_description.toLowerCase().includes(query)
+          (product.description && product.description.toLowerCase().includes(query)) ||
+          (product.short_description && product.short_description.toLowerCase().includes(query))
         );
       }
 
       // Apply category filter
       if (filters.category) {
         filtered = filtered.filter(product =>
-          product.categories.some(cat => cat.name.toLowerCase() === filters.category.toLowerCase())
+          product.categories?.some(cat => cat.name.toLowerCase() === filters.category.toLowerCase())
         );
       }
 
@@ -156,7 +154,7 @@ const mockProducts: WCProduct[] = [
     id: 1,
     name: 'Organic Brown Rice',
     slug: 'organic-brown-rice',
-    price: 15.99,
+    price: '15.99',
     regular_price: '15.99',
     sale_price: '',
     on_sale: false,
@@ -176,6 +174,11 @@ const mockProducts: WCProduct[] = [
         id: 1,
         name: 'Rice',
         slug: 'rice',
+        description: '',
+        display: 'default' as const,
+        image: null,
+        menu_order: 0,
+        count: 1
       },
     ],
     tags: [],
@@ -192,7 +195,7 @@ const mockProducts: WCProduct[] = [
     id: 2,
     name: 'Red Rice Premium',
     slug: 'red-rice-premium',
-    price: 18.50,
+    price: "18.50",
     regular_price: '20.00',
     sale_price: '18.50',
     on_sale: true,
@@ -212,6 +215,11 @@ const mockProducts: WCProduct[] = [
         id: 1,
         name: 'Rice',
         slug: 'rice',
+        description: '',
+        display: 'default' as const,
+        image: null,
+        menu_order: 0,
+        count: 1
       },
     ],
     tags: [],
@@ -228,7 +236,7 @@ const mockProducts: WCProduct[] = [
     id: 3,
     name: 'Turmeric Powder',
     slug: 'turmeric-powder',
-    price: 12.99,
+    price: "12.99",
     regular_price: '12.99',
     sale_price: '',
     on_sale: false,
@@ -248,6 +256,11 @@ const mockProducts: WCProduct[] = [
         id: 2,
         name: 'Herbs',
         slug: 'herbs',
+        description: '',
+        display: 'default' as const,
+        image: null,
+        menu_order: 0,
+        count: 1
       },
     ],
     tags: [],
@@ -264,7 +277,7 @@ const mockProducts: WCProduct[] = [
     id: 4,
     name: 'Organic Honey',
     slug: 'organic-honey',
-    price: 25.50,
+    price: "25.50",
     regular_price: '25.50',
     sale_price: '',
     on_sale: false,
@@ -284,6 +297,11 @@ const mockProducts: WCProduct[] = [
         id: 3,
         name: 'Blends',
         slug: 'blends',
+        description: '',
+        display: 'default' as const,
+        image: null,
+        menu_order: 0,
+        count: 1
       },
     ],
     tags: [],
@@ -301,7 +319,7 @@ const mockProducts: WCProduct[] = [
     id: 5,
     name: 'Organic Quinoa',
     slug: 'organic-quinoa',
-    price: 22.99,
+    price: "22.99",
     regular_price: '22.99',
     sale_price: '',
     on_sale: false,
@@ -309,7 +327,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic quinoa superfood',
     short_description: 'Organic quinoa superfood',
     images: [{ id: 5, src: '/quinoa.jpg', alt: 'Organic Quinoa', name: 'Quinoa Image' }],
-    categories: [{ id: 2, name: 'Herbs', slug: 'herbs' }],
+    categories: [{ id: 2, name: 'Herbs', slug: 'herbs', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -324,7 +342,7 @@ const mockProducts: WCProduct[] = [
     id: 6,
     name: 'Organic Chia Seeds',
     slug: 'organic-chia-seeds',
-    price: 18.99,
+    price: "18.99",
     regular_price: '18.99',
     sale_price: '',
     on_sale: false,
@@ -332,7 +350,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic chia seeds for smoothies',
     short_description: 'Organic chia seeds',
     images: [{ id: 6, src: '/chia.jpg', alt: 'Organic Chia Seeds', name: 'Chia Seeds Image' }],
-    categories: [{ id: 2, name: 'Herbs', slug: 'herbs' }],
+    categories: [{ id: 2, name: 'Herbs', slug: 'herbs', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -347,7 +365,7 @@ const mockProducts: WCProduct[] = [
     id: 7,
     name: 'Organic Coconut Oil',
     slug: 'organic-coconut-oil',
-    price: 16.99,
+    price: "16.99",
     regular_price: '16.99',
     sale_price: '',
     on_sale: false,
@@ -355,7 +373,7 @@ const mockProducts: WCProduct[] = [
     description: 'Pure organic coconut oil for cooking',
     short_description: 'Organic coconut oil',
     images: [{ id: 7, src: '/coconut-oil.jpg', alt: 'Organic Coconut Oil', name: 'Coconut Oil Image' }],
-    categories: [{ id: 3, name: 'Blends', slug: 'blends' }],
+    categories: [{ id: 3, name: 'Blends', slug: 'blends', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -370,7 +388,7 @@ const mockProducts: WCProduct[] = [
     id: 8,
     name: 'Organic Almonds',
     slug: 'organic-almonds',
-    price: 28.99,
+    price: "28.99",
     regular_price: '28.99',
     sale_price: '',
     on_sale: false,
@@ -378,7 +396,7 @@ const mockProducts: WCProduct[] = [
     description: 'Raw organic almonds for snacking',
     short_description: 'Organic almonds',
     images: [{ id: 8, src: '/almonds.jpg', alt: 'Organic Almonds', name: 'Almonds Image' }],
-    categories: [{ id: 2, name: 'Herbs', slug: 'herbs' }],
+    categories: [{ id: 2, name: 'Herbs', slug: 'herbs', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -393,7 +411,7 @@ const mockProducts: WCProduct[] = [
     id: 9,
     name: 'Organic Cashews',
     slug: 'organic-cashews',
-    price: 32.99,
+    price: "32.99",
     regular_price: '32.99',
     sale_price: '',
     on_sale: false,
@@ -401,7 +419,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic cashews for snacking',
     short_description: 'Organic cashews',
     images: [{ id: 9, src: '/cashews.jpg', alt: 'Organic Cashews', name: 'Cashews Image' }],
-    categories: [{ id: 2, name: 'Herbs', slug: 'herbs' }],
+    categories: [{ id: 2, name: 'Herbs', slug: 'herbs', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -416,7 +434,7 @@ const mockProducts: WCProduct[] = [
     id: 10,
     name: 'Organic Flaxseeds',
     slug: 'organic-flaxseeds',
-    price: 14.99,
+    price: "14.99",
     regular_price: '14.99',
     sale_price: '',
     on_sale: false,
@@ -424,7 +442,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic flaxseeds rich in omega-3',
     short_description: 'Organic flaxseeds',
     images: [{ id: 10, src: '/flaxseeds.jpg', alt: 'Organic Flaxseeds', name: 'Flaxseeds Image' }],
-    categories: [{ id: 2, name: 'Herbs', slug: 'herbs' }],
+    categories: [{ id: 2, name: 'Herbs', slug: 'herbs', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -439,7 +457,7 @@ const mockProducts: WCProduct[] = [
     id: 11,
     name: 'Organic Jasmine Rice',
     slug: 'organic-jasmine-rice',
-    price: 19.99,
+    price: "19.99",
     regular_price: '19.99',
     sale_price: '',
     on_sale: false,
@@ -447,7 +465,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic jasmine rice with aromatic fragrance',
     short_description: 'Organic jasmine rice',
     images: [{ id: 11, src: '/jasmine-rice.jpg', alt: 'Organic Jasmine Rice', name: 'Jasmine Rice Image' }],
-    categories: [{ id: 1, name: 'Rice', slug: 'rice' }],
+    categories: [{ id: 1, name: 'Rice', slug: 'rice', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -462,7 +480,7 @@ const mockProducts: WCProduct[] = [
     id: 12,
     name: 'Organic Basmati Rice',
     slug: 'organic-basmati-rice',
-    price: 24.99,
+    price: "24.99",
     regular_price: '24.99',
     sale_price: '',
     on_sale: false,
@@ -470,7 +488,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic basmati rice for special occasions',
     short_description: 'Organic basmati rice',
     images: [{ id: 12, src: '/basmati-rice.jpg', alt: 'Organic Basmati Rice', name: 'Basmati Rice Image' }],
-    categories: [{ id: 1, name: 'Rice', slug: 'rice' }],
+    categories: [{ id: 1, name: 'Rice', slug: 'rice', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -485,7 +503,7 @@ const mockProducts: WCProduct[] = [
     id: 13,
     name: 'Organic Wild Rice',
     slug: 'organic-wild-rice',
-    price: 29.99,
+    price: "29.99",
     regular_price: '29.99',
     sale_price: '',
     on_sale: false,
@@ -493,7 +511,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic wild rice with nutty flavor',
     short_description: 'Organic wild rice',
     images: [{ id: 13, src: '/wild-rice.jpg', alt: 'Organic Wild Rice', name: 'Wild Rice Image' }],
-    categories: [{ id: 1, name: 'Rice', slug: 'rice' }],
+    categories: [{ id: 1, name: 'Rice', slug: 'rice', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -508,7 +526,7 @@ const mockProducts: WCProduct[] = [
     id: 14,
     name: 'Organic Black Rice',
     slug: 'organic-black-rice',
-    price: 21.99,
+    price: "21.99",
     regular_price: '21.99',
     sale_price: '',
     on_sale: false,
@@ -516,7 +534,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic black rice rich in antioxidants',
     short_description: 'Organic black rice',
     images: [{ id: 14, src: '/black-rice.jpg', alt: 'Organic Black Rice', name: 'Black Rice Image' }],
-    categories: [{ id: 1, name: 'Rice', slug: 'rice' }],
+    categories: [{ id: 1, name: 'Rice', slug: 'rice', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -531,7 +549,7 @@ const mockProducts: WCProduct[] = [
     id: 15,
     name: 'Organic Sticky Rice',
     slug: 'organic-sticky-rice',
-    price: 17.99,
+    price: "17.99",
     regular_price: '17.99',
     sale_price: '',
     on_sale: false,
@@ -539,7 +557,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic glutinous sticky rice',
     short_description: 'Organic sticky rice',
     images: [{ id: 15, src: '/sticky-rice.jpg', alt: 'Organic Sticky Rice', name: 'Sticky Rice Image' }],
-    categories: [{ id: 1, name: 'Rice', slug: 'rice' }],
+    categories: [{ id: 1, name: 'Rice', slug: 'rice', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -554,7 +572,7 @@ const mockProducts: WCProduct[] = [
     id: 16,
     name: 'Organic Long Grain Rice',
     slug: 'organic-long-grain-rice',
-    price: 16.99,
+    price: "16.99",
     regular_price: '16.99',
     sale_price: '',
     on_sale: false,
@@ -562,7 +580,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic long grain white rice',
     short_description: 'Organic long grain rice',
     images: [{ id: 16, src: '/long-grain-rice.jpg', alt: 'Organic Long Grain Rice', name: 'Long Grain Rice Image' }],
-    categories: [{ id: 1, name: 'Rice', slug: 'rice' }],
+    categories: [{ id: 1, name: 'Rice', slug: 'rice', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -577,7 +595,7 @@ const mockProducts: WCProduct[] = [
     id: 17,
     name: 'Organic Short Grain Rice',
     slug: 'organic-short-grain-rice',
-    price: 18.99,
+    price: "18.99",
     regular_price: '18.99',
     sale_price: '',
     on_sale: false,
@@ -585,7 +603,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic short grain rice for sushi',
     short_description: 'Organic short grain rice',
     images: [{ id: 17, src: '/short-grain-rice.jpg', alt: 'Organic Short Grain Rice', name: 'Short Grain Rice Image' }],
-    categories: [{ id: 1, name: 'Rice', slug: 'rice' }],
+    categories: [{ id: 1, name: 'Rice', slug: 'rice', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -600,7 +618,7 @@ const mockProducts: WCProduct[] = [
     id: 18,
     name: 'Organic Arborio Rice',
     slug: 'organic-arborio-rice',
-    price: 23.99,
+    price: "23.99",
     regular_price: '23.99',
     sale_price: '',
     on_sale: false,
@@ -608,7 +626,7 @@ const mockProducts: WCProduct[] = [
     description: 'Premium organic arborio rice for risotto',
     short_description: 'Organic arborio rice',
     images: [{ id: 18, src: '/arborio-rice.jpg', alt: 'Organic Arborio Rice', name: 'Arborio Rice Image' }],
-    categories: [{ id: 1, name: 'Rice', slug: 'rice' }],
+    categories: [{ id: 1, name: 'Rice', slug: 'rice', description: '', display: 'default' as const, image: null, menu_order: 0, count: 0 }],
     tags: [],
     attributes: [],
     variations: [],
@@ -1081,7 +1099,8 @@ describe('Search Modal Integration', () => {
         expect(riceFilterButton).toBeInTheDocument();
       }, { timeout: 1000 });
 
-      await user.click(riceFilterButton);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      await user.click(riceFilterButton!);
 
       // Then search
       const searchInput = screen.getByPlaceholderText(/search products/i);

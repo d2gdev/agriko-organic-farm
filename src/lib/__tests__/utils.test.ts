@@ -116,8 +116,8 @@ describe('Utility Functions', () => {
     });
 
     it('should handle null/undefined', () => {
-      expect(stripHtml(null as string)).toBe('');
-      expect(stripHtml(undefined as string)).toBe('');
+      expect(stripHtml(null as any)).toBe('');
+      expect(stripHtml(undefined as any)).toBe('');
     });
 
     it('should clean up extra whitespace', () => {
@@ -143,7 +143,7 @@ describe('Utility Functions', () => {
     it('should return placeholder SVG if no images', () => {
       const product = {
         images: []
-      } as WCProduct;
+      } as unknown as WCProduct;
 
       const result = getProductMainImage(product);
       expect(result).toMatch(/data:image\/svg\+xml;base64,/);

@@ -184,8 +184,9 @@ export function keywordSearch(
       categories: 2.0,
       tags: 1.5
     },
-    includeMetadata = true
+    includeMetadata: _includeMetadata = true
   } = options;
+  void _includeMetadata; // Preserved for future metadata inclusion feature
 
   // Tokenize query
   const queryTokens = tokenize(query);
@@ -199,7 +200,8 @@ export function keywordSearch(
     const matchedTerms: string[] = [];
 
     // Process item tokens for comparison
-    const itemTokens = stemming ? item.tokens.map(stem) : item.tokens;
+    const _itemTokens = stemming ? item.tokens.map(stem) : item.tokens;
+    void _itemTokens; // Preserved for future advanced matching
 
     // Score different fields with different weights
     const fieldScores = {

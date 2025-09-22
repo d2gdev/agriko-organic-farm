@@ -172,7 +172,7 @@ export class EmbeddingStartup {
     try {
       const status = getEmbedderStatus();
       
-      if (status.error) {
+      if ('error' in status && status.error) {
         return {
           status: 'error',
           ready: false,
@@ -180,8 +180,8 @@ export class EmbeddingStartup {
           error: status.error
         };
       }
-      
-      if (status.loading) {
+
+      if ('loading' in status && status.loading) {
         return {
           status: 'loading',
           ready: false,
@@ -189,8 +189,8 @@ export class EmbeddingStartup {
           error: null
         };
       }
-      
-      if (!status.ready) {
+
+      if ('ready' in status && !status.ready) {
         return {
           status: 'error',
           ready: false,

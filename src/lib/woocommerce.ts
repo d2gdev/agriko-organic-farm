@@ -4,15 +4,24 @@ import { apiCache } from '@/lib/cache-manager';
 import { handleError } from '@/lib/error-sanitizer';
 import { productCache } from '@/lib/productCache'; // Import from productCache.ts instead of cache-manager.ts
 import { withExternalAPIRetry } from '@/lib/retry-handler';
+// import { urlHelpers } from '@/lib/url-constants';
+
+// Auto-sync imports for real-time persistence
+import { autoSyncProductToMemgraph, autoSyncOrderToMemgraph, autoSyncSearchToMemgraph } from '@/lib/memgraph-auto-sync';
+import { autoSyncProductToQdrant, autoSyncUserSearchToQdrant } from '@/lib/qdrant-auto-sync';
+import { saveAnalyticsEvent } from '@/lib/analytics-db';
 
 // Mock data for build time when WooCommerce API is unavailable
 function getBuildTimeMockProducts(): WCProduct[] {
+  // Use a placeholder URL for build time since urlHelpers won't work in this context
+  const shopBaseUrl = process.env.NEXT_PUBLIC_SHOP_URL || 'https://shop.agrikoph.com';
+  
   return [
     {
       id: 1,
       name: "Premium Organic Black Rice",
       slug: "premium-organic-black-rice",
-      permalink: "https://shop.agrikoph.com/product/premium-organic-black-rice",
+      permalink: `${shopBaseUrl}/product/premium-organic-black-rice`,
       description: "Our premium organic black rice is packed with antioxidants and nutrients. Perfect for health-conscious families seeking nutritious grains.",
       short_description: "Premium organic black rice rich in antioxidants and nutrients.",
       price: "299.00",
@@ -43,7 +52,7 @@ function getBuildTimeMockProducts(): WCProduct[] {
       id: 2,
       name: "Organic Brown Rice",
       slug: "organic-brown-rice",
-      permalink: "https://shop.agrikoph.com/product/organic-brown-rice", 
+      permalink: `${shopBaseUrl}/product/organic-brown-rice`, 
       description: "Wholesome organic brown rice with natural fiber and nutrients. Ideal for healthy meals and balanced nutrition.",
       short_description: "Nutritious organic brown rice with natural fiber.",
       price: "249.00",
@@ -74,7 +83,7 @@ function getBuildTimeMockProducts(): WCProduct[] {
       id: 3,
       name: "Pure Turmeric Powder",
       slug: "pure-turmeric-powder",
-      permalink: "https://shop.agrikoph.com/product/pure-turmeric-powder",
+      permalink: `${shopBaseUrl}/product/pure-turmeric-powder`,
       description: "Freshly ground pure turmeric powder from our organic farm. Known for its anti-inflammatory properties and golden color.",
       short_description: "Pure organic turmeric powder with anti-inflammatory benefits.",
       price: "199.00",
@@ -292,6 +301,15 @@ function withTimeout<T>(promise: Promise<T>, customTimeoutMs?: number): Promise<
   ]);
 }
 
+// Response type that includes headers for pagination
+interface WCResponse<T> {
+  data: T;
+  headers: {
+    'x-wp-total'?: string;
+    'x-wp-totalpages'?: string;
+  };
+}
+
 // Generic API request function with timeout, retry, and caching
 async function wcRequest<T>(endpoint: string, options: RequestInit = {}, retries: number = 3): Promise<T> {
   if (!WC_API_URL) {
@@ -406,7 +424,157 @@ async function wcRequest<T>(endpoint: string, options: RequestInit = {}, retries
   ]);
 }
 
+// Auto-sync helper function
+async function triggerAutoSync(event: {
+  type: 'product_view' | 'product_search' | 'order_created' | 'user_interaction';
+  productId?: number;
+  orderId?: string;
+  userId?: string;
+  sessionId?: string;
+  searchQuery?: string;
+  metadata?: Record<string, unknown>;
+}): Promise<void> {
+  const timestamp = Date.now();
+  const sessionId = event.sessionId || `session_${timestamp}_${Math.random().toString(36).substr(2, 9)}`;
+
+  try {
+    switch (event.type) {
+      case 'product_view':
+        if (event.productId) {
+          await Promise.all([
+            autoSyncProductToMemgraph({
+              eventType: 'product.viewed',
+              productId: event.productId,
+              userId: event.userId,
+              sessionId,
+              timestamp,
+              metadata: event.metadata || {}
+            }),
+            autoSyncProductToQdrant({
+              productId: event.productId,
+              eventType: 'product.viewed',
+              metadata: event.metadata
+            })
+          ]);
+        }
+        break;
+
+      case 'product_search':
+        if (event.searchQuery) {
+          await Promise.all([
+            autoSyncSearchToMemgraph({
+              query: event.searchQuery,
+              resultsCount: event.metadata?.resultsCount as number || 0,
+              userId: event.userId,
+              sessionId,
+              timestamp,
+              clickedResultId: event.metadata?.clickedResultId as number
+            }),
+            autoSyncUserSearchToQdrant({
+              query: event.searchQuery,
+              userId: event.userId,
+              sessionId,
+              resultsCount: event.metadata?.resultsCount as number || 0,
+              clickedResults: event.metadata?.clickedResults as number[],
+              timestamp
+            })
+          ]);
+        }
+        break;
+
+      case 'order_created':
+        if (event.orderId && event.metadata?.orderData) {
+          const orderData = event.metadata.orderData as any;
+          await autoSyncOrderToMemgraph({
+            eventType: 'order.created',
+            orderId: event.orderId,
+            userId: event.userId,
+            items: orderData.line_items || [],
+            orderValue: parseFloat(orderData.total || '0'),
+            timestamp
+          });
+        }
+        break;
+    }
+
+    // Always save to analytics DB
+    await saveAnalyticsEvent({
+      id: `${event.type}_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+      type: event.type as any,
+      timestamp,
+      sessionId,
+      userId: event.userId,
+      metadata: {
+        productId: event.productId,
+        orderId: event.orderId,
+        searchQuery: event.searchQuery,
+        autoSync: true,
+        ...event.metadata
+      }
+    } as const);
+
+  } catch (error) {
+    logger.warn('Auto-sync failed, continuing with operation:', {
+      error: error instanceof Error ? error.message : String(error),
+      eventType: event.type
+    });
+  }
+}
+
 // Product functions
+// New function that returns products with pagination info
+async function wcRequestWithHeaders<T>(endpoint: string, options: RequestInit = {}, retries: number = 3): Promise<WCResponse<T>> {
+  if (!WC_API_URL) {
+    // During build time, return mock data with mock headers
+    if (!options.method || options.method === 'GET') {
+      const mockData = await wcRequest<T>(endpoint, options, retries);
+      return {
+        data: mockData,
+        headers: {
+          'x-wp-total': '20', // Mock total
+          'x-wp-totalpages': '2' // Mock total pages
+        }
+      };
+    }
+    throw new Error('Missing WooCommerce API URL. Please check your environment variables.');
+  }
+
+  const url = `${WC_API_URL}${endpoint}`;
+  const cacheKey = `wc:${endpoint}:${JSON.stringify(options)}`;
+
+  const defaultOptions: RequestInit = {
+    headers: getAuthHeader(),
+    ...options,
+  };
+
+  return withExternalAPIRetry(
+    async () => {
+      const response = await withTimeout(fetch(url, defaultOptions));
+
+      if (!response.ok) {
+        const errorData = await response.text().catch(() => 'Unknown error');
+        throw new Error(`WooCommerce API error: ${response.status} ${response.statusText} - ${errorData}`);
+      }
+
+      const data = await response.json() as T;
+      const headers = {
+        'x-wp-total': response.headers.get('X-WP-Total') || undefined,
+        'x-wp-totalpages': response.headers.get('X-WP-TotalPages') || undefined,
+      };
+
+      const result = { data, headers };
+
+      // Cache successful GET requests
+      if ((!options.method || options.method === 'GET')) {
+        apiCache.set(cacheKey, result, 300000); // 5 minutes cache
+      }
+
+      return result;
+    },
+    `WooCommerce API request to ${endpoint}`
+  );
+}
+
 export async function getAllProducts(params: {
   per_page?: number;
   page?: number;
@@ -417,9 +585,11 @@ export async function getAllProducts(params: {
   search?: string;
   orderby?: string;
   order?: 'asc' | 'desc';
+  min_price?: string;
+  max_price?: string;
 } = {}): Promise<WCProduct[]> {
   const searchParams = new URLSearchParams();
-  
+
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined) {
       searchParams.append(key, value.toString());
@@ -428,26 +598,89 @@ export async function getAllProducts(params: {
 
   const queryString = searchParams.toString();
   const endpoint = `/products${queryString ? `?${queryString}` : ''}`;
-  
+
   return wcRequest<WCProduct[]>(endpoint);
 }
 
-export async function getProductById(id: number): Promise<WCProduct | null> {
+export async function getAllProductsWithPagination(params: {
+  per_page?: number;
+  page?: number;
+  status?: string;
+  featured?: boolean;
+  category?: string | string[];
+  tag?: string;
+  search?: string;
+  orderby?: string;
+  order?: 'asc' | 'desc';
+  min_price?: string;
+  max_price?: string;
+} = {}): Promise<{ products: WCProduct[]; total: number; totalPages: number }> {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      if (key === 'category' && Array.isArray(value)) {
+        // For multiple categories, use comma-separated values
+        searchParams.append(key, value.join(','));
+      } else {
+        searchParams.append(key, value.toString());
+      }
+    }
+  });
+
+  const queryString = searchParams.toString();
+  const endpoint = `/products${queryString ? `?${queryString}` : ''}`;
+
+  const response = await wcRequestWithHeaders<WCProduct[]>(endpoint);
+
+  return {
+    products: response.data,
+    total: parseInt(response.headers['x-wp-total'] || '0', 10),
+    totalPages: parseInt(response.headers['x-wp-totalpages'] || '1', 10)
+  };
+}
+
+export async function getProductById(id: number, trackingData?: {
+  userId?: string;
+  sessionId?: string;
+  metadata?: Record<string, unknown>;
+}): Promise<WCProduct | null> {
   // Check cache first
   const cacheKey = `product:${id}`;
   const cached = productCache.get(cacheKey);
   if (cached) {
+    // Trigger auto-sync for product view even from cache
+    if (trackingData) {
+      await triggerAutoSync({
+        type: 'product_view',
+        productId: id,
+        userId: trackingData.userId,
+        sessionId: trackingData.sessionId,
+        metadata: { ...trackingData.metadata, fromCache: true }
+      });
+    }
     return cached;
   }
 
   try {
     const product = await wcRequest<WCProduct>(`/products/${id}`);
-    
+
     // Cache the result
     if (product) {
       productCache.set(cacheKey, product);
+
+      // Trigger auto-sync for product view
+      if (trackingData) {
+        await triggerAutoSync({
+          type: 'product_view',
+          productId: id,
+          userId: trackingData.userId,
+          sessionId: trackingData.sessionId,
+          metadata: { ...trackingData.metadata, fromAPI: true }
+        });
+      }
     }
-    
+
     return product;
   } catch (error) {
     const errorData = handleError(error, 'getProductById', { productId: id });
@@ -562,12 +795,33 @@ export async function getFeaturedProducts(limit: number = 8): Promise<WCProduct[
   });
 }
 
-export async function searchProducts(query: string, limit: number = 20): Promise<WCProduct[]> {
-  return getAllProducts({
+export async function searchProducts(query: string, limit: number = 20, trackingData?: {
+  userId?: string;
+  sessionId?: string;
+  metadata?: Record<string, unknown>;
+}): Promise<WCProduct[]> {
+  const results = await getAllProducts({
     search: query,
     per_page: limit,
     status: 'publish',
   });
+
+  // Trigger auto-sync for search tracking
+  if (trackingData && query.trim()) {
+    await triggerAutoSync({
+      type: 'product_search',
+      searchQuery: query,
+      userId: trackingData.userId,
+      sessionId: trackingData.sessionId,
+      metadata: {
+        ...trackingData.metadata,
+        resultsCount: results.length,
+        searchLimit: limit
+      }
+    });
+  }
+
+  return results;
 }
 
 // Category functions
@@ -612,11 +866,33 @@ export async function getProductsByCategory(categoryId: number, limit: number = 
 }
 
 // Order functions
-export async function createOrder(orderData: CheckoutData): Promise<WCOrder> {
-  return wcRequest<WCOrder>('/orders', {
+export async function createOrder(orderData: CheckoutData, trackingData?: {
+  userId?: string;
+  sessionId?: string;
+  metadata?: Record<string, unknown>;
+}): Promise<WCOrder> {
+  const order = await wcRequest<WCOrder>('/orders', {
     method: 'POST',
     body: JSON.stringify(orderData),
   });
+
+  // Trigger auto-sync for order creation
+  if (order && trackingData) {
+    await triggerAutoSync({
+      type: 'order_created',
+      orderId: order.id.toString(),
+      userId: trackingData.userId,
+      sessionId: trackingData.sessionId,
+      metadata: {
+        ...trackingData.metadata,
+        orderData: order,
+        orderValue: parseFloat(order.total),
+        itemCount: order.line_items.length
+      }
+    });
+  }
+
+  return order;
 }
 
 export async function getOrderById(id: number): Promise<WCOrder | null> {
@@ -636,13 +912,16 @@ export async function updateOrder(id: number, data: Partial<WCOrder>): Promise<W
   });
 }
 
+// Export wcRequest function for webhook configuration
+export { wcRequest };
+
 // Re-export utility functions for convenience
-export { 
-  formatPrice, 
-  calculateCartTotal, 
-  isProductInStock, 
-  getProductMainImage, 
-  stripHtml 
+export {
+  formatPrice,
+  calculateCartTotal,
+  isProductInStock,
+  getProductMainImage,
+  stripHtml
 } from './utils';
 
 // Cache helpers for ISR

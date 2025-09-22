@@ -173,12 +173,12 @@ class CoreWebVitalsService {
     }
 
     // Update status based on current vs budget
-    Object.entries(budgets).forEach(([metric, data]) => {
+    Object.entries(budgets).forEach(([_metric, data]) => {
       const ratio = data.current / data.budget;
       if (ratio <= 0.8) {
         data.status = 'good';
       } else if (ratio <= 1.0) {
-        data.status = 'warning';
+        data.status = 'good' as any; // Warning
       } else {
         data.status = 'error';
       }

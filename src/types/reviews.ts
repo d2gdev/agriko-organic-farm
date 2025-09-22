@@ -225,7 +225,7 @@ export interface ReviewMetricsFilter {
 
 // SEO-related review types
 export interface ReviewStructuredData {
-  '@context': 'https://schema.org';
+  '@context': 'URL_CONSTANTS.SCHEMA.BASE';
   '@type': 'Review';
   author: {
     '@type': 'Person';
@@ -246,7 +246,7 @@ export interface ReviewStructuredData {
 }
 
 export interface AggregateRatingStructuredData {
-  '@context': 'https://schema.org';
+  '@context': 'URL_CONSTANTS.SCHEMA.BASE';
   '@type': 'AggregateRating';
   ratingValue: number;
   reviewCount: number;

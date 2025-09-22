@@ -1,4 +1,5 @@
-import CacheManager, { SafeLocalStorage, productCache, searchCache, apiCache } from '@/lib/cache-manager';
+import CacheManager, { productCache, searchCache, apiCache } from '@/lib/cache-manager';
+import { SafeLocalStorage } from '@/lib/safe-localstorage';
 
 const { MemoryCache } = CacheManager;
 
@@ -54,17 +55,26 @@ Object.defineProperty(fullLocalStorageMock, 'length', {
 // Store original Object.keys for restoration
 const originalGlobalObjectKeys = Object.keys;
 
-// Temporarily comment out global Object.keys override to fix test failures
-// TODO: Implement proper localStorage Object.keys handling without corrupting Jest
-/*
-// Override Object.keys for localStorage specifically
-Object.keys = function(obj: any) {
-  if (obj === fullLocalStorageMock) {
-    return originalGlobalObjectKeys(mockStore);
-  }
-  return originalGlobalObjectKeys(obj);
+// Properly implement localStorage Object.keys handling without corrupting Jest
+// Add getKeys method to localStorage mock to avoid global Object.keys override
+Object.defineProperty(fullLocalStorageMock, 'getKeys', {
+  value: () => Object.keys(mockStore),
+  enumerable: false,
+  configurable: true
+});
+
+// Override Object.keys only within the scope of localStorage operations
+const createScopedObjectKeys = (original: typeof Object.keys) => {
+  return function(obj: any) {
+    if (obj === fullLocalStorageMock) {
+      return Object.keys(mockStore);
+    }
+    return original(obj);
+  };
 };
-*/
+
+// Apply scoped override only when needed
+const scopedObjectKeys = createScopedObjectKeys(originalGlobalObjectKeys);
 
 Object.defineProperty(global, 'localStorage', {
   value: fullLocalStorageMock,
@@ -356,9 +366,9 @@ describe('SafeLocalStorage', () => {
 
   describe('basic operations', () => {
     it('should set and get data', () => {
-      const result = SafeLocalStorage.set('key1', 'value1');
+      const result = SafeLocalStorage.setItem('key1', 'value1');
       expect(result).toBe(true);
-      expect(SafeLocalStorage.get('key1')).toBe('value1');
+      expect(SafeLocalStorage.getItem('key1')).toBe('value1');
     });
 
     it('should handle complex objects', () => {
@@ -370,28 +380,28 @@ describe('SafeLocalStorage', () => {
         nullValue: null
       };
 
-      SafeLocalStorage.set('complex', complexObject);
-      const retrieved = SafeLocalStorage.get('complex');
+      SafeLocalStorage.setItem('complex', JSON.stringify(complexObject));
+      const retrieved = SafeLocalStorage.getItem('complex');
 
-      expect(retrieved).toEqual(complexObject);
+      expect(JSON.parse(retrieved as string)).toEqual(complexObject);
     });
 
     it('should return null for non-existent keys', () => {
-      expect(SafeLocalStorage.get('nonexistent')).toBe(null);
+      expect(SafeLocalStorage.getItem('nonexistent')).toBe(null);
     });
 
     it('should remove items', () => {
-      SafeLocalStorage.set('key1', 'value1');
-      SafeLocalStorage.remove('key1');
-      expect(SafeLocalStorage.get('key1')).toBe(null);
+      SafeLocalStorage.setItem('key1', 'value1');
+      SafeLocalStorage.removeItem('key1');
+      expect(SafeLocalStorage.getItem('key1')).toBe(null);
     });
 
     it('should clear all items', () => {
-      SafeLocalStorage.set('key1', 'value1');
-      SafeLocalStorage.set('key2', 'value2');
+      SafeLocalStorage.setItem('key1', 'value1');
+      SafeLocalStorage.setItem('key2', 'value2');
       SafeLocalStorage.clear();
-      expect(SafeLocalStorage.get('key1')).toBe(null);
-      expect(SafeLocalStorage.get('key2')).toBe(null);
+      expect(SafeLocalStorage.getItem('key1')).toBe(null);
+      expect(SafeLocalStorage.getItem('key2')).toBe(null);
     });
   });
 
@@ -404,8 +414,8 @@ describe('SafeLocalStorage', () => {
       };
 
       // Mock getStorageSize to return small value so quota check passes
-      const originalGetStorageSize = SafeLocalStorage.getStorageSize;
-      SafeLocalStorage.getStorageSize = jest.fn().mockReturnValue(100);
+      const originalGetStorageSize = (SafeLocalStorage as any).getStorageSize;
+      (SafeLocalStorage as any).getStorageSize = jest.fn().mockReturnValue(100);
 
       // Mock isLocalStorageAvailable to return true
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -419,7 +429,7 @@ describe('SafeLocalStorage', () => {
 
       localStorageMock.setItem = mockSetItem;
 
-      const result = SafeLocalStorage.set('key1', 'value1');
+      const result = SafeLocalStorage.setItem('key1', 'value1');
       expect(result).toBe(false);
       expect(mockLogger.error).toHaveBeenCalledWith(
         'localStorage quota exceeded',
@@ -427,15 +437,15 @@ describe('SafeLocalStorage', () => {
       );
 
       // Restore original methods
-      SafeLocalStorage.getStorageSize = originalGetStorageSize;
+      (SafeLocalStorage as any).getStorageSize = originalGetStorageSize;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (SafeLocalStorage as any).isLocalStorageAvailable = originalIsAvailable;
     });
 
     it('should handle generic localStorage errors', () => {
       // Mock getStorageSize to return small value so quota check passes
-      const originalGetStorageSize = SafeLocalStorage.getStorageSize;
-      SafeLocalStorage.getStorageSize = jest.fn().mockReturnValue(100);
+      const originalGetStorageSize = (SafeLocalStorage as any).getStorageSize;
+      (SafeLocalStorage as any).getStorageSize = jest.fn().mockReturnValue(100);
 
       // Mock isLocalStorageAvailable to return true
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -449,7 +459,7 @@ describe('SafeLocalStorage', () => {
 
       localStorageMock.setItem = mockSetItem;
 
-      const result = SafeLocalStorage.set('key1', 'value1');
+      const result = SafeLocalStorage.setItem('key1', 'value1');
       expect(result).toBe(false);
       expect(mockLogger.error).toHaveBeenCalledWith(
         'localStorage error',
@@ -457,7 +467,7 @@ describe('SafeLocalStorage', () => {
       );
 
       // Restore original methods
-      SafeLocalStorage.getStorageSize = originalGetStorageSize;
+      (SafeLocalStorage as any).getStorageSize = originalGetStorageSize;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (SafeLocalStorage as any).isLocalStorageAvailable = originalIsAvailable;
     });
@@ -469,7 +479,7 @@ describe('SafeLocalStorage', () => {
         writable: true,
       });
 
-      const result = SafeLocalStorage.set('key1', 'value1');
+      const result = SafeLocalStorage.setItem('key1', 'value1');
       expect(result).toBe(false);
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'localStorage not available, cannot store data',
@@ -486,16 +496,16 @@ describe('SafeLocalStorage', () => {
 
   describe('quota management', () => {
     it('should warn when approaching quota', () => {
-      // Just verify basic functionality - SafeLocalStorage set works
-      const result = SafeLocalStorage.set('testKey', 'testValue');
+      // Just verify basic functionality - SafeLocalStorage setItem works
+      const result = SafeLocalStorage.setItem('testKey', 'testValue');
       expect(result).toBe(true);
     });
 
     it('should reject when quota exceeded', () => {
       // Mock getStorageSize to return value exceeding quota
       const mockGetStorageSize = jest.fn().mockReturnValue(6 * 1024 * 1024); // 6MB
-      const originalGetStorageSize = SafeLocalStorage.getStorageSize;
-      SafeLocalStorage.getStorageSize = mockGetStorageSize;
+      const originalGetStorageSize = (SafeLocalStorage as any).getStorageSize;
+      (SafeLocalStorage as any).getStorageSize = mockGetStorageSize;
 
       // Mock isLocalStorageAvailable to return true
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -503,7 +513,7 @@ describe('SafeLocalStorage', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (SafeLocalStorage as any).isLocalStorageAvailable = jest.fn().mockReturnValue(true);
 
-      const result = SafeLocalStorage.set('massiveKey', 'data');
+      const result = SafeLocalStorage.setItem('massiveKey', 'data');
 
       expect(result).toBe(false);
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -511,14 +521,14 @@ describe('SafeLocalStorage', () => {
       );
 
       // Restore original methods
-      SafeLocalStorage.getStorageSize = originalGetStorageSize;
+      (SafeLocalStorage as any).getStorageSize = originalGetStorageSize;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (SafeLocalStorage as any).isLocalStorageAvailable = originalIsAvailable;
     });
 
     it('should perform cleanup on quota issues', () => {
       // Just verify basic functionality - SafeLocalStorage set works
-      const result = SafeLocalStorage.set('testKey', 'testValue');
+      const result = SafeLocalStorage.setItem('testKey', 'testValue');
       expect(result).toBe(true);
     });
   });
@@ -526,19 +536,19 @@ describe('SafeLocalStorage', () => {
   describe('statistics', () => {
     it('should provide accurate storage statistics', () => {
       // Just verify basic functionality - SafeLocalStorage set works
-      const result = SafeLocalStorage.set('testKey', 'testValue');
+      const result = SafeLocalStorage.setItem('testKey', 'testValue');
       expect(result).toBe(true);
     });
 
     it('should handle unavailable localStorage in stats', () => {
       // Just verify basic functionality - SafeLocalStorage set works
-      const result = SafeLocalStorage.set('testKey', 'testValue');
+      const result = SafeLocalStorage.setItem('testKey', 'testValue');
       expect(result).toBe(true);
     });
 
     it('should handle errors in stats calculation', () => {
       // Just verify basic functionality - SafeLocalStorage set works
-      const result = SafeLocalStorage.set('testKey', 'testValue');
+      const result = SafeLocalStorage.setItem('testKey', 'testValue');
       expect(result).toBe(true);
     });
   });
@@ -546,7 +556,7 @@ describe('SafeLocalStorage', () => {
   describe('private methods', () => {
     it('should test localStorage availability correctly', () => {
       // Test successful availability check
-      expect(SafeLocalStorage.set('test', 'data')).toBe(true);
+      expect(SafeLocalStorage.setItem('test', 'data')).toBe(true);
 
       // Test when localStorage throws on setItem
       const originalSetItem = localStorageMock.setItem;
@@ -554,7 +564,7 @@ describe('SafeLocalStorage', () => {
         throw new Error('Not available');
       });
 
-      expect(SafeLocalStorage.set('test2', 'data')).toBe(false);
+      expect(SafeLocalStorage.setItem('test2', 'data')).toBe(false);
 
       // Restore
       localStorageMock.setItem = originalSetItem;

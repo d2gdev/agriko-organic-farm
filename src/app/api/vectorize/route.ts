@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
-import { syncProductsToPinecone, vectorizeSingleProduct } from '@/lib/vectorization';
+import { syncProductsToQdrant, vectorizeSingleProduct } from '@/lib/vectorization';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     } else if (action === 'sync') {
       logger.info('🚀 Bulk product vectorization started');
       
-      const result = await syncProductsToPinecone({
+      const result = await syncProductsToQdrant({
         batchSize,
         maxProducts,
         featuredOnly,
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   return NextResponse.json({
     message: 'Vectorization API - Use POST with action "sync" or "single"',
     endpoints: {

@@ -254,7 +254,8 @@ export class QueryOptimizer {
   // Generate query variations using synonyms
   generateSynonymVariations(query: string): string[] {
     const variations: string[] = [];
-    const words = query.split(' ');
+    const _words = query.split(' ');
+    void _words; // Preserved for future word-level synonym replacement
 
     for (const [word, synonymList] of this.synonyms.entries()) {
       if (query.includes(word)) {

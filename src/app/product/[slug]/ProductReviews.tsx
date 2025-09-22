@@ -16,7 +16,7 @@ export default function ProductReviews({ productId, productName }: ProductReview
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
-  const handleReviewSubmit = (review: ReviewSubmission) => {
+  const handleReviewSubmit = (_review: ReviewSubmission) => {
     setReviewSubmitted(true);
     setShowReviewForm(false);
     

@@ -119,13 +119,13 @@ jest.mock('@/hooks/useProductFilters', () => ({
         const query = searchQuery.toLowerCase();
         filtered = filtered.filter(product =>
           product.name.toLowerCase().includes(query) ||
-          product.description.toLowerCase().includes(query) ||
-          product.short_description.toLowerCase().includes(query)
+          (product.description && product.description.toLowerCase().includes(query)) ||
+          (product.short_description && product.short_description.toLowerCase().includes(query))
         );
       }
       if (filters.category) {
         filtered = filtered.filter(product =>
-          product.categories.some(cat => cat.name.toLowerCase() === filters.category.toLowerCase())
+          product.categories?.some(cat => cat.name.toLowerCase() === filters.category.toLowerCase())
         );
       }
       if (filters.inStock) {
@@ -139,9 +139,9 @@ jest.mock('@/hooks/useProductFilters', () => ({
             case 'name':
               return a.name.localeCompare(b.name);
             case 'price_low':
-              return parseFloat(a.price.toString()) - parseFloat(b.price.toString());
+              return parseFloat((a.price || '0').toString()) - parseFloat((b.price || '0').toString());
             case 'price_high':
-              return parseFloat(b.price.toString()) - parseFloat(a.price.toString());
+              return parseFloat((b.price || '0').toString()) - parseFloat((a.price || '0').toString());
             default:
               return 0;
           }
@@ -188,7 +188,7 @@ const mockProducts: WCProduct[] = [
     id: 1,
     name: 'Organic Brown Rice',
     slug: 'organic-brown-rice',
-    price: 15.99,
+    price: '15.99',
     regular_price: '15.99',
     sale_price: '',
     on_sale: false,
@@ -208,6 +208,11 @@ const mockProducts: WCProduct[] = [
         id: 1,
         name: 'Rice',
         slug: 'rice',
+        description: 'Rice products',
+        display: 'default',
+        image: null,
+        menu_order: 0,
+        count: 10,
       },
     ],
     tags: [
@@ -215,6 +220,8 @@ const mockProducts: WCProduct[] = [
         id: 1,
         name: 'Organic',
         slug: 'organic',
+        description: 'Organic products',
+        count: 5,
       },
     ],
     attributes: [],
@@ -230,7 +237,7 @@ const mockProducts: WCProduct[] = [
     id: 2,
     name: 'Red Rice Premium',
     slug: 'red-rice-premium',
-    price: 18.50,
+    price: '18.50',
     regular_price: '20.00',
     sale_price: '18.50',
     on_sale: true,
@@ -250,6 +257,11 @@ const mockProducts: WCProduct[] = [
         id: 1,
         name: 'Rice',
         slug: 'rice',
+        description: 'Rice products',
+        display: 'default',
+        image: null,
+        menu_order: 0,
+        count: 10,
       },
     ],
     tags: [
@@ -257,11 +269,15 @@ const mockProducts: WCProduct[] = [
         id: 1,
         name: 'Organic',
         slug: 'organic',
+        description: 'Organic products',
+        count: 5,
       },
       {
         id: 2,
         name: 'Premium',
         slug: 'premium',
+        description: 'Premium products',
+        count: 3,
       },
     ],
     attributes: [],
@@ -277,7 +293,7 @@ const mockProducts: WCProduct[] = [
     id: 3,
     name: 'Turmeric Powder',
     slug: 'turmeric-powder',
-    price: 12.99,
+    price: '12.99',
     regular_price: '12.99',
     sale_price: '',
     on_sale: false,
@@ -297,6 +313,11 @@ const mockProducts: WCProduct[] = [
         id: 2,
         name: 'Herbs',
         slug: 'herbs',
+        description: 'Herb products',
+        display: 'default',
+        image: null,
+        menu_order: 0,
+        count: 5,
       },
     ],
     tags: [
@@ -304,6 +325,8 @@ const mockProducts: WCProduct[] = [
         id: 1,
         name: 'Organic',
         slug: 'organic',
+        description: 'Organic products',
+        count: 5,
       },
     ],
     attributes: [],
@@ -319,7 +342,7 @@ const mockProducts: WCProduct[] = [
     id: 4,
     name: 'Organic Honey',
     slug: 'organic-honey',
-    price: 25.50,
+    price: '25.50',
     regular_price: '25.50',
     sale_price: '',
     on_sale: false,
@@ -339,6 +362,11 @@ const mockProducts: WCProduct[] = [
         id: 3,
         name: 'Blends',
         slug: 'blends',
+        description: 'Blend products',
+        display: 'default',
+        image: null,
+        menu_order: 0,
+        count: 3,
       },
     ],
     tags: [
@@ -346,11 +374,15 @@ const mockProducts: WCProduct[] = [
         id: 1,
         name: 'Organic',
         slug: 'organic',
+        description: 'Organic products',
+        count: 5,
       },
       {
         id: 3,
         name: 'Local',
         slug: 'local',
+        description: 'Local products',
+        count: 2,
       },
     ],
     attributes: [],

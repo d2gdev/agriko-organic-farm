@@ -463,7 +463,7 @@ class ABTestingFramework {
         this.userAssignments = new Map(
           Object.entries(parsed).map(([userId, tests]) => [
             userId,
-            new Map(Object.entries(tests as Record<string, string>))
+            new Map(Object.entries(tests))
           ])
         );
       }

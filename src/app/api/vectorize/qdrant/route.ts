@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 import { getAllProducts } from '@/lib/woocommerce';
 import { indexProducts, checkQdrantHealth } from '@/lib/qdrant';
+import { URL_CONSTANTS } from '@/lib/url-constants';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // Check if Qdrant is available
     const isHealthy = await checkQdrantHealth();
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Health check for Qdrant
     const isHealthy = await checkQdrantHealth();
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       status: isHealthy ? 'healthy' : 'unhealthy',
       qdrant: {
-        url: process.env.QDRANT_URL || 'http://localhost:6333',
+        url: URL_CONSTANTS.API.QDRANT,
         collection: process.env.QDRANT_COLLECTION || 'agriko_products',
         configured: !!process.env.QDRANT_URL
       },

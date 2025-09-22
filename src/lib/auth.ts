@@ -63,8 +63,8 @@ export async function validateApiAuth(request: NextRequest): Promise<AuthResult>
       if (adminPasswordBcrypt) {
         try {
           const bcrypt = await import('bcryptjs');
-          const userOk = adminUsername ? safeEqual(username, adminUsername as string) : false;
-          const passOk = await bcrypt.compare(password, adminPasswordBcrypt as string).catch(() => false);
+          const userOk = adminUsername ? safeEqual(username, adminUsername) : false;
+          const passOk = await bcrypt.compare(password, adminPasswordBcrypt).catch(() => false);
           if (userOk && passOk) {
             const user: AuthUser = { username, role: 'administrator' };
             return { isAuthenticated: true, user };
@@ -77,8 +77,8 @@ export async function validateApiAuth(request: NextRequest): Promise<AuthResult>
 
       // Fallback to constant-time comparison of plaintext credentials
       if (adminUsername && adminPassword) {
-        const userOk = safeEqual(username, adminUsername as string);
-        const passOk = safeEqual(password, adminPassword as string);
+        const userOk = safeEqual(username, adminUsername);
+        const passOk = safeEqual(password, adminPassword);
         if (userOk && passOk) {
           const user: AuthUser = { username, role: 'administrator' };
           return { isAuthenticated: true, user };

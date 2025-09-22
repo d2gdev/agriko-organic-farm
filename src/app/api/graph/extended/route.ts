@@ -12,22 +12,16 @@ import {
   getProductsByRegion,
   addIngredient,
   addRegion,
-  addSeason,
   addCondition,
   addNutrient,
   createProductContainsIngredient,
   createProductGrownInRegion,
-  createProductHarvestedInSeason,
   createHealthBenefitTreatsCondition,
   createIngredientRichInNutrient,
   Ingredient,
   Region,
   Condition,
-  Nutrient,
-  ContainsRelationship,
-  GrownInRelationship,
-  TreatsRelationship,
-  RichInRelationship
+  Nutrient
 } from '@/lib/extended-graph-schema';
 import {
   batchImportExtendedData,

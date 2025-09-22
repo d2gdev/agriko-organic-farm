@@ -110,11 +110,6 @@ export default function ReviewModerationPage() {
     }
   };
 
-  const handleBulkModeration = async (reviewIds: string[], action: 'approve' | 'reject' | 'spam') => {
-    for (const reviewId of reviewIds) {
-      await handleModeration(reviewId, action);
-    }
-  };
 
   const filteredReviews = reviews.filter(review => 
     selectedStatus === 'all' || review.status === selectedStatus
@@ -205,14 +200,14 @@ export default function ReviewModerationPage() {
                 onClick={() => setSelectedStatus(status as ReviewStatus | 'all')}
                 className={`px-3 py-1 text-sm rounded-full border transition-colors ${
                   selectedStatus === status
-                    ? status === 'all' 
+                    ? status === 'all'
                       ? 'bg-blue-100 text-blue-800 border-blue-200'
-                      : getStatusColor(status as ReviewStatus)
+                      : getStatusColor(status)
                     : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
                 }`}
               >
                 {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)} 
-                {status === 'all' ? ` (${stats.total})` : ` (${stats[status as keyof ModerationStats]})`}
+                {status === 'all' ? ` (${stats.total})` : status in stats ? ` (${stats[status as keyof ModerationStats]})` : ''}
               </button>
             ))}
           </div>

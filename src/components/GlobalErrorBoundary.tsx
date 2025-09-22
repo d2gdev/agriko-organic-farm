@@ -15,7 +15,7 @@ interface State {
   errorInfo: ErrorInfo | null;
 }
 
-export default class GlobalErrorBoundary extends Component<Props, State> {
+class GlobalErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
@@ -60,7 +60,7 @@ export default class GlobalErrorBoundary extends Component<Props, State> {
       })
     }).catch(reportError => {
       // Fail silently - don't throw in error handler
-      console.error('Failed to report error:', reportError);
+      logger.error('Failed to report error:', reportError);
     });
   }
 
@@ -115,7 +115,7 @@ export default class GlobalErrorBoundary extends Component<Props, State> {
                 </summary>
                 <pre className="mt-2 p-4 bg-gray-100 rounded-lg text-xs overflow-x-auto">
                   {this.state.error.toString()}
-                  {this.state.errorInfo && this.state.errorInfo.componentStack}
+                  {this.state.errorInfo?.componentStack}
                 </pre>
               </details>
             )}
@@ -127,3 +127,5 @@ export default class GlobalErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export default GlobalErrorBoundary;

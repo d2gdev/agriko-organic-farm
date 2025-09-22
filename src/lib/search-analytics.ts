@@ -365,7 +365,7 @@ export function getSeasonalBoost(query: string): number {
 }
 
 // Get personalized search recommendations
-export function getPersonalizedBoosts(sessionId: string, query: string): Record<string, number> {
+export function getPersonalizedBoosts(sessionId: string, _query: string): Record<string, number> {
   const profile = getUserProfile(sessionId);
   const boosts: Record<string, number> = {};
   

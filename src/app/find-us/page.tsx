@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import HeroSection from '@/components/HeroSection';
+import { URL_CONSTANTS, urlHelpers } from '@/lib/url-constants';
 
 export default function FindUsPage() {
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({
@@ -15,6 +16,10 @@ export default function FindUsPage() {
     'puregold-visayas': false,
   });
 
+  const [regionFilter, setRegionFilter] = useState<string>('all');
+  const [chainFilter, setChainFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
       ...prev,
@@ -22,16 +27,26 @@ export default function FindUsPage() {
     }));
   };
 
+  // Filter logic for store cards
+  const shouldShowStore = (storeChain: string, regions: string[]) => {
+    const chainMatch = chainFilter === 'all' || chainFilter === storeChain;
+    const regionMatch = regionFilter === 'all' || regions.some(region =>
+      regionFilter === region.toLowerCase()
+    );
+
+    return chainMatch && regionMatch;
+  };
+
   // Enhanced Organization Schema for Find Us Page
   const organizationSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": ["Organization", "LocalBusiness", "Store"],
     "name": "Agriko Organic Farm",
     "alternateName": "Agriko Multi-Trade & Enterprise Corp.",
     "legalName": "Agriko Multi-Trade & Enterprise Corp.",
     "description": "Sustainably grown organic rice varieties, pure herbal powders, and health blends cultivated with care from our family farm.",
-    "url": "https://shop.agrikoph.com",
-    "logo": "https://shop.agrikoph.com/images/Agriko-Logo.png",
+    "url": urlHelpers.getShopUrl(),
+    "logo": `${urlHelpers.getShopUrl()}/images/Agriko-Logo.png`,
     "founder": {
       "@type": "Person",
       "name": "Gerry Paglinawan",
@@ -40,7 +55,7 @@ export default function FindUsPage() {
     "address": [
       {
         "@type": "PostalAddress",
-        "@id": "https://shop.agrikoph.com/find-us#cebu-office",
+        "@id": `${urlHelpers.getShopUrl()}/find-us#cebu-office`,
         "name": "Visayas Office",
         "streetAddress": "GF G&A Arcade, Wilson St., Lahug",
         "addressLocality": "Cebu City",
@@ -55,7 +70,7 @@ export default function FindUsPage() {
       },
       {
         "@type": "PostalAddress",
-        "@id": "https://shop.agrikoph.com/find-us#farm-location",
+        "@id": `${urlHelpers.getShopUrl()}/find-us#farm-location`,
         "name": "Paglinawan Organic Eco Farm",
         "streetAddress": "Paglinawan Organic Eco Farm, Purok 6, Libertad",
         "addressLocality": "Dumingag",
@@ -79,8 +94,8 @@ export default function FindUsPage() {
       }
     ],
     "sameAs": [
-      "https://www.facebook.com/AgrikoPH/",
-      "https://agrikoph.com"
+      URL_CONSTANTS.SOCIAL.FACEBOOK,
+      URL_CONSTANTS.COMPANY_BASE_URL
     ],
     "hasOfferCatalog": {
       "@type": "OfferCatalog",
@@ -107,29 +122,29 @@ export default function FindUsPage() {
 
   // Enhanced Breadcrumb Schema for Find Us Page
   const breadcrumbSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": "BreadcrumbList",
     "itemListElement": [
       {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://shop.agrikoph.com"
+        "item": urlHelpers.getShopUrl()
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Find Our Products",
-        "item": "https://shop.agrikoph.com/find-us"
+        "item": urlHelpers.getShopUrl('/find-us')
       }
     ]
   };
 
   // Retail Partner Schemas
   const metroSupermarketSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": "Organization",
-    "@id": "https://shop.agrikoph.com/find-us#metro-partner",
+    "@id": urlHelpers.getShopUrl('/find-us#metro-partner'),
     "name": "Metro Supermarket",
     "alternateName": "Metro Retail Stores Group",
     "description": "Major Philippine supermarket chain carrying Agriko organic products across Luzon and Visayas",
@@ -144,7 +159,7 @@ export default function FindUsPage() {
             "@type": "ProductGroup",
             "name": "Agriko Organic Rice Varieties"
           },
-          "availability": "https://schema.org/InStock"
+          "availability": URL_CONSTANTS.SCHEMA.BASE + "/InStock"
         },
         {
           "@type": "Offer", 
@@ -152,7 +167,7 @@ export default function FindUsPage() {
             "@type": "ProductGroup",
             "name": "Agriko Herbal Powders"
           },
-          "availability": "https://schema.org/InStock"
+          "availability": URL_CONSTANTS.SCHEMA.BASE + "/InStock"
         }
       ]
     },
@@ -169,9 +184,9 @@ export default function FindUsPage() {
   };
 
   const gaisanoGrandSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": "Organization",
-    "@id": "https://shop.agrikoph.com/find-us#gaisano-partner",
+    "@id": urlHelpers.getShopUrl('/find-us#gaisano-partner'),
     "name": "Gaisano Grand",
     "alternateName": "Gaisano Grand Mall",
     "description": "Leading Visayas and Mindanao supermarket chain featuring Agriko organic products",
@@ -185,7 +200,7 @@ export default function FindUsPage() {
             "@type": "ProductGroup",
             "name": "Agriko 5-in-1 Turmeric Blend"
           },
-          "availability": "https://schema.org/InStock"
+          "availability": URL_CONSTANTS.SCHEMA.BASE + "/InStock"
         },
         {
           "@type": "Offer",
@@ -193,7 +208,7 @@ export default function FindUsPage() {
             "@type": "ProductGroup", 
             "name": "Agriko Organic Honey"
           },
-          "availability": "https://schema.org/InStock"
+          "availability": URL_CONSTANTS.SCHEMA.BASE + "/InStock"
         }
       ]
     },
@@ -210,9 +225,9 @@ export default function FindUsPage() {
   };
 
   const puregoldSchema = {
-    "@context": "https://schema.org", 
+    "@context": URL_CONSTANTS.SCHEMA.BASE, 
     "@type": "Organization",
-    "@id": "https://shop.agrikoph.com/find-us#puregold-partner",
+    "@id": urlHelpers.getShopUrl('/find-us#puregold-partner'),
     "name": "PureGold Price Club",
     "alternateName": "PureGold Supermarket",
     "description": "Nationwide Philippine supermarket chain offering Agriko premium organic products",
@@ -227,7 +242,7 @@ export default function FindUsPage() {
             "@type": "ProductGroup",
             "name": "Agriko Complete Product Line"
           },
-          "availability": "https://schema.org/InStock"
+          "availability": URL_CONSTANTS.SCHEMA.BASE + "/InStock"
         }
       ]
     },
@@ -239,17 +254,17 @@ export default function FindUsPage() {
 
   // Store Locator Schema
   const storeLocatorSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": "WebPage",
-    "@id": "https://shop.agrikoph.com/find-us#storepage",
+    "@id": urlHelpers.getShopUrl('/find-us#storepage'),
     "name": "Find Agriko Products - Store Locator",
     "description": "Locate Agriko organic products at Metro, Gaisano Grand, and PureGold supermarkets across the Philippines",
-    "url": "https://shop.agrikoph.com/find-us",
+    "url": urlHelpers.getShopUrl('/find-us'),
     "inLanguage": "en-PH",
     "isPartOf": {
       "@type": "WebSite",
       "name": "Agriko Organic Farm",
-      "url": "https://shop.agrikoph.com"
+      "url": urlHelpers.getShopUrl()
     },
     "about": {
       "@type": "Thing",
@@ -326,12 +341,89 @@ export default function FindUsPage() {
             <p className="text-xl text-gray-600 mb-8">Available in 50+ stores nationwide</p>
 
             {/* Search/Filter Bar */}
-            <div className="max-w-md mx-auto">
-              <div className="bg-white rounded-lg shadow-md p-4 flex items-center gap-3">
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <span className="text-gray-600">Filter by Region: Luzon • Visayas • Mindanao</span>
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-lg shadow-md p-6 border-2 border-gray-100">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Search Input */}
+                  <div className="space-y-2">
+                    <label htmlFor="store-search" className="block text-sm font-medium text-gray-700">
+                      Search Stores
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                      <input
+                        id="store-search"
+                        name="store-search"
+                        type="text"
+                        placeholder="Search by city or store..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        aria-label="Search stores by city or store name"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Region Filter */}
+                  <div className="space-y-2">
+                    <label htmlFor="region-filter" className="block text-sm font-medium text-gray-700">
+                      Filter by Region
+                    </label>
+                    <select
+                      id="region-filter"
+                      name="region-filter"
+                      value={regionFilter}
+                      onChange={(e) => setRegionFilter(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      aria-label="Filter stores by region"
+                    >
+                      <option value="all">All Regions</option>
+                      <option value="luzon">Luzon</option>
+                      <option value="visayas">Visayas</option>
+                      <option value="mindanao">Mindanao</option>
+                    </select>
+                  </div>
+
+                  {/* Chain Filter */}
+                  <div className="space-y-2">
+                    <label htmlFor="chain-filter" className="block text-sm font-medium text-gray-700">
+                      Filter by Store Chain
+                    </label>
+                    <select
+                      id="chain-filter"
+                      name="chain-filter"
+                      value={chainFilter}
+                      onChange={(e) => setChainFilter(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      aria-label="Filter stores by chain"
+                    >
+                      <option value="all">All Stores</option>
+                      <option value="metro">Metro Supermarket</option>
+                      <option value="gaisano">Gaisano Grand</option>
+                      <option value="puregold">PureGold</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Clear Filters */}
+                {(regionFilter !== 'all' || chainFilter !== 'all' || searchQuery) && (
+                  <div className="mt-4 text-center">
+                    <button
+                      onClick={() => {
+                        setRegionFilter('all');
+                        setChainFilter('all');
+                        setSearchQuery('');
+                      }}
+                      className="text-sm text-gray-600 hover:text-gray-800 underline"
+                    >
+                      Clear all filters
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -339,7 +431,8 @@ export default function FindUsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             
             {/* Metro Supermarkets */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+            {shouldShowStore('metro', ['luzon', 'visayas']) && (
+            <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
               {/* Logo Container */}
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-8 flex items-center justify-center h-48">
                 <div className="text-center">
@@ -358,12 +451,12 @@ export default function FindUsPage() {
                 <div className="mb-4">
                   <button
                     onClick={() => toggleSection('metro-luzon')}
-                    className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 rounded-lg transition-all duration-200"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-lg">📍</span>
                       <span className="font-semibold text-gray-800">Luzon</span>
-                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">6 stores</span>
+                      <span className="text-xs bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 px-2 py-1 rounded-full font-semibold">6 stores</span>
                     </div>
                     <svg
                       className={`w-5 h-5 text-gray-500 transition-transform ${expandedSections['metro-luzon'] ? 'rotate-180' : ''}`}
@@ -390,12 +483,12 @@ export default function FindUsPage() {
                 <div>
                   <button
                     onClick={() => toggleSection('metro-visayas')}
-                    className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 rounded-lg transition-all duration-200"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-lg">📍</span>
                       <span className="font-semibold text-gray-800">Visayas</span>
-                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">20+ stores</span>
+                      <span className="text-xs bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 px-2 py-1 rounded-full font-semibold">20+ stores</span>
                     </div>
                     <svg
                       className={`w-5 h-5 text-gray-500 transition-transform ${expandedSections['metro-visayas'] ? 'rotate-180' : ''}`}
@@ -434,11 +527,34 @@ export default function FindUsPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Order Online CTA for Metro */}
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-3">
+                      Can&apos;t visit the store? Order online with free delivery!
+                    </p>
+                    <Link
+                      href="/products"
+                      className="inline-flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg"
+                    >
+                      Order Online - Free Delivery
+                      <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </Link>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Same quality products, delivered to your door
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
+            )}
 
             {/* Gaisano Grand Supermarket */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+            {shouldShowStore('gaisano', ['visayas', 'mindanao']) && (
+            <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
               {/* Logo Container */}
               <div className="bg-gradient-to-br from-green-50 to-green-100 p-8 flex items-center justify-center h-48">
                 <div className="text-center">
@@ -462,12 +578,12 @@ export default function FindUsPage() {
                 <div className="mb-4">
                   <button
                     onClick={() => toggleSection('gaisano-visayas')}
-                    className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 rounded-lg transition-all duration-200"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-lg">📍</span>
                       <span className="font-semibold text-gray-800">Visayas</span>
-                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">18 stores</span>
+                      <span className="text-xs bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 px-2 py-1 rounded-full font-semibold">18 stores</span>
                     </div>
                     <svg
                       className={`w-5 h-5 text-gray-500 transition-transform ${expandedSections['gaisano-visayas'] ? 'rotate-180' : ''}`}
@@ -506,12 +622,12 @@ export default function FindUsPage() {
                 <div>
                   <button
                     onClick={() => toggleSection('gaisano-mindanao')}
-                    className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 rounded-lg transition-all duration-200"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-lg">📍</span>
                       <span className="font-semibold text-gray-800">Mindanao</span>
-                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">9 stores</span>
+                      <span className="text-xs bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 px-2 py-1 rounded-full font-semibold">9 stores</span>
                     </div>
                     <svg
                       className={`w-5 h-5 text-gray-500 transition-transform ${expandedSections['gaisano-mindanao'] ? 'rotate-180' : ''}`}
@@ -536,11 +652,34 @@ export default function FindUsPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Order Online CTA for Gaisano */}
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-3">
+                      Save time and gas! Order online for home delivery
+                    </p>
+                    <Link
+                      href="/products"
+                      className="inline-flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-md hover:shadow-lg"
+                    >
+                      Order Online Now
+                      <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </Link>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Direct from our farm to your home
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
+            )}
 
             {/* PureGold Supermarket */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+            {shouldShowStore('puregold', ['visayas']) && (
+            <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
               {/* Logo Container */}
               <div className="bg-gradient-to-br from-orange-50 to-yellow-100 p-8 flex items-center justify-center h-48">
                 <div className="text-center">
@@ -587,8 +726,30 @@ export default function FindUsPage() {
                     <p className="text-sm text-gray-600">• PureGold Guadalupe</p>
                   </div>
                 )}
+
+                {/* Order Online CTA for PureGold */}
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-3">
+                      Skip the trip! Get Agriko delivered to your doorstep
+                    </p>
+                    <Link
+                      href="/products"
+                      className="inline-flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-300 shadow-md hover:shadow-lg"
+                    >
+                      Order Online Today
+                      <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </Link>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Fresh organic products, fast delivery
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
+            )}
           </div>
 
           {/* Fully Polished Contact Section */}

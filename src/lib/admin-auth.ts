@@ -105,7 +105,7 @@ export function withAdminAuth<T extends unknown[]>(
 
       // Call the wrapped handler
       return await handler(request, authResult, ...args);
-    } catch (error) {
+    } catch {
       return new Response(JSON.stringify({ error: 'Authentication error' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
@@ -147,7 +147,7 @@ export async function validateAdminAuth(request: Request): Promise<{ success: bo
     }
 
     return { success: true, userId: username };
-  } catch (error) {
+  } catch {
     return { success: false, error: 'Authentication error' };
   }
 }

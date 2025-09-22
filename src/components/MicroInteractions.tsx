@@ -156,7 +156,8 @@ export function InteractiveCard({
   className,
   hoverEffect = 'lift'
 }: InteractiveCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
+  const [_isHovered, setIsHovered] = useState(false);
+  void _isHovered; // Preserved for future hover state features
 
   const effectClasses = {
     lift: 'hover:-translate-y-1 hover:shadow-xl',

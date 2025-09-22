@@ -55,11 +55,9 @@ export async function GET(request: NextRequest) {
     const options: ContextualSearchOptions = {
       sessionId,
       userId: searchParams.get('userId') || undefined,
-      mode: (searchParams.get('mode') as 'hybrid' | 'semantic_only' | 'keyword_only' | null) || 'hybrid',
-      maxResults: parseInt(searchParams.get('limit') || '20'),
+      limit: parseInt(searchParams.get('limit') || '20'),
       category: searchParams.get('category') || undefined,
-      inStock: searchParams.get('inStock') === 'true' ? true : undefined,
-      featured: searchParams.get('featured') === 'true' ? true : undefined,
+      inStockOnly: searchParams.get('inStock') === 'true' ? true : undefined,
       location: {
         country: searchParams.get('country') || undefined,
         region: searchParams.get('region') || undefined,
@@ -71,7 +69,7 @@ export async function GET(request: NextRequest) {
       userAgent: request.headers.get('user-agent') || undefined
     };
 
-    const { results, searchStats, contextualInsights } = await contextualSearch(query, options);
+    const { results, searchStats, contextualInsights, qualityMetrics } = await contextualSearch(query, options);
 
     return NextResponse.json({
       success: true,
@@ -82,7 +80,11 @@ export async function GET(request: NextRequest) {
       searchType: 'contextual',
       stats: searchStats,
       contextualInsights,
-      appliedContext: contextualInsights.appliedContext
+      qualityMetrics,
+      appliedContext: contextualInsights.appliedContext,
+      semanticClusters: contextualInsights.semanticClusters?.slice(0, 5), // Top 5 clusters
+      personalizedBoosts: contextualInsights.personalizedBoosts,
+      intent: contextualInsights.searchIntent
     });
 
   } catch (error) {
@@ -124,24 +126,16 @@ export async function POST(request: NextRequest) {
       sessionId,
       userId,
       location,
-      mode: options.mode || 'hybrid',
-      semanticWeight: options.semanticWeight || 0.6,
-      keywordWeight: options.keywordWeight || 0.4,
-      maxResults: options.maxResults || 20,
-      minSemanticScore: options.minSemanticScore,
-      minKeywordScore: options.minKeywordScore,
+      limit: options.limit || 20,
       category: options.category,
-      inStock: options.inStock,
-      featured: options.featured,
-      priceRange: options.priceRange,
+      inStockOnly: options.inStockOnly,
       enablePersonalization: options.enablePersonalization !== false,
       enableSeasonalBoost: options.enableSeasonalBoost !== false,
       enableQueryExpansion: options.enableQueryExpansion !== false,
-      userAgent: request.headers.get('user-agent') || undefined,
-      keywordOptions: options.keywordOptions || {}
+      userAgent: request.headers.get('user-agent') || undefined
     };
 
-    const { results, searchStats, contextualInsights } = await contextualSearch(query, contextualOptions);
+    const { results, searchStats, contextualInsights, qualityMetrics } = await contextualSearch(query, contextualOptions);
 
     return NextResponse.json({
       success: true,
@@ -158,11 +152,17 @@ export async function POST(request: NextRequest) {
         personalizedBoostCount: Object.keys(contextualInsights.personalizedBoosts).length,
         regionalBoostCount: Object.keys(contextualInsights.regionalBoosts).length
       },
+      qualityMetrics,
+      semanticAnalysis: {
+        intent: contextualInsights.searchIntent,
+        clusters: contextualInsights.semanticClusters?.slice(0, 3),
+        facets: contextualInsights.semanticFacets
+      },
       configuration: {
         personalization: contextualOptions.enablePersonalization,
         seasonalBoost: contextualOptions.enableSeasonalBoost,
         queryExpansion: contextualOptions.enableQueryExpansion,
-        searchMode: contextualOptions.mode
+        searchMode: 'hybrid'
       }
     });
 

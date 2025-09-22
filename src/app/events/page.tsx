@@ -1,19 +1,20 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import HeroSection from '@/components/HeroSection';
+import { URL_CONSTANTS, urlHelpers } from '@/lib/url-constants';
 
 export default function EventsPage() {
   // Farm Tour Event Schema
   const farmTourEventSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": "Event",
-    "@id": "https://shop.agrikoph.com/events#farm-tours",
+    "@id": `${urlHelpers.getShopUrl()}/events#farm-tours`,
     "name": "Paglinawan Organic Eco Farm Tours",
     "description": "Experience sustainable organic farming firsthand. Learn about rice cultivation, herbal medicine, and traditional Filipino agricultural practices.",
     "startDate": "2024-01-01T09:00:00+08:00",
     "endDate": "2024-12-31T17:00:00+08:00",
-    "eventStatus": "https://schema.org/EventScheduled",
-    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": `${URL_CONSTANTS.SCHEMA.BASE}/EventScheduled`,
+    "eventAttendanceMode": `${URL_CONSTANTS.SCHEMA.BASE}/OfflineEventAttendanceMode`,
     "location": {
       "@type": "Place",
       "name": "Paglinawan Organic Eco Farm",
@@ -34,13 +35,13 @@ export default function EventsPage() {
     "organizer": {
       "@type": "Organization",
       "name": "Agriko Organic Farm",
-      "url": "https://shop.agrikoph.com"
+      "url": "urlHelpers.getShopUrl()"
     },
     "offers": {
       "@type": "Offer",
       "price": "0",
       "priceCurrency": "PHP",
-      "availability": "https://schema.org/InStock",
+      "availability": "URL_CONSTANTS.SCHEMA.BASE/InStock",
       "validFrom": "2024-01-01"
     },
     "audience": {
@@ -61,16 +62,16 @@ export default function EventsPage() {
 
   // Workshop Event Schema
   const herbalMedicineWorkshopSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": "EducationEvent",
-    "@id": "https://shop.agrikoph.com/events#herbal-workshops",
+    "@id": "urlHelpers.getShopUrl()/events#herbal-workshops",
     "name": "Traditional Filipino Herbal Medicine Workshop",
     "description": "Learn about the health benefits and preparation methods of traditional Filipino herbal medicines including turmeric, ginger, and moringa.",
     "startDate": "2024-06-01T14:00:00+08:00",
     "endDate": "2024-06-01T17:00:00+08:00",
     "duration": "PT3H",
-    "eventStatus": "https://schema.org/EventScheduled",
-    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": `${URL_CONSTANTS.SCHEMA.BASE}/EventScheduled`,
+    "eventAttendanceMode": `${URL_CONSTANTS.SCHEMA.BASE}/OfflineEventAttendanceMode`,
     "location": {
       "@type": "Place",
       "name": "Paglinawan Organic Eco Farm",
@@ -97,13 +98,13 @@ export default function EventsPage() {
     "organizer": {
       "@type": "Organization", 
       "name": "Agriko Organic Farm",
-      "url": "https://shop.agrikoph.com"
+      "url": "urlHelpers.getShopUrl()"
     },
     "offers": {
       "@type": "Offer",
       "price": "500",
       "priceCurrency": "PHP",
-      "availability": "https://schema.org/InStock",
+      "availability": "URL_CONSTANTS.SCHEMA.BASE/InStock",
       "includes": [
         "Workshop materials",
         "Sample herbal products",
@@ -125,20 +126,20 @@ export default function EventsPage() {
 
   // Breadcrumb Schema
   const breadcrumbSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": "BreadcrumbList",
     "itemListElement": [
       {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://shop.agrikoph.com"
+        "item": "urlHelpers.getShopUrl()"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Events & Workshops",
-        "item": "https://shop.agrikoph.com/events"
+        "item": "urlHelpers.getShopUrl()/events"
       }
     ]
   };

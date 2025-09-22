@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { logger } from '@/lib/logger';
 import { reviewDB } from '@/lib/review-database';
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-helpers';

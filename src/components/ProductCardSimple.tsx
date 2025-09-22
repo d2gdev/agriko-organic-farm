@@ -33,7 +33,7 @@ export default function ProductCardSimple({
   product,
   className = '',
   priority = false,
-  layout = 'grid',
+  layout: _layout = 'grid',
   fetchPriority = 'auto'
 }: ProductCardSimpleProps) {
 
@@ -100,7 +100,7 @@ export default function ProductCardSimple({
             </>
           ) : (
             <span className="text-lg font-bold text-gray-900">
-              {formatPrice(product.price)}
+              {formatPrice(product.price as string | number)}
             </span>
           )}
         </div>

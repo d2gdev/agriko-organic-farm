@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateAnalyticsEvent, safeValidateAnalyticsEvent } from '@/lib/validation-schemas';
+import { safeValidateAnalyticsEvent } from '@/lib/validation-schemas';
 import { logger } from '@/lib/logger';
 import type { AnalyticsEvent } from '@/lib/validation-schemas';
 
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 // Type-safe event processing
 async function processAnalyticsEvent(event: AnalyticsEvent): Promise<void> {
   // All properties are now type-safe
-  const { eventType, userId, sessionId, timestamp, data, metadata } = event;
+  const { metadata } = event;
   
   // Type-safe data access
   if (metadata?.device) {

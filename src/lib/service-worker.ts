@@ -1,33 +1,33 @@
 import { logger } from '@/lib/logger';
-import type { 
-  ServiceWorkerMessage, 
-  ServiceWorkerResponse, 
-  CacheInfo, 
-  ServiceWorkerStatus,
-  BackgroundSyncOptions 
+import type {
+  ServiceWorkerMessage,
+  ServiceWorkerResponse,
+  CacheInfo,
+  ServiceWorkerStatus
+  // BackgroundSyncOptions // Preserved for future background sync implementation
 } from '@/types/service-worker';
 // Service Worker registration and management utilities
 
 // Service Worker Manager interface for no-op fallback
-interface ServiceWorkerManagerInterface {
-  register(): Promise<boolean>;
-  checkForUpdates(): Promise<void>;
-  unregister(): Promise<boolean>;
-  sendMessage(message: ServiceWorkerMessage): Promise<ServiceWorkerResponse>;
-  registerBackgroundSync(tag: string, options?: BackgroundSyncOptions): Promise<void>;
-  getCacheInfo(): Promise<CacheInfo | null>;
-  clearCache(): Promise<boolean>;
-  getStatus(): ServiceWorkerStatus;
-}
+// interface ServiceWorkerManagerInterface {
+//   register(): Promise<boolean>;
+//   checkForUpdates(): Promise<void>;
+//   unregister(): Promise<boolean>;
+//   sendMessage(message: ServiceWorkerMessage): Promise<ServiceWorkerResponse>;
+//   registerBackgroundSync(tag: string, options?: BackgroundSyncOptions): Promise<void>;
+//   getCacheInfo(): Promise<CacheInfo | null>;
+//   clearCache(): Promise<boolean>;
+//   getStatus(): ServiceWorkerStatus;
+// } // Preserved for future service worker implementation
 
 // Add a new interface that extends the base interface with all required properties
-interface FullServiceWorkerManagerInterface extends ServiceWorkerManagerInterface {
-  registration: ServiceWorkerRegistration | null;
-  isSupported: boolean;
-  updateCheckInterval: NodeJS.Timeout | null;
-  handleUpdate(): void;
-  showUpdateNotification(): void;
-}
+// interface FullServiceWorkerManagerInterface extends ServiceWorkerManagerInterface {
+//   registration: ServiceWorkerRegistration | null;
+//   isSupported: boolean;
+//   updateCheckInterval: NodeJS.Timeout | null;
+//   handleUpdate(): void;
+//   showUpdateNotification(): void;
+// } // Preserved for future full service worker implementation
 
 // Background sync registration interface
 interface ServiceWorkerRegistrationWithSync extends ServiceWorkerRegistration {
@@ -279,10 +279,10 @@ export class ServiceWorkerManager {
 }
 
 // Offline queue for analytics and form data
-interface OfflineQueueInterface {
-  add(item: Omit<QueueItem, 'id' | 'timestamp' | 'retries'>): void;
-  getStatus(): { items: number; isOnline: boolean };
-}
+// interface OfflineQueueInterface {
+//   add(item: Omit<QueueItem, 'id' | 'timestamp' | 'retries'>): void;
+//   getStatus(): { items: number; isOnline: boolean };
+// } // Preserved for future offline queue interface
 
 interface QueueItem {
   id: string;
@@ -294,15 +294,15 @@ interface QueueItem {
 }
 
 // Add interface for SSR fallback
-interface FullOfflineQueueInterface extends OfflineQueueInterface {
-  queue: QueueItem[];
-  isOnline: boolean;
-  setupOnlineListener(): void;
-  processQueue(): Promise<void>;
-  processItem(item: QueueItem): Promise<void>;
-  saveQueue(): void;
-  loadQueue(): void;
-}
+// interface FullOfflineQueueInterface extends OfflineQueueInterface {
+//   queue: QueueItem[];
+//   isOnline: boolean;
+//   setupOnlineListener(): void;
+//   processQueue(): Promise<void>;
+//   processItem(item: QueueItem): Promise<void>;
+//   saveQueue(): void;
+//   loadQueue(): void;
+// } // Preserved for future full offline queue implementation
 
 export class OfflineQueue {
   private static instance: OfflineQueue;
@@ -455,7 +455,8 @@ export async function initializePerformanceOptimizations(): Promise<void> {
   if (typeof window === 'undefined') return;
 
   const swManager = ServiceWorkerManager.getInstance();
-  const offlineQueue = OfflineQueue.getInstance();
+  const _offlineQueue = OfflineQueue.getInstance();
+  void _offlineQueue; // Preserved for future offline queue integration
 
   // Register service worker
   await swManager.register();

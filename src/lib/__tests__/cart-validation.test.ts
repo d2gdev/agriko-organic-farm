@@ -291,7 +291,7 @@ describe('Cart Operations', () => {
         on_sale: false,
         categories: [],
         images: [
-          { id: 1, src: null as string, name: 'Image 1', alt: 'Alt text' }
+          { id: 1, src: '' as string, name: 'Image 1', alt: 'Alt text' }
         ],
         short_description: '',
         description: '',

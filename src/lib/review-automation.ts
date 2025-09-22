@@ -130,7 +130,7 @@ export class ReviewAutomationService {
   }
 
   // Process completed reviews (mark request as completed)
-  static async markRequestCompleted(orderId: string, reviewId: string): Promise<void> {
+  static async markRequestCompleted(orderId: string, _reviewId: string): Promise<void> {
     try {
       logger.info('✅ Marking review request completed for order:', { orderId });
       
@@ -208,7 +208,7 @@ export class ReviewAutomationService {
   static generateReviewUrl(orderId: string, productId: number, token?: string): string {
     const baseUrl = typeof window !== 'undefined' 
       ? window.location.origin 
-      : 'https://shop.agrikoph.com';
+      : 'urlHelpers.getShopUrl()';
     
     const params = new URLSearchParams({
       order: orderId,
@@ -234,7 +234,7 @@ export class ReviewAutomationService {
       orderDate: new Date(orderData.orderDate).toLocaleDateString(),
       productCount: orderData.productIds.length.toString(),
       reviewUrl: this.generateReviewUrl(orderData.orderId, orderData.productIds[0] ?? 0),
-      unsubscribeUrl: `${typeof window !== 'undefined' ? window.location.origin : 'https://shop.agrikoph.com'}/unsubscribe?order=${orderData.orderId}`,
+      unsubscribeUrl: `${typeof window !== 'undefined' ? window.location.origin : 'urlHelpers.getShopUrl()'}/unsubscribe?order=${orderData.orderId}`,
       supportEmail: 'support@agrikoph.com',
       companyName: 'Agriko Organic Farm'
     };

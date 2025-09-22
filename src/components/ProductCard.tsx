@@ -6,9 +6,12 @@ import Image from 'next/image';
 import { WCProduct } from '@/types/woocommerce';
 import { formatPrice, getProductMainImage, stripHtml, isProductInStock } from '@/lib/utils';
 import { useSafeCart } from '@/context/CartContext';
+import { ecommerceEvent, funnelEvent } from '@/lib/gtag';
 import toast from 'react-hot-toast';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { calculateDiscountPercentage } from '@/lib/price-validation';
+
+// Removed APP_CONSTANTS import due to dependency issues
 
 interface ProductCardProps {
   product: WCProduct;
@@ -22,29 +25,51 @@ function ProductCard({
   product,
   className = '',
   priority = false,
-  layout = 'grid',
+  layout: _layout = 'grid',
   fetchPriority = 'auto'
 }: ProductCardProps) {
   const cart = useSafeCart();
   const [isLoading, setIsLoading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
+  const [_imageError, setImageError] = useState(false);
+  void _imageError; // Preserved for future error display
   const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
   const isUnmountedRef = useRef(false);
+  const hasTrackedViewRef = useRef(false);
+
+  // Track product view when component mounts and is visible
+  useEffect(() => {
+    if (!hasTrackedViewRef.current) {
+      hasTrackedViewRef.current = true;
+      const category = product.categories?.[0]?.name ?? 'Uncategorized';
+      const price = parseFloat(product.price as string) || 0;
+
+      // Track with Google Analytics
+      ecommerceEvent.viewItem(
+        product.id.toString(),
+        product.name,
+        category,
+        price
+      );
+
+      // Track funnel step
+      funnelEvent.viewProductDetail(product.id.toString(), product.name);
+    }
+  }, [product]);
 
   // Cleanup timeouts on unmount and prevent state updates after unmount
   useEffect(() => {
     isUnmountedRef.current = false;
-    
+
     // Fallback timeout to show image if onLoad doesn't fire
     const fallbackTimeout = setTimeout(() => {
       if (!isUnmountedRef.current && !imageLoaded) {
         setImageLoaded(true);
       }
     }, 3000); // 3 second fallback
-    
+
     timeoutsRef.current.push(fallbackTimeout);
-    
+
     return () => {
       isUnmountedRef.current = true;
       // Clear timeouts before clearing the array
@@ -73,6 +98,21 @@ function ProductCard({
         
         if (cart) {
           cart.addItem(product);
+
+          // Track add to cart with Google Analytics
+          const category = product.categories?.[0]?.name ?? 'Uncategorized';
+          const price = parseFloat(product.price as string) || 0;
+
+          ecommerceEvent.addToCart(
+            product.id.toString(),
+            product.name,
+            category,
+            price,
+            1
+          );
+
+          // Track funnel step
+          funnelEvent.addToCart(product.id.toString(), product.name, price);
         }
         
         toast.success(
@@ -112,7 +152,7 @@ function ProductCard({
       
       timeoutsRef.current.push(delayTimeout);
       
-    } catch (error) {
+    } catch {
       if (!isUnmountedRef.current) {
         toast.error('Failed to add item to cart');
       }
@@ -148,7 +188,7 @@ function ProductCard({
         "@type": "Organization",
         "name": "Agriko Organic Farm"
       },
-      "url": `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shop.agrikoph.com'}/product/${product.slug}`
+      "url": `https://agrikoph.com/product/${product.slug}`
     },
     "category": product.categories?.map(cat => cat.name).join(", ") ?? "Organic Products"
   };
@@ -169,8 +209,8 @@ function ProductCard({
     return product.on_sale && product.regular_price !== product.price
       ? (() => {
           const discountResult = calculateDiscountPercentage(
-            product.regular_price,
-            product.price,
+            product.regular_price || '0',
+            product.price || '0',
             `ProductCard ${product.name}`
           );
           return discountResult.success ? Math.round(discountResult.value) : null;
@@ -192,55 +232,40 @@ function ProductCard({
         {/* Card Container */}
         <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 hover:shadow-xl hover:border-primary-200 transition-all duration-500 ease-out overflow-hidden hover:-translate-y-2 h-full flex flex-col relative min-h-[480px]">
 
-          {(product.featured || ((product as unknown as Record<string, unknown>).total_sales && ((product as unknown as Record<string, unknown>).total_sales as number) > 50)) ? (
-            <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-              {/* Premium Badge for featured products */}
-              {product.featured ? (
-                <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-amber-900 px-3 py-1 text-xs font-bold rounded-full shadow-lg flex items-center space-x-1 w-fit">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <span>Premium</span>
-                </div>
-              ) : null}
 
-              {/* Enhanced Premium Bestseller Badge - Gold Ribbon Style */}
-              {((product as unknown as Record<string, unknown>).total_sales && ((product as unknown as Record<string, unknown>).total_sales as number) > 50) ? (
-              <div className="relative">
-                {/* Main ribbon badge */}
-                <div className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-amber-900 px-4 py-2 text-xs font-bold shadow-xl flex items-center space-x-2 w-fit border border-amber-300/50 relative overflow-hidden">
-                  {/* Ribbon cut effect */}
-                  <div className="absolute left-0 top-0 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-amber-600 border-t-[12px] border-t-amber-600"></div>
-                  <div className="absolute right-0 bottom-0 w-0 h-0 border-l-[8px] border-l-amber-600 border-r-[8px] border-r-transparent border-b-[12px] border-b-amber-600"></div>
-
-                  {/* Premium crown icon */}
-                  <svg className="w-4 h-4 drop-shadow-sm" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M5 4a1 1 0 00-.894 1.447l2 4A1 1 0 007 10h1.394l.8-2.4a1 1 0 011.612 0l.8 2.4H13a1 1 0 00.894-.553l2-4A1 1 0 0015 4a1 1 0 00-1 1v.5a1 1 0 01-2 0V5a1 1 0 00-1-1 1 1 0 00-1 1v.5a1 1 0 01-2 0V5a1 1 0 00-1-1 1 1 0 00-1 1v.5a1 1 0 01-2 0V5a1 1 0 00-1-1z"/>
-                  </svg>
-                  <span className="uppercase tracking-wider font-extrabold">Bestseller</span>
-
-                  {/* Shimmer effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-pulse"></div>
-                </div>
-
-                {/* Glow effect */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 rounded blur opacity-25 animate-pulse"></div>
-              </div>
-            ) : null}
-            </div>
-          ) : null}
-
-          <div className="block relative">
-            <Link href={`/product/${product.slug}`} className="block">
+          <Link href={`/product/${product.slug}`} className="block relative">
               <div className="relative h-80 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden rounded-xl group-hover:shadow-2xl transition-all duration-500 flex items-center justify-center">
 
-                {/* Loading Shimmer - Only show while loading */}
+                {/* Premium/Bestseller Badges Overlay on Image - Always render container */}
+                <div className="absolute top-8 left-8 z-20 flex flex-col gap-2">
+                  {/* Premium Badge for featured products */}
+                  {product.featured ? (
+                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-amber-900 px-3 py-1 text-xs font-bold rounded-full shadow-lg flex items-center space-x-1 w-fit">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      <span>Premium</span>
+                    </div>
+                  ) : null}
+
+                  {/* Enhanced Premium Bestseller Badge */}
+                  {(product.total_sales && product.total_sales > 50) ? (
+                    <div className="bg-gradient-to-r from-red-600 to-red-700 text-white px-3 py-1.5 rounded-lg font-black shadow-lg transform -rotate-2 hover:rotate-0 transition-transform duration-300">
+                      <span className="text-xs flex items-center gap-1">
+                        <span className="text-sm">⭐</span>
+                        BESTSELLER
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* Loading Shimmer - Hydration-safe conditional rendering */}
                 {!imageLoaded && (
-                  <div className="absolute inset-0 bg-neutral-200 animate-pulse" />
+                  <div className="absolute inset-0 bg-neutral-200 animate-pulse transition-opacity duration-300" />
                 )}
 
                 {/* Inner container for perfect centering and consistent sizing */}
-                <div className="relative w-full h-full max-w-[240px] max-h-[240px] flex items-center justify-center p-6">
+                <div className="relative w-full h-full max-w-[240px] max-h-[240px] flex items-center justify-center p-6 z-0">
                   <Image
                     src={mainImage}
                     alt={product.name}
@@ -288,7 +313,11 @@ function ProductCard({
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
               {/* Heart/Wishlist Icon */}
-              <button className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-lg hover:bg-red-50 transition-all duration-300 transform hover:scale-110 pointer-events-auto">
+              <button
+                className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-lg hover:bg-red-50 transition-all duration-300 transform hover:scale-110 pointer-events-auto"
+                aria-label={`Add ${product.name} to wishlist`}
+                aria-describedby={`product-${product.id}-name`}
+              >
                 <svg className="w-5 h-5 text-gray-600 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
@@ -301,7 +330,7 @@ function ProductCard({
                     e.stopPropagation();
                     handleAddToCart(e);
                   }}
-                  className="bg-red-600 text-white px-6 py-2.5 rounded-full font-semibold transform translate-y-8 group-hover:translate-y-0 transition-all duration-300 flex items-center space-x-2 hover:bg-red-700 shadow-xl pointer-events-auto"
+                  className="bg-green-600 text-white px-6 py-2.5 rounded-full font-semibold transform translate-y-8 group-hover:translate-y-0 transition-all duration-300 flex items-center space-x-2 hover:bg-green-700 shadow-xl pointer-events-auto"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -310,7 +339,6 @@ function ProductCard({
                 </button>
               </div>
             </div>
-          </div>
 
           {/* Product Information */}
           <div className="p-6 flex-1 flex flex-col">
@@ -342,28 +370,32 @@ function ProductCard({
               </h3>
             </Link>
 
-            {/* Rating Stars - Consistent rendering to avoid hydration mismatch */}
-            <div className="mb-3 h-5 flex items-center space-x-2">
-              {product.rating_count > 0 && (
-                <>
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className={`w-4 h-4 ${i < Math.round(parseFloat(product.average_rating || '0')) ? 'text-yellow-400 fill-current' : 'text-gray-300 fill-current'}`}
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <span className="text-xs text-gray-500">({product.rating_count})</span>
-                </>
+            {/* Rating Stars - Always show stars, default to 5 if no ratings */}
+            <div className="mb-2 h-5 flex items-center space-x-2">
+              <div className="flex items-center" suppressHydrationWarning>
+                {[1, 2, 3, 4, 5].map((starIndex) => {
+                  const rating = (product.rating_count || 0) > 0
+                    ? parseFloat(product.average_rating || '0')
+                    : 5; // Default to 5 stars if no ratings
+                  const isFilled = starIndex <= Math.round(rating);
+                  return (
+                    <svg
+                      key={starIndex}
+                      className={`w-4 h-4 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300 fill-current'}`}
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  );
+                })}
+              </div>
+              {(product.rating_count || 0) > 0 && (
+                <span className="text-xs text-gray-500">({product.rating_count})</span>
               )}
             </div>
 
             {/* Description with 5-Line Display */}
-            <div className="flex-1 flex items-center mb-4">
+            <div className="flex-1 flex items-center mb-3">
               {shortDescription && (
                 <p
                   id={`product-${product.id}-description`}
@@ -381,15 +413,15 @@ function ProductCard({
                   {product.on_sale && product.regular_price !== product.price ? (
                     <>
                       <span className="text-xl font-bold text-primary-700">
-                        {formatPrice(product.price)}
+                        {formatPrice(product.price || '0')}
                       </span>
                       <span className="text-sm text-neutral-500 line-through">
-                        {formatPrice(product.regular_price)}
+                        {formatPrice(product.regular_price || product.price || '0')}
                       </span>
                     </>
                   ) : (
                     <span className="text-xl font-bold text-neutral-900">
-                      {formatPrice(product.price)}
+                      {formatPrice(product.price || '0')}
                     </span>
                   )}
                 </div>
@@ -408,13 +440,13 @@ function ProductCard({
                 <button
                   onClick={handleAddToCart}
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-neutral-400 disabled:to-neutral-500 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2 group/button relative overflow-hidden"
+                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-neutral-400 disabled:to-neutral-500 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2 group/button relative overflow-hidden"
                   aria-label={`Add ${product.name} to shopping cart`}
                   aria-describedby={`product-${product.id}-description`}
                   aria-disabled={!inStock || isLoading}
                 >
                   {/* Slide-in cart icon effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-700 to-red-800 translate-x-full group-hover/button:translate-x-0 transition-transform duration-300 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-green-800 translate-x-full group-hover/button:translate-x-0 transition-transform duration-300 flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5" />
                     </svg>
@@ -435,7 +467,7 @@ function ProductCard({
                   )}
 
                   {/* Hover glow effect */}
-                  <div className="absolute inset-0 bg-red-500 rounded-xl opacity-0 group-hover/button:opacity-20 blur-sm transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-green-500 rounded-xl opacity-0 group-hover/button:opacity-20 blur-sm transition-opacity duration-300"></div>
                 </button>
               )}
             </div>

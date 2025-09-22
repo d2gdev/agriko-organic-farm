@@ -3,7 +3,7 @@ import { logger } from '@/lib/logger';
 
 import { getAllProducts, getProductsByIds } from './woocommerce';
 import { generateBatchEmbeddings, prepareTextForEmbedding } from './embeddings';
-import { safeUpsertVectors } from './pinecone';
+import { safeUpsertVectors } from './qdrant';
 
 export interface ProductVector {
   id: string;
@@ -54,7 +54,7 @@ export async function vectorizeProducts(products: WCProduct[]): Promise<ProductV
       source: 'agriko',
       productId: product.id,
       slug: product.slug,
-      price: product.price,
+      price: product.price || '0',
       categories: product.categories?.map(cat => cat.name) || [],
       inStock: product.stock_status === 'instock',
       featured: product.featured || false,
@@ -66,7 +66,7 @@ export async function vectorizeProducts(products: WCProduct[]): Promise<ProductV
   return vectors;
 }
 
-export async function syncProductsToPinecone(
+export async function syncProductsToQdrant(
   options: {
     batchSize?: number;
     maxProducts?: number;
@@ -100,14 +100,14 @@ export async function syncProductsToPinecone(
       try {
         const vectors = await vectorizeProducts(batch);
         
-        // Format vectors for Pinecone
-        const pineconeVectors = vectors.map(vector => ({
+        // Format vectors for Qdrant
+        const qdrantVectors = vectors.map(vector => ({
           id: vector.id,
           values: vector.embedding,
           metadata: vector.metadata,
         }));
         
-        const result = await safeUpsertVectors(pineconeVectors);
+        const result = await safeUpsertVectors(qdrantVectors);
         
         if (result.success) {
           totalProcessed += batch.length;
@@ -205,13 +205,13 @@ export async function vectorizeSingleProduct(productId: number): Promise<boolean
       return false;
     }
     
-    const pineconeVector = {
+    const qdrantVector = {
       id: firstVector.id,
       values: firstVector.embedding,
       metadata: firstVector.metadata,
     };
     
-    const result = await safeUpsertVectors([pineconeVector]);
+    const result = await safeUpsertVectors([qdrantVector]);
     
     if (result.success) {
       logger.info(`✅ Product ${productId} vectorized successfully`);

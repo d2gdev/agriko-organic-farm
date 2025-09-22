@@ -124,7 +124,7 @@ describe('Logger', () => {
 
     it('should handle array data', () => {
       const arrayData = [1, 2, 3, 'test'];
-      logger.warn('Array data test', arrayData);
+      logger.warn('Array data test', arrayData as any);
 
       expect(console.warn).toHaveBeenCalledWith(
         expect.stringContaining('Array data test'),
@@ -133,7 +133,7 @@ describe('Logger', () => {
     });
 
     it('should handle null and undefined data', () => {
-      logger.info('Null test', null);
+      logger.info('Null test', null as any);
       logger.info('Undefined test', undefined);
 
       expect(console.info).toHaveBeenNthCalledWith(1,
@@ -267,7 +267,7 @@ describe('Logger', () => {
       const fnData = () => 'test function';
 
       expect(() => {
-        logger.info('Function data test', fnData);
+        logger.info('Function data test', fnData as any);
       }).not.toThrow();
 
       expect(console.info).toHaveBeenCalled();
@@ -275,11 +275,11 @@ describe('Logger', () => {
 
     it('should handle symbol and bigint data', () => {
       const symbolData = Symbol('test');
-      const bigintData = BigInt(123456789012345678901234567890n);
+      const bigintData = BigInt('123456789012345678901234567890');
 
       expect(() => {
-        logger.info('Symbol test', symbolData);
-        logger.info('BigInt test', bigintData);
+        logger.info('Symbol test', symbolData as any);
+        logger.info('BigInt test', bigintData as any);
       }).not.toThrow();
 
       expect(console.info).toHaveBeenCalledTimes(2);

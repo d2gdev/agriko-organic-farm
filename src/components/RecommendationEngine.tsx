@@ -266,14 +266,14 @@ export default function RecommendationEngine({
                 <div className="mt-3">
                   <div className="flex flex-wrap gap-2">
                     {Object.entries(rec.factors)
-                      .filter(([_, score]) => (score as number) > 0)
-                      .sort(([,a], [,b]) => (b as number) - (a as number))
+                      .filter(([_, score]) => Number(score) > 0)
+                      .sort(([,a], [,b]) => Number(b) - Number(a))
                       .slice(0, 4)
                       .map(([factor, score]) => (
                         <div 
                           key={factor}
                           className="flex items-center space-x-1 text-xs"
-                          title={`${factor}: ${(score as number).toFixed(2)}`}
+                          title={`${factor}: ${Number(score).toFixed(2)}`}
                         >
                           <span className={getFactorColor(factor)}>
                             {getFactorIcon(factor)}

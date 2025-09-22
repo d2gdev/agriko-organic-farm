@@ -194,33 +194,33 @@ export class GlobalCacheCoordinator {
     for (const cache of sortedCaches) {
       try {
         const statsBefore = cache.getStats();
-        
+
         // Try cleanup method first
         if (cache.cleanup) {
           cache.cleanup(aggressive);
           cleanedUp = true;
         }
-        
+
         // If aggressive cleanup and still over memory limit, clear lower priority caches
         if (aggressive && cache.priority < 5) {
           const memoryAfterCleanup = this.getTotalMemoryUsageMB();
           const utilizationAfterCleanup = (memoryAfterCleanup / this.config.maxGlobalMemoryMB) * 100;
-          
+
           if (utilizationAfterCleanup > this.config.criticalThresholdPercent * 0.8) {
             logger.warn(`Clearing low-priority cache due to critical memory usage: ${cache.name}`);
             cache.clear();
             cleanedUp = true;
           }
         }
-        
+
         const statsAfter = cache.getStats();
         const itemsEvicted = statsBefore.size - statsAfter.size;
         totalItemsEvicted += itemsEvicted;
-        
+
         if (itemsEvicted > 0) {
           logger.debug(`Cache cleanup: ${cache.name} evicted ${itemsEvicted} items`);
         }
-        
+
       } catch (error) {
         logger.error(`Error during cache cleanup for ${cache.id}:`, error as Record<string, unknown>);
       }

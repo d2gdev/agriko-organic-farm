@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/logger';
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 interface SearchAnalytics {
   totalSearches: number;
@@ -301,7 +301,7 @@ export default function SearchAnalyticsDashboard({
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {analytics.topQueries.map((query, index) => (
+                  {analytics.topQueries.map((query, _index) => (
                     <tr key={query.query}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {query.query}

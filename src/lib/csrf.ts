@@ -52,9 +52,9 @@ export function generateCSRFToken(sessionId?: string): { token: string; hash: st
  * Verify CSRF token
  */
 export function verifyCSRFToken(
-  token: string, 
-  hash: string, 
-  sessionId?: string
+  token: string,
+  hash: string,
+  _sessionId?: string
 ): { valid: boolean; error?: string } {
   if (!token || !hash) {
     return { valid: false, error: 'Missing CSRF token or hash' };

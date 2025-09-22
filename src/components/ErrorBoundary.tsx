@@ -33,7 +33,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     };
   }
 
-  static getDerivedStateFromError(error: Error, prevState?: ErrorBoundaryState): Partial<ErrorBoundaryState> {
+  static getDerivedStateFromError(error: Error, _prevState?: ErrorBoundaryState): Partial<ErrorBoundaryState> {
     const now = Date.now();
     const errorId = `${error.name}-${error.message?.slice(0, 50)}`;
     

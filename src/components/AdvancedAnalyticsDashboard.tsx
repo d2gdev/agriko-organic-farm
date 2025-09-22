@@ -3,14 +3,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/logger';
 
-import { 
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+import {
+  BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area
 } from 'recharts';
-import { 
-  TrendingUp, TrendingDown, Users, ShoppingCart, 
-  Search, Eye, MousePointer, DollarSign, Clock, Target,
+import {
+  TrendingUp, TrendingDown, Users, ShoppingCart,
+  Search, Eye, DollarSign,
   Activity, BarChart3, Zap, Brain
 } from 'lucide-react';
 
@@ -189,7 +189,7 @@ export default function AdvancedAnalyticsDashboard({
     recommendationCTR: 0,
     cacheStats: { hitRate: 0, missRate: 0 }
   };
-  const historicalData = data.historical ?? { traffic: [], conversions: [] };
+  // const _historicalData = data.historical ?? { traffic: [], conversions: [] };
   const recommendationData = data.recommendations ?? { accuracy: 0, coverage: 0, diversity: 0, performanceByType: [] };
   const searchData = data.search ?? { topQueries: [], noResults: 0, avgResultsPerQuery: 0, searchTypes: [] };
   const userBehaviorData = data.userBehavior || { 
@@ -579,12 +579,12 @@ interface ConversionStep {
   rate: number;
 }
 
-interface SearchQuery {
-  query: string;
-  count: number;
-  successRate: number;
-  searches?: number;
-}
+// interface SearchQuery {
+//   query: string;
+//   count: number;
+//   successRate: number;
+//   searches?: number;
+// }
 
 interface SearchType {
   searchType: string;

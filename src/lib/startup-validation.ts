@@ -2,6 +2,25 @@
 import { validateEnvironmentVariables, type Environment } from '@/lib/validation-schemas';
 import { logger } from '@/lib/logger';
 
+/**
+ * Creates a fallback environment for development mode
+ */
+function createFallbackEnvironment(): Environment {
+  return {
+    NODE_ENV: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
+    NEXT_PUBLIC_WC_API_URL: process.env.NEXT_PUBLIC_WC_API_URL || 'https://shop.agrikoph.com/wp-json/wc/v3',
+    WC_CONSUMER_KEY: process.env.WC_CONSUMER_KEY || 'fallback_key',
+    WC_CONSUMER_SECRET: process.env.WC_CONSUMER_SECRET || 'fallback_secret',
+    JWT_SECRET: process.env.JWT_SECRET || 'fallback_jwt_secret_minimum_32_chars_long',
+    ADMIN_PASSWORD_HASH: process.env.ADMIN_PASSWORD_HASH || 'fallback_hash_minimum_20_chars',
+    ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'admin',
+    MEMGRAPH_URL: process.env.MEMGRAPH_URL,
+    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
+    PINECONE_API_KEY: process.env.PINECONE_API_KEY,
+    PINECONE_INDEX_NAME: process.env.PINECONE_INDEX_NAME,
+  };
+}
+
 let validatedEnv: Environment | null = null;
 
 /**
@@ -19,8 +38,15 @@ export function initializeEnvironmentValidation(): Environment {
     logger.info('✅ Environment validation passed');
     return validatedEnv;
   } catch (error) {
-    logger.error('❌ Environment validation failed - application cannot start');
-    throw error;
+    // In development, provide fallback environment with warnings
+    if (process.env.NODE_ENV === 'development') {
+      logger.warn('⚠️ Environment validation failed in development mode - using fallback values');
+      validatedEnv = createFallbackEnvironment();
+      return validatedEnv;
+    } else {
+      logger.error('❌ Environment validation failed in production mode');
+      throw error;
+    }
   }
 }
 
@@ -89,7 +115,7 @@ export function createTypedApiClient<TRequest, TResponse>(
  * Type-safe local storage access
  */
 export const typedStorage = {
-  setItem<T>(key: string, value: T, validator: (data: unknown) => T): void {
+  setItem<T>(key: string, value: T, _validator: (data: unknown) => T): void {
     try {
       const serialized = JSON.stringify(value);
       localStorage.setItem(key, serialized);

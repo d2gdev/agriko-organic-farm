@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { logger } from '@/lib/logger';
 import { getProductById, getAllProducts } from '@/lib/woocommerce';
 import { WCProduct, WCCategory } from '@/types/woocommerce';
-import { hybridSearch } from '@/lib/hybrid-search';
+import { hybridSearch, HybridSearchResult } from '@/lib/hybrid-search';
 import { productCacheSafe } from '@/lib/thread-safe-cache';
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-helpers';
 
@@ -18,17 +18,17 @@ interface SmartRecommendation {
   source: 'semantic' | 'graph-category' | 'graph-health';
 }
 
-interface SemanticSearchResult {
-  id: string;
-  title: string;
-  name: string;
-  slug: string;
-  price: number;
-  categories: string[];
-  inStock: boolean;
-  featured: boolean;
-  relevanceScore: number;
-}
+// interface SemanticSearchResult {
+//   id: string;
+//   title: string;
+//   name: string;
+//   slug: string;
+//   price: number;
+//   categories: string[];
+//   inStock: boolean;
+//   featured: boolean;
+//   relevanceScore: number;
+// }
 
 // Real implementation functions
 async function findSimilarProductsByCategory(targetProduct: WCProduct, limit: number) {
@@ -40,7 +40,7 @@ async function findSimilarProductsByCategory(targetProduct: WCProduct, limit: nu
     }
 
     // Get products from same categories
-    const categoryIds = targetProduct.categories.map((cat: WCCategory) => cat.id);
+    const categoryIds = targetProduct.categories?.map((cat: WCCategory) => cat.id) || [];
     const allProducts = await getAllProducts({ 
       per_page: 50,
       category: categoryIds.join(','),
@@ -50,12 +50,12 @@ async function findSimilarProductsByCategory(targetProduct: WCProduct, limit: nu
     const similarProducts = allProducts
       .filter((product: WCProduct) => product.id !== targetProduct.id) // Don't include the source product
       .map((product: WCProduct) => {
-        const sharedCategories = product.categories.filter((cat: WCCategory) => 
+        const sharedCategories = product.categories?.filter((cat: WCCategory) =>
           categoryIds.includes(cat.id)
-        ).length;
+        ).length || 0;
         
         const categoryScore = sharedCategories / Math.max(categoryIds.length, 1);
-        const priceScore = calculatePriceSimilarity(targetProduct.price, product.price);
+        const priceScore = calculatePriceSimilarity(targetProduct.price as string | number, product.price as string | number);
         
         return {
           ...product,
@@ -95,54 +95,17 @@ async function findSemanticSimilarProducts(targetProduct: WCProduct, limit: numb
 
     // Use the product name and description as search query
     const searchQuery = `${targetProduct.name} ${targetProduct.short_description || ''}`;
-    const semanticResponse = await hybridSearch(searchQuery, { maxResults: limit + 5, mode: 'semantic_only' }); // Get a few extra to filter out the source
+    const semanticResponse = await hybridSearch(searchQuery, { limit: limit + 5 }); // Get a few extra to filter out the source
 
     const similarProducts = semanticResponse.results
-      .filter((result: { productId: number }) => result.productId !== targetProduct.id) // Remove source product
+      .filter((result: HybridSearchResult) => result.product.id !== targetProduct.id) // Remove source product
       .slice(0, limit)
-      .map((result: { productId: number; title: string; slug: string; price: string; categories?: string[]; description?: string; images?: unknown[]; inStock?: boolean; featured?: boolean; hybridScore?: number; semanticScore?: number }) => {
-        // Get the full product data to ensure it matches WCProduct interface
+      .map((result: HybridSearchResult): WCProductWithSimilarity => {
+        // Use the full product data from the result
         return {
-          id: result.productId,
-          name: result.title,
-          slug: result.slug,
-          price: result.price,
-          regular_price: result.price,
-          sale_price: '0',
-          permalink: '',
-          description: result.description || '',
-          short_description: result.description || '',
-          on_sale: false,
-          status: 'publish',
-          featured: result.featured || false,
-          catalog_visibility: 'visible',
-          sku: '',
-          stock_status: result.inStock !== false ? 'instock' : 'outofstock',
-          stock_quantity: null,
-          manage_stock: false,
-          categories: result.categories?.map((name: string) => ({
-            id: 0,
-            name,
-            slug: name.toLowerCase().replace(/ /g, '-'),
-            description: '',
-            display: 'default',
-            image: null,
-            menu_order: 0,
-            count: 0
-          })) || [],
-          tags: [],
-          images: result.images || [],
-          attributes: [],
-          variations: [],
-          weight: '0',
-          dimensions: { length: '0', width: '0', height: '0' },
-          meta_data: [],
-          average_rating: '0',
-          rating_count: 0,
-          date_created: new Date().toISOString(),
-          date_modified: new Date().toISOString(),
-          similarityScore: result.hybridScore || result.semanticScore || 0.5
-        } as WCProduct & { similarityScore: number };
+          ...result.product,
+          similarityScore: result.score
+        };
       });
 
     await productCacheSafe.set(cacheKey, similarProducts, 10 * 60 * 1000); // 10 minutes
@@ -251,8 +214,8 @@ export async function GET(request: NextRequest) {
       logger.info('🏷️ Adding price-based recommendations to fill quota...');
       try {
         const priceRange = {
-          min: Math.max(0, parseFloat(sourceProduct.price) * 0.7),
-          max: parseFloat(sourceProduct.price) * 1.3
+          min: Math.max(0, parseFloat(sourceProduct.price as string) * 0.7),
+          max: parseFloat(sourceProduct.price as string) * 1.3
         };
         
         const priceBasedProducts = await getAllProducts({
@@ -264,7 +227,7 @@ export async function GET(request: NextRequest) {
         const filteredPriceProducts = priceBasedProducts
           .filter((product: WCProduct) => !excludeIds.includes(product.id))
           .filter((product: WCProduct) => {
-            const productPrice = parseFloat(product.price);
+            const productPrice = parseFloat(product.price as string);
             return productPrice >= priceRange.min && productPrice <= priceRange.max;
           });
         

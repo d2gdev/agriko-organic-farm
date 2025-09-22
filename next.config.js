@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Dynamic deployment with Node.js
-  trailingSlash: true,
+  // Note: trailingSlash breaks API routes
+  trailingSlash: false,
 
   images: {
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -39,8 +39,13 @@ const nextConfig = {
       static: 180,
     },
     optimizeCss: false,
-    optimizePackageImports: ['lucide-react', 'date-fns', 'recharts'],
+    // Disable features that might use Jest workers
+    workerThreads: false,
+    cpus: 1,
   },
+
+  // Fix cross-origin warnings for development
+  allowedDevOrigins: ['127.0.0.1:3000', 'localhost:3000'],
 
   serverExternalPackages: ['sharp', 'neo4j-driver', '@pinecone-database/pinecone', 'nodemailer', 'redis'],
 
@@ -82,12 +87,54 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: process.env.NODE_ENV === 'development'
-              ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://agrikoph.com https://shop.agrikoph.com https://api.openai.com https://api.pinecone.io https://*.googleapis.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self';"
-              : "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://agrikoph.com https://shop.agrikoph.com https://api.openai.com https://api.pinecone.io https://*.googleapis.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self';"
+              ? "default-src 'self' localhost:* http://localhost:* https://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://tagmanager.google.com localhost:* http://localhost:* https://localhost:*; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://tagmanager.google.com localhost:* http://localhost:* https://localhost:*; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data: localhost:* http://localhost:* https://localhost:*; img-src 'self' data: https: blob: https://www.googletagmanager.com https://ssl.gstatic.com localhost:* http://localhost:* https://localhost:*; connect-src 'self' https://agrikoph.com https://shop.agrikoph.com https://api.openai.com https://api.pinecone.io https://api.deepseek.com https://*.googleapis.com https://www.google-analytics.com https://region1.google-analytics.com https://fonts.googleapis.com https://fonts.gstatic.com localhost:* http://localhost:* https://localhost:*; worker-src 'self' blob:; manifest-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self';"
+              : "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://tagmanager.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://tagmanager.google.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:; img-src 'self' data: https: blob: https://www.googletagmanager.com https://ssl.gstatic.com; connect-src 'self' https://agrikoph.com https://shop.agrikoph.com https://api.openai.com https://api.pinecone.io https://api.deepseek.com https://*.googleapis.com https://www.google-analytics.com https://region1.google-analytics.com https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self' blob:; manifest-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self';"
           }
         ],
       },
     ];
+  },
+
+  webpack: (config, { isServer, dev, webpack }) => {
+    // Prevent Jest workers and other worker processes from being used in browser
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        'jest-worker': false,
+        'worker_threads': false,
+        'child_process': false,
+        fs: false,
+        path: false,
+        os: false,
+      };
+
+      // Block problematic modules that might spawn workers
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@xenova/transformers': false,
+        'jest-worker': false,
+        'worker_threads': false,
+        'child_process': false,
+      };
+
+      // Add ignore plugin for worker-related modules
+      config.plugins.push(
+        new webpack.IgnorePlugin({
+          resourceRegExp: /^(jest-worker|worker_threads|child_process)$/,
+        })
+      );
+    }
+
+    // Disable Next.js worker optimization that might conflict
+    if (dev) {
+      config.optimization = {
+        ...config.optimization,
+        usedExports: false,
+        sideEffects: false,
+      };
+    }
+
+    return config;
   },
 }
 

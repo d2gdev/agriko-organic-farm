@@ -1,10 +1,8 @@
 import { logger } from '@/lib/logger';
 import SafeLocalStorage from '@/lib/safe-localstorage';
-import type { 
-  AnalyticsEvent, 
-  AnalyticsMetadata, 
-  PageAnalyticsData, 
-  ConversionEvent 
+import type {
+  AnalyticsEvent,
+  AnalyticsMetadata
 } from '@/types/analytics';
 // Client-side analytics tracking for user behavior
 'use client';

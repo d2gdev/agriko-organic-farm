@@ -33,11 +33,11 @@ describe('Error Sanitizer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Reset environment to development for most tests
-    process.env.NODE_ENV = 'development';
+    (process.env as any).NODE_ENV ='development';
   });
 
   afterAll(() => {
-    process.env.NODE_ENV = originalEnv;
+    (process.env as any).NODE_ENV =originalEnv;
   });
 
   describe('sanitizeError', () => {
@@ -80,7 +80,7 @@ describe('Error Sanitizer', () => {
 
     describe('Production mode', () => {
       beforeEach(() => {
-        process.env.NODE_ENV = 'production';
+        (process.env as any).NODE_ENV ='production';
       });
 
       it('should return generic message for unknown errors in production', () => {
@@ -164,7 +164,7 @@ describe('Error Sanitizer', () => {
       });
 
       it('should exclude details by default in production', () => {
-        process.env.NODE_ENV = 'production';
+        (process.env as any).NODE_ENV ='production';
         const error = new Error('Test error') as any;
         error.details = { userId: 123, action: 'test' };
 
@@ -233,7 +233,7 @@ describe('Error Sanitizer', () => {
     });
 
     it('should exclude stack traces in production', () => {
-      process.env.NODE_ENV = 'production';
+      (process.env as any).NODE_ENV ='production';
       const error = new Error('Production error');
       error.stack = 'Error: Production error\n    at test.js:1:1';
 
@@ -332,7 +332,7 @@ describe('Error Sanitizer', () => {
     });
 
     it('should use custom message when provided', () => {
-      process.env.NODE_ENV = 'production';
+      (process.env as any).NODE_ENV ='production';
       const error = new Error('Internal error');
       const response = handleApiError(error, 'Custom error message') as any;
 
@@ -448,7 +448,7 @@ describe('Error Sanitizer', () => {
     });
 
     it('should handle production mode consistently', () => {
-      process.env.NODE_ENV = 'production';
+      (process.env as any).NODE_ENV ='production';
 
       const errors = [
         new Error('Database connection failed'),

@@ -205,9 +205,9 @@ export class ThreadSafeCache<T> {
     if (count <= 0) return;
 
     // Convert to array and sort by access pattern (LRU + frequency)
-    const entries = Array.from(this.cache.entries());
+    const entries = Array.from(this.cache.entries()) as Array<[string, CacheEntry<T>]>;
     const now = Date.now();
-    
+
     entries.sort(([, a], [, b]) => {
       // Score based on recency and frequency
       const scoreA = a.accessCount / (now - a.lastAccessed + 1);
@@ -218,7 +218,7 @@ export class ThreadSafeCache<T> {
     // Remove the least valuable entries
     for (let i = 0; i < Math.min(count, entries.length); i++) {
       const entry = entries[i];
-      if (entry) {
+      if (entry?.[0]) {
         this.cache.delete(entry[0]);
       }
     }
@@ -230,8 +230,9 @@ export class ThreadSafeCache<T> {
     const lockKey = `get:${key}`;
     
     // Wait for any existing lock on this key
-    if (this.locks.has(lockKey)) {
-      await this.locks.get(lockKey);
+    const existingLock = this.locks.get(lockKey);
+    if (existingLock) {
+      await existingLock;
     }
 
     return this.queueOperation({
@@ -319,9 +320,9 @@ export class ThreadSafeCache<T> {
   // Batch operations for better performance
   async getMultiple(keys: string[]): Promise<Map<string, T | null>> {
     const results = new Map<string, T | null>();
-    
+
     // Process in parallel but maintain consistency
-    const promises = keys.map(key => 
+    const promises = keys.map(key =>
       this.get(key).then(value => ({ key, value }))
     );
     
@@ -391,6 +392,7 @@ export class ThreadSafeCache<T> {
     if (this.locks.size > 0) {
       await Promise.all(Array.from(this.locks.values()));
     }
+    this.locks.clear();
 
     // Clear cache
     this.cache.clear();

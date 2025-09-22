@@ -2,10 +2,7 @@
 import { WCProduct } from '@/types/woocommerce';
 import { logger } from '@/lib/logger';
 
-import { getAllProducts } from './woocommerce';
 import { getSession } from './memgraph';
-import { GraphProduct } from './memgraph';
-import neo4j from 'neo4j-driver';
 
 // Neo4j type interfaces
 interface Neo4jValue {
@@ -77,7 +74,6 @@ export interface TextExtractionResult {
 export async function discoverEntitiesFromProducts(
   products: WCProduct[]
 ): Promise<DiscoveredEntity[]> {
-  const entities: DiscoveredEntity[] = [];
   const entityMap = new Map<string, DiscoveredEntity>();
   
   for (const product of products) {
@@ -152,7 +148,6 @@ function extractPotentialIngredients(text: string): string[] {
 // Extract entities from existing graph data
 export async function discoverEntitiesFromGraph(): Promise<DiscoveredEntity[]> {
   const session = await getSession();
-  const entities: DiscoveredEntity[] = [];
   const entityMap = new Map<string, DiscoveredEntity>();
   
   try {

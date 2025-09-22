@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { logger } from '@/lib/logger';
+import { promises as fs } from 'fs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getValidatedJwtSecret } from './jwt-config';
@@ -60,11 +61,12 @@ class FileSessionStorage implements SessionStorage {
   }
 
   private ensureDirectoryExists(dir: string): void {
+    if (typeof window !== 'undefined') return; // Skip on client-side
+
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const fs = require('fs') as typeof import('fs');
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
+      const fsSync = require('fs') as typeof import('fs');
+      if (!fsSync.existsSync(dir)) {
+        fsSync.mkdirSync(dir, { recursive: true });
       }
     } catch (error) {
       logger.warn('Failed to create sessions directory, using memory fallback:', error as Record<string, unknown>);
@@ -72,9 +74,9 @@ class FileSessionStorage implements SessionStorage {
   }
 
   private async readSessions(): Promise<Record<string, SessionData>> {
+    if (typeof window !== 'undefined') return {}; // Skip on client-side
+
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access
-      const fs = (require('fs') as typeof import('fs')).promises;
       const data = await fs.readFile(this.sessionFile, 'utf8');
       return JSON.parse(data) as Record<string, SessionData>;
     } catch {
@@ -83,9 +85,9 @@ class FileSessionStorage implements SessionStorage {
   }
 
   private async writeSessions(sessions: Record<string, SessionData>): Promise<void> {
+    if (typeof window !== 'undefined') return; // Skip on client-side
+
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access
-      const fs = (require('fs') as typeof import('fs')).promises;
       await fs.writeFile(this.sessionFile, JSON.stringify(sessions, null, 2));
     } catch (error) {
       logger.error('Failed to write sessions file:', error as Record<string, unknown>);
@@ -93,9 +95,9 @@ class FileSessionStorage implements SessionStorage {
   }
 
   private async readRevoked(): Promise<Set<string>> {
+    if (typeof window !== 'undefined') return new Set(); // Skip on client-side
+
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access
-      const fs = (require('fs') as typeof import('fs')).promises;
       const data = await fs.readFile(this.revokedFile, 'utf8');
       return new Set(JSON.parse(data) as string[]);
     } catch {
@@ -104,9 +106,9 @@ class FileSessionStorage implements SessionStorage {
   }
 
   private async writeRevoked(revoked: Set<string>): Promise<void> {
+    if (typeof window !== 'undefined') return; // Skip on client-side
+
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access
-      const fs = (require('fs') as typeof import('fs')).promises;
       await fs.writeFile(this.revokedFile, JSON.stringify(Array.from(revoked), null, 2));
     } catch (error) {
       logger.error('Failed to write revoked tokens file:', error as Record<string, unknown>);
@@ -252,8 +254,10 @@ let sessionStorage: SessionStorage;
 
 function initializeSessionStorage(): SessionStorage {
   const environment = process.env.NODE_ENV;
-  const redisUrl = process.env.REDIS_URL;
-  const databaseUrl = process.env.DATABASE_URL;
+  const _redisUrl = process.env.REDIS_URL;
+  const _databaseUrl = process.env.DATABASE_URL;
+  void _redisUrl; // Preserved for future Redis session storage
+  void _databaseUrl; // Preserved for future database session storage
 
   if (environment === 'production') {
     // In production, always use persistent storage

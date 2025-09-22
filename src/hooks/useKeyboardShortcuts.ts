@@ -34,7 +34,8 @@ export function useKeyboardShortcuts({
     
     const matchedShortcut = shortcuts.find(shortcut => {
       if (shortcut.disabled) return false;
-      
+      if (!event.key || !shortcut.key) return false;
+
       const keyMatch = shortcut.key.toLowerCase() === event.key.toLowerCase();
       const ctrlMatch = !!shortcut.ctrlKey === !!event.ctrlKey;
       const metaMatch = !!shortcut.metaKey === !!event.metaKey;
@@ -149,12 +150,12 @@ export function useCommerceKeyboardShortcuts({
 export function useModalKeyboardShortcuts({
   onClose,
   onConfirm,
-  onCancel,
+  _onCancel,
   enabled = true
 }: {
   onClose?: () => void;
   onConfirm?: () => void;
-  onCancel?: () => void;
+  _onCancel?: () => void;
   enabled?: boolean;
 }) {
   const shortcuts: KeyboardShortcut[] = [

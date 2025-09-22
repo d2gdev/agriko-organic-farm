@@ -76,7 +76,7 @@ describe('Error Handling', () => {
     });
 
     it('should handle unsupported input types', () => {
-      const result = parsePrice({} as Record<string, unknown>, 'test');
+      const result = parsePrice({} as any, 'test');
       expect(result.success).toBe(false);
       expect(result.error).toContain('Unsupported price type');
     });
@@ -96,7 +96,7 @@ describe('Error Handling', () => {
     });
 
     it('should handle invalid quantity in multiplication', () => {
-      const result = safePriceMultiply('100', 'invalid' as string, 'test');
+      const result = safePriceMultiply('100', 'invalid' as any, 'test');
       expect(result.success).toBe(false);
       expect(result.error).toContain('invalid format');
     });

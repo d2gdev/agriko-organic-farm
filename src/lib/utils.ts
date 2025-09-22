@@ -39,8 +39,8 @@ export function calculateCartTotal(items: Array<{ price: string; quantity: numbe
 }
 
 export function isProductInStock(product: WCProduct): boolean {
-  return product.stock_status === 'instock' && 
-         (!product.manage_stock || (product.stock_quantity !== null && product.stock_quantity > 0));
+  return product.stock_status === 'instock' &&
+         (!product.manage_stock || (product.stock_quantity !== null && product.stock_quantity !== undefined && product.stock_quantity > 0));
 }
 
 export function getProductMainImage(product: WCProduct): string {

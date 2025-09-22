@@ -44,15 +44,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { action } = body;
 
-    let result;
-    
     if (action === 'reinitialize') {
       logger.info('Reinitializing embedding model via API');
-      result = await reinitializeEmbedder();
+      await reinitializeEmbedder();
     } else {
       // Default action: initialize
       logger.info('Initializing embedding model via API');
-      result = await initializeEmbedder();
+      await initializeEmbedder();
     }
 
     const status = getEmbedderStatus();

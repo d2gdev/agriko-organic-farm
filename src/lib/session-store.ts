@@ -1,5 +1,5 @@
-import { createHash } from 'crypto';
-import { createClient, RedisClientType } from 'redis';
+// import { createHash } from 'crypto'; // Preserved for future session hashing
+// import { createClient, RedisClientType } from 'redis'; // Preserved for future Redis integration
 import { logger } from '@/lib/logger';
 import { SessionData as ImportedSessionData } from '../types/session';
 
@@ -23,7 +23,7 @@ export interface SessionStore {
  * Redis-based session store
  */
 export class RedisSessionStore implements SessionStore {
-  private client: RedisClientType | null = null;
+  private client: any | null = null; // Redis client type depends on dynamic import
   private isConnected = false;
   private keyPrefix = 'agriko:session:';
   private defaultTTL = 7 * 24 * 60 * 60; // 7 days in seconds
@@ -68,7 +68,7 @@ export class RedisSessionStore implements SessionStore {
         database: parseInt(process.env.REDIS_DATABASE ?? '0')
       });
 
-      this.client.on('error', (error: Error) => {
+      (this.client as any).on('error', (error: Error) => {
         logger.error('Redis client error:', { 
           message: error.message, 
           stack: error.stack,
@@ -77,17 +77,17 @@ export class RedisSessionStore implements SessionStore {
         this.isConnected = false;
       });
 
-      this.client.on('connect', () => {
+      (this.client as any).on('connect', () => {
         logger.info('Redis client connected');
         this.isConnected = true;
       });
 
-      this.client.on('disconnect', () => {
+      (this.client as any).on('disconnect', () => {
         logger.warn('Redis client disconnected');
         this.isConnected = false;
       });
 
-      await this.client.connect();
+      await (this.client as any).connect();
       logger.info('Redis session store initialized');
 
     } catch (error: unknown) {
@@ -107,7 +107,7 @@ export class RedisSessionStore implements SessionStore {
 
     try {
       const key = this.keyPrefix + sessionId;
-      const data = await this.client.get(key);
+      const data = await (this.client as any).get(key);
       
       if (!data) {
         return null;
@@ -117,7 +117,7 @@ export class RedisSessionStore implements SessionStore {
       
       // Update last activity timestamp in Redis
       (parsed as SessionData & { lastActivity: number }).lastActivity = Date.now();
-      await this.client.set(key, JSON.stringify(parsed), {
+      await (this.client as any).set(key, JSON.stringify(parsed), {
         EX: this.defaultTTL
       });
 
@@ -142,7 +142,7 @@ export class RedisSessionStore implements SessionStore {
       const serialized = JSON.stringify(data);
       const ttl = ttlSeconds ?? this.defaultTTL;
 
-      await this.client.set(key, serialized, {
+      await (this.client as any).set(key, serialized, {
         EX: ttl
       });
 
@@ -163,7 +163,7 @@ export class RedisSessionStore implements SessionStore {
 
     try {
       const key = this.keyPrefix + sessionId;
-      await this.client.del(key);
+      await (this.client as any).del(key);
       logger.debug(`Session deleted from Redis: ${sessionId}`);
     } catch (error) {
       logger.error('Error deleting session from Redis:', { 
@@ -196,18 +196,18 @@ export class RedisSessionStore implements SessionStore {
     }
 
     try {
-      const keys = await this.client.keys(this.keyPrefix + '*');
+      const keys = await (this.client as any).keys(this.keyPrefix + '*');
       const sessions: Array<{ sessionId: string; data: SessionData }> = [];
 
       for (const key of keys) {
         try {
-          const data = await this.client.get(key);
+          const data = await (this.client as any).get(key);
           if (data) {
             const sessionId = key.replace(this.keyPrefix, '');
             const parsed = JSON.parse(data) as SessionData;
             sessions.push({ sessionId, data: parsed });
           }
-        } catch (parseError) {
+        } catch {
           logger.warn(`Failed to parse session data for key ${key}`);
         }
       }
@@ -225,7 +225,7 @@ export class RedisSessionStore implements SessionStore {
   async destroy(): Promise<void> {
     if (this.client) {
       try {
-        await this.client.quit();
+        await (this.client as any).quit();
         logger.info('Redis session store destroyed');
       } catch (error) {
         logger.error('Error destroying Redis session store:', { 

@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
-import { registerCache, unregisterCache } from './global-cache-coordinator';
+import { registerCache } from './global-cache-coordinator';
+// Note: MemoryOptimizedCache and memoryMonitor available if needed
 
 // Cache configuration with memory management
 interface CacheConfig {
@@ -454,7 +455,7 @@ export class SafeLocalStorage {
       localStorage.removeItem(testKey);
       
       return retrievedValue === testValue;
-    } catch (error) {
+    } catch {
       // localStorage might be disabled (private browsing, SSR, etc.)
       return false;
     }
@@ -627,18 +628,21 @@ export class SafeLocalStorage {
   }
 }
 
-// Graceful shutdown
+// Graceful shutdown (prevent duplicate listeners)
 if (typeof process !== 'undefined') {
-  process.on('SIGINT', () => {
+  // Increase max listeners to prevent warnings during hot reloading
+  if (process.getMaxListeners() < 50) {
+    process.setMaxListeners(50);
+  }
+
+  const cleanup = () => {
     productCache.destroy();
     searchCache.destroy();
     apiCache.destroy();
-  });
-  process.on('SIGTERM', () => {
-    productCache.destroy();
-    searchCache.destroy();
-    apiCache.destroy();
-  });
+  };
+
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
 }
 
 const CacheManager = {

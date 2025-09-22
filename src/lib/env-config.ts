@@ -23,9 +23,9 @@ const envSchema = z.object({
   GOOGLE_ANALYTICS_ID: z.string().optional(),
   
   // AI/ML Services
-  PINECONE_API_KEY: z.string().optional(),
-  PINECONE_INDEX_NAME: z.string().optional(),
-  PINECONE_HOST: z.string().url().optional(),
+  QDRANT_API_KEY: z.string().optional(),
+  QDRANT_COLLECTION_NAME: z.string().optional(),
+  QDRANT_HOST: z.string().url().optional(),
   DEEPSEEK_API_KEY: z.string().optional(),
   
   // Database
@@ -71,9 +71,9 @@ try {
     GITHUB_TOKEN: undefined,
     GH_TOKEN: undefined,
     GOOGLE_ANALYTICS_ID: undefined,
-    PINECONE_API_KEY: undefined,
-    PINECONE_INDEX_NAME: undefined,
-    PINECONE_HOST: undefined,
+    QDRANT_API_KEY: undefined,
+    QDRANT_COLLECTION_NAME: undefined,
+    QDRANT_HOST: undefined,
     DEEPSEEK_API_KEY: undefined,
     MEMGRAPH_URL: undefined,
     MEMGRAPH_USER: undefined,
@@ -126,9 +126,9 @@ export const envConfig = {
   // External APIs
   githubToken: env.GITHUB_TOKEN ?? env.GH_TOKEN,
   googleAnalyticsId: env.GOOGLE_ANALYTICS_ID,
-  pineconeApiKey: env.PINECONE_API_KEY,
-  pineconeIndexName: env.PINECONE_INDEX_NAME,
-  pineconeHost: env.PINECONE_HOST,
+  qdrantApiKey: env.QDRANT_API_KEY,
+  qdrantCollectionName: env.QDRANT_COLLECTION_NAME,
+  qdrantHost: env.QDRANT_HOST,
   deepseekApiKey: env.DEEPSEEK_API_KEY,
   
   // Database

@@ -251,8 +251,8 @@ describe('Retry Handler', () => {
 
       stats = getCircuitBreakerStats();
       expect(stats['test-stats']).toBeDefined();
-      expect(stats['test-stats'].state).toBe('closed');
-      expect(stats['test-stats'].failures).toBe(0);
+      expect(stats['test-stats']?.state).toBe('closed');
+      expect(stats['test-stats']?.failures).toBe(0);
     });
 
     it('should reset circuit breaker', async () => {
@@ -348,6 +348,7 @@ describe('Retry Handler', () => {
   describe('HTTP Retry', () => {
     beforeEach(() => {
       // Create a proper Response mock
+      // @ts-ignore - Mock assignment for testing
       global.Response = jest.fn().mockImplementation((body, init) => {
         const mockResponse = {
           ok: init?.status ? init.status < 400 : true,
@@ -460,7 +461,7 @@ describe('Retry Handler', () => {
     it('should have critical configuration', () => {
       const config = DEFAULT_RETRY_CONFIGS.critical;
       expect(config.maxAttempts).toBe(5);
-      expect(config.retryableErrors?.(new Error('any error'))).toBe(true);
+      expect(config.retryableErrors?.()).toBe(true);
     });
 
     it('should test network retryable errors', () => {

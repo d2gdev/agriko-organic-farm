@@ -303,7 +303,7 @@ export function withErrorHandling<T extends unknown[]>(
       // Extract request from args if it's a NextRequest
       const request = args.find((arg): arg is NextRequest => 
         Boolean(arg && typeof arg === 'object' && 'headers' in arg && 'url' in arg)
-      ) as NextRequest | undefined;
+      );
 
       const requestId = request ? getRequestId(request) : generateRequestId();
       const context = `${handler.name ?? 'anonymous'}`;
@@ -317,7 +317,7 @@ export function withErrorHandling<T extends unknown[]>(
 export function validateRequest<T>(
   schema: z.ZodSchema<T>,
   data: unknown,
-  requestId?: string
+  _requestId?: string
 ): T {
   try {
     return schema.parse(data);

@@ -21,8 +21,6 @@ const CartItem = React.memo(({
   removeItem,
   onProductClick
 }: CartItemProps) => {
-  const itemKey = `${item.product.id}-${item.variation?.id ?? 'no-variation'}`;
-
   const handleDecreaseQuantity = useCallback(() => {
     updateQuantity(item.product.id, item.quantity - 1, item.variation?.id);
   }, [updateQuantity, item.product.id, item.quantity, item.variation?.id]);
@@ -36,7 +34,7 @@ const CartItem = React.memo(({
   }, [removeItem, item.product.id, item.variation?.id]);
 
   const productImage = useMemo(() => getProductMainImage(item.product), [item.product]);
-  const formattedPrice = useMemo(() => formatPrice(item.product.price), [item.product.price]);
+  const formattedPrice = useMemo(() => formatPrice(item.product.price as string | number), [item.product.price]);
 
   return (
     <div

@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import Breadcrumb from '@/components/Breadcrumb';
+import { URL_CONSTANTS } from '@/lib/url-constants';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -15,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: 'website',
       locale: 'en_US',
-      url: 'https://agrikoph.com/farm',
+      url: 'URL_CONSTANTS.COMPANY_BASE_URL/farm',
       siteName: 'Agriko Organic Farm',
       title: 'Visit Our Farm - Paglinawan Organic Eco Farm | Agriko',
       description: 'Experience authentic Filipino organic farming at Paglinawan Organic Eco Farm in Dumingag, Zamboanga Del Sur. Learn traditional farming methods, meet founder Gerry, and see where your healthy food comes from.',
@@ -47,12 +48,12 @@ export async function generateViewport() {
 
 export default function FarmPage() {
   const farmSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": ["LocalBusiness", "TouristAttraction", "Farm"],
     "name": "Paglinawan Organic Eco Farm",
     "alternateName": "Green Haven - Agriko Organic Farm",
     "description": "10-hectare organic farm in Dumingag, Zamboanga Del Sur offering authentic Filipino farming experiences, tours, and sustainable agriculture education.",
-    "url": "https://agrikoph.com/farm",
+    "url": `${URL_CONSTANTS.COMPANY_BASE_URL}/farm`,
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "Paglinawan Organic Eco Farm, Purok 6, Libertad",

@@ -174,7 +174,7 @@ export class ConnectionPool<T> {
         if (this.connections.length < this.config.maxConnections) {
           try {
             await this.createNewConnection();
-          } catch (error) {
+          } catch {
             request.reject(new Error('Failed to create new connection'));
             continue;
           }
@@ -452,8 +452,13 @@ if (typeof window === 'undefined') {
   });
 }
 
-// Graceful shutdown
+// Graceful shutdown (prevent duplicate listeners)
 if (typeof process !== 'undefined') {
+  // Increase max listeners to prevent warnings during hot reloading
+  if (process.getMaxListeners() < 50) {
+    process.setMaxListeners(50);
+  }
+
   const cleanup = async () => {
     await httpPool.destroy();
   };

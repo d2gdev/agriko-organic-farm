@@ -4,11 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { logger } from '@/lib/logger';
 
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { formatPrice, getProductMainImage, stripHtml } from '@/lib/utils';
+import { formatPrice } from '@/lib/utils';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
-import Button from '@/components/Button';
 import { ecommerceEvent } from '@/lib/gtag';
 import SearchLoadingState from '@/components/SearchLoadingState';
 
@@ -39,7 +36,7 @@ export default function SemanticSearchModal({ isOpen, onClose }: SemanticSearchM
   const router = useRouter();
 
   // Enhanced focus management with focus trap
-  const { focusFirst } = useFocusTrap(modalRef, {
+  useFocusTrap(modalRef, {
     isActive: isOpen,
     initialFocus: inputRef,
     escapeDeactivates: true,

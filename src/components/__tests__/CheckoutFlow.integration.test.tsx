@@ -44,7 +44,7 @@ const mockProduct: WCProduct = {
   id: 1,
   name: 'Test Organic Rice',
   slug: 'test-organic-rice',
-  price: 15.99,
+  price: '15.99',
   regular_price: '15.99',
   sale_price: '',
   on_sale: false,
@@ -64,6 +64,11 @@ const mockProduct: WCProduct = {
       id: 1,
       name: 'Rice',
       slug: 'rice',
+      description: 'Rice products',
+      display: 'default',
+      image: null,
+      menu_order: 0,
+      count: 10,
     },
   ],
   tags: [],
@@ -81,7 +86,7 @@ const mockProduct: WCProduct = {
 const renderCheckoutWithCart = (initialItems: Array<{ product: WCProduct; quantity: number; variation: null }> = []) => {
   const mockCartState = {
     items: initialItems,
-    total: initialItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
+    total: initialItems.reduce((sum, item) => sum + parseFloat(item.product.price as string) * item.quantity, 0),
   };
 
   const mockUseCart = {
@@ -381,7 +386,7 @@ describe('Checkout Flow Integration', () => {
             ...mockProduct,
             id: 2,
             name: 'Organic Honey',
-            price: 25.50,
+            price: '25.50',
           },
           quantity: 1,
           variation: null,

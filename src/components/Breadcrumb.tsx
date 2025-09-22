@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { ChevronRightIcon, HomeIcon } from '@heroicons/react/24/solid';
 
@@ -15,20 +16,20 @@ interface BreadcrumbProps {
 export default function Breadcrumb({ items }: BreadcrumbProps) {
   // Generate BreadcrumbList structured data
   const breadcrumbSchema = {
-    "@context": "https://schema.org",
+    "@context": "URL_CONSTANTS.SCHEMA.BASE",
     "@type": "BreadcrumbList",
     "itemListElement": [
       {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://shop.agrikoph.com"
+        "item": "urlHelpers.getShopUrl()"
       },
       ...items.map((item, index) => ({
         "@type": "ListItem",
         "position": index + 2,
         "name": item.name,
-        "item": item.href ? `https://shop.agrikoph.com${item.href}` : undefined
+        "item": item.href ? `urlHelpers.getShopUrl()${item.href}` : undefined
       }))
     ]
   };

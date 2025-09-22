@@ -2,6 +2,8 @@
  * Safe localStorage wrapper that handles SSR and private browsing gracefully
  */
 
+import { logger } from '@/lib/logger';
+
 export class SafeLocalStorage {
   private static isAvailable: boolean | null = null;
   private static lastCheck: number = 0;
@@ -32,7 +34,7 @@ export class SafeLocalStorage {
       this.isAvailable = true;
       this.lastCheck = now;
       return true;
-    } catch (error) {
+    } catch {
       // localStorage is not available (private browsing, disabled, etc.)
       this.isAvailable = false;
       this.lastCheck = now;
@@ -51,7 +53,7 @@ export class SafeLocalStorage {
     try {
       return window.localStorage.getItem(key);
     } catch (error) {
-      console.warn(`SafeLocalStorage: Failed to get item "${key}":`, error);
+      logger.warn(`SafeLocalStorage: Failed to get item "${key}":`, error as Record<string, unknown>);
       return null;
     }
   }
@@ -68,7 +70,7 @@ export class SafeLocalStorage {
       window.localStorage.setItem(key, value);
       return true;
     } catch (error) {
-      console.warn(`SafeLocalStorage: Failed to set item "${key}":`, error);
+      logger.warn(`SafeLocalStorage: Failed to set item "${key}":`, error as Record<string, unknown>);
       return false;
     }
   }
@@ -85,7 +87,7 @@ export class SafeLocalStorage {
       window.localStorage.removeItem(key);
       return true;
     } catch (error) {
-      console.warn(`SafeLocalStorage: Failed to remove item "${key}":`, error);
+      logger.warn(`SafeLocalStorage: Failed to remove item "${key}":`, error as Record<string, unknown>);
       return false;
     }
   }
@@ -102,7 +104,7 @@ export class SafeLocalStorage {
       window.localStorage.clear();
       return true;
     } catch (error) {
-      console.warn('SafeLocalStorage: Failed to clear localStorage:', error);
+      logger.warn('SafeLocalStorage: Failed to clear localStorage:', error as Record<string, unknown>);
       return false;
     }
   }
@@ -119,7 +121,7 @@ export class SafeLocalStorage {
     try {
       return JSON.parse(item) as T;
     } catch (error) {
-      console.warn(`SafeLocalStorage: Failed to parse JSON for "${key}":`, error);
+      logger.warn(`SafeLocalStorage: Failed to parse JSON for "${key}":`, error as Record<string, unknown>);
       return null;
     }
   }
@@ -132,7 +134,7 @@ export class SafeLocalStorage {
       const serialized = JSON.stringify(value);
       return this.setItem(key, serialized);
     } catch (error) {
-      console.warn(`SafeLocalStorage: Failed to serialize JSON for "${key}":`, error);
+      logger.warn(`SafeLocalStorage: Failed to serialize JSON for "${key}":`, error as Record<string, unknown>);
       return false;
     }
   }

@@ -16,8 +16,9 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    // Generate mock review requests
-    const mockRequests = generateMockReviewRequests();
+    // TODO: Fetch actual review requests from database
+    // const requests = await reviewRequestsDatabase.getAllRequests();
+    const mockRequests: ReviewRequest[] = [];
 
     // Apply filters
     let filteredRequests = mockRequests;
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Generate mock review requests for development
-function generateMockReviewRequests(): ReviewRequest[] {
+function _generateMockReviewRequests(): ReviewRequest[] {
   const requests: ReviewRequest[] = [];
   const currentTime = new Date();
 

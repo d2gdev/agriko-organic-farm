@@ -1,20 +1,12 @@
-import { Suspense } from 'react';
 import { logger } from '@/lib/logger';
 import Link from 'next/link';
-import Image from 'next/image';
 import { getAllProducts } from '@/lib/woocommerce';
-import ProductCard from '@/components/ProductCard';
 import HeroSection from '@/components/HeroSection';
 import Breadcrumb from '@/components/Breadcrumb';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/Card';
-import { OrganicProductGridSkeleton } from '@/components/OrganicLoadingStates';
 import ProductsWithFiltersSimple from '@/components/ProductsWithFiltersSimple';
+import { URL_CONSTANTS, urlHelpers } from '@/lib/url-constants';
 import type { Metadata } from 'next';
-
-// Products grid loading component
-function ProductsGridSkeleton() {
-  return <OrganicProductGridSkeleton count={12} />;
-}
 
 // Product categories section
 function CategoryCards() {
@@ -191,19 +183,19 @@ export const metadata: Metadata = {
 export default function ProductsPage() {
   // Enhanced Collection Page Schema
   const collectionPageSchema = {
-    "@context": "https://schema.org",
+    "@context": URL_CONSTANTS.SCHEMA.BASE,
     "@type": "CollectionPage",
-    "@id": "https://shop.agrikoph.com/products#collectionpage",
+    "@id": `${urlHelpers.getShopUrl()}/products#collectionpage`,
     "name": "Shop All Products - Agriko Organic Farm",
     "description": "Browse our complete collection of organic rice varieties, herbal powders, and health blends.",
-    "url": "https://shop.agrikoph.com/products",
+    "url": `${urlHelpers.getShopUrl()}/products`,
     "inLanguage": "en-PH",
     "datePublished": "2016-01-01",
-    "dateModified": new Date().toISOString().split('T')[0],
+    "dateModified": "2024-03-15",
     "isPartOf": {
       "@type": "WebSite",
       "name": "Agriko Organic Farm",
-      "url": "https://shop.agrikoph.com"
+      "url": urlHelpers.getShopUrl()
     },
     "breadcrumb": {
       "@type": "BreadcrumbList",
@@ -212,13 +204,13 @@ export default function ProductsPage() {
           "@type": "ListItem",
           "position": 1,
           "name": "Home",
-          "item": "https://shop.agrikoph.com"
+          "item": urlHelpers.getShopUrl()
         },
         {
           "@type": "ListItem",
           "position": 2,
           "name": "Shop All Products",
-          "item": "https://shop.agrikoph.com/products"
+          "item": `${urlHelpers.getShopUrl()}/products`
         }
       ]
     },
@@ -234,7 +226,7 @@ export default function ProductsPage() {
             "@type": "ProductGroup",
             "name": "Organic Rice Varieties",
             "description": "Premium organic black, brown, red, and white rice varieties",
-            "url": "https://shop.agrikoph.com/products?category=rice",
+            "url": `${urlHelpers.getShopUrl()}/products?category=rice`,
             "hasVariant": [
               {"@type": "Product", "name": "Black Rice"},
               {"@type": "Product", "name": "Brown Rice"},
@@ -250,7 +242,7 @@ export default function ProductsPage() {
             "@type": "ProductGroup",
             "name": "Pure Herbal Powders",
             "description": "Pure, nutrient-dense superfoods with powerful health benefits",
-            "url": "https://shop.agrikoph.com/products?category=herbs",
+            "url": `${urlHelpers.getShopUrl()}/products?category=herbs`,
             "hasVariant": [
               {"@type": "Product", "name": "Turmeric Powder"},
               {"@type": "Product", "name": "Ginger Powder"},
@@ -265,7 +257,7 @@ export default function ProductsPage() {
             "@type": "ProductGroup",
             "name": "Health Blends & Natural Products",
             "description": "Specially crafted blends and organic honey for complete wellness",
-            "url": "https://shop.agrikoph.com/products?category=blends",
+            "url": `${urlHelpers.getShopUrl()}/products?category=blends`,
             "hasVariant": [
               {"@type": "Product", "name": "5-in-1 Turmeric Tea Blend"},
               {"@type": "Product", "name": "Pure Organic Honey"},
@@ -280,9 +272,9 @@ export default function ProductsPage() {
   // Product Category Schemas
   const categorySchemas = [
     {
-      "@context": "https://schema.org",
+      "@context": URL_CONSTANTS.SCHEMA.BASE,
       "@type": "ProductGroup",
-      "@id": "https://shop.agrikoph.com/products#rice-category",
+      "@id": `${urlHelpers.getShopUrl()}/products#rice-category`,
       "name": "Organic Rice Varieties",
       "description": "Premium organic rice varieties cultivated using sustainable farming practices",
       "brand": {
@@ -304,9 +296,9 @@ export default function ProductsPage() {
       ]
     },
     {
-      "@context": "https://schema.org",
+      "@context": URL_CONSTANTS.SCHEMA.BASE,
       "@type": "ProductGroup",
-      "@id": "https://shop.agrikoph.com/products#herbs-category",
+      "@id": `${urlHelpers.getShopUrl()}/products#herbs-category`,
       "name": "Pure Herbal Powders",
       "description": "Premium herbal powders with exceptional health benefits and nutritional value",
       "brand": {

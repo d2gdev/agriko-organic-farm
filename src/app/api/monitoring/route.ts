@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, alertId, data } = body;
+    const { action, alertId } = body;
 
     switch (action) {
       case 'resolve_alert':
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Health check endpoint (no auth required for basic health)
-export async function HEAD(request: NextRequest) {
+export async function HEAD(_request: NextRequest) {
   try {
     const healthStatus = await monitoring.getHealthStatus();
     

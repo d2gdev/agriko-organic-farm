@@ -57,7 +57,7 @@ export default function EnhancedProductCard({
       
       setTimeout(() => toggleCart(), 1200);
       
-    } catch (error) {
+    } catch {
       toast.error('Failed to add item to cart');
     } finally {
       setIsLoading(false);
@@ -67,7 +67,7 @@ export default function EnhancedProductCard({
   const inStock = isProductInStock(product);
   const mainImage = getProductMainImage(product);
   const shortDescription = product.short_description ? stripHtml(product.short_description) : '';
-  const discountPercentage = product.on_sale && product.regular_price !== product.price 
+  const discountPercentage = product.on_sale && product.regular_price && product.price && product.regular_price !== product.price
     ? Math.round(((parseFloat(product.regular_price) - parseFloat(product.price)) / parseFloat(product.regular_price)) * 100)
     : null;
 
@@ -173,15 +173,15 @@ export default function EnhancedProductCard({
                 {product.on_sale && product.regular_price !== product.price ? (
                   <>
                     <span className="text-xl font-bold text-primary-700">
-                      {formatPrice(product.price)}
+                      {formatPrice(product.price || '0')}
                     </span>
                     <span className="text-sm text-neutral-500 line-through">
-                      {formatPrice(product.regular_price)}
+                      {formatPrice(product.regular_price || product.price || '0')}
                     </span>
                   </>
                 ) : (
                   <span className="text-xl font-bold text-neutral-900">
-                    {formatPrice(product.price)}
+                    {formatPrice(product.price || '0')}
                   </span>
                 )}
               </div>

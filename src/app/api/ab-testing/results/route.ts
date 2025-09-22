@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
-import { abTesting, commonTests } from '@/lib/ab-testing';
+import { abTesting } from '@/lib/ab-testing';
 import { abTestingAnalytics } from '@/lib/ab-testing-analytics';
 import { sanitizeStringParam, createErrorResponse, parseBooleanParam } from '@/lib/api-helpers';
 import { checkEndpointRateLimit, createRateLimitResponse } from '@/lib/rate-limit';
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
         warning: 'A/B Testing analytics unavailable, showing fallback data',
         timestamp: new Date().toISOString()
       });
-    } catch (fallbackError) {
+    } catch {
       return NextResponse.json(
         { 
           success: false, 

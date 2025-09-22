@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
 }
 
 // HEAD /api/health - Lightweight health check for load balancers
-export async function HEAD(request: NextRequest) {
+export async function HEAD(_request: NextRequest) {
   try {
     const healthStatus = await monitoring.getHealthStatus();
     

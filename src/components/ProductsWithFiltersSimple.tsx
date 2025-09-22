@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { WCProduct } from '@/types/woocommerce';
 import ProductCard from '@/components/ProductCard';
-import Button from '@/components/Button';
 
 interface ProductsWithFiltersSimpleProps {
   products: WCProduct[];

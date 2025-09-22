@@ -14,7 +14,7 @@ import {
   TreatsRelationship,
   RichInRelationship
 } from './extended-graph-schema';
-import neo4j, { Integer } from 'neo4j-driver';
+import { Integer } from 'neo4j-driver';
 
 // Data import interface for batch operations
 export interface BatchImportResults {

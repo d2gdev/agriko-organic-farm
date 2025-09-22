@@ -84,15 +84,19 @@ export function RelationshipExplorer() {
   const [maxHops, setMaxHops] = useState(3);
   const [limit, setLimit] = useState(10);
   
-  const [relationships, setRelationships] = useState<Relationship[]>([]);
-  const [paths, setPaths] = useState<RelationshipPath[]>([]);
-  const [connectedEntities, setConnectedEntities] = useState<ConnectedEntity[]>([]);
+  const [_relationships, setRelationships] = useState<Relationship[]>([]);
+  void _relationships; // Preserved for future relationship display
+  const [_paths, setPaths] = useState<RelationshipPath[]>([]);
+  void _paths; // Preserved for future path visualization
+  const [_connectedEntities, setConnectedEntities] = useState<ConnectedEntity[]>([]);
+  void _connectedEntities; // Preserved for future entity connections
   const [discoveredEntities, setDiscoveredEntities] = useState<DiscoveredEntity[]>([]);
   const [entityDiscoveryLoading, setEntityDiscoveryLoading] = useState(false);
   const [autoCreateEntities, setAutoCreateEntities] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [autoCreating, setAutoCreating] = useState(false);
+  const [_autoCreating, setAutoCreating] = useState(false);
+  void _autoCreating; // Preserved for future auto-creation status
   // Add results state
   const [results, setResults] = useState<ResultsType | null>(null);
   
@@ -185,7 +189,7 @@ export function RelationshipExplorer() {
     }
   };
   
-  const handleAutoCreateEntities = async () => {
+  const _handleAutoCreateEntities = async () => {
     // Check if results exist and have entities
     if (!results || !('entities' in results) || !results.entities || !Array.isArray(results.entities) || results.entities.length === 0) {
       setError('No entities to create. Please discover entities first.');
@@ -226,6 +230,7 @@ export function RelationshipExplorer() {
       setAutoCreating(false);
     }
   };
+  void _handleAutoCreateEntities; // Preserved for future auto-creation feature
   
   const renderResults = () => {
     if (!results) return null;
@@ -243,7 +248,8 @@ export function RelationshipExplorer() {
     } else if (action === 'discover-entities') {
       // Type guard for discovered entities results
       if (results && typeof results === 'object' && 'entities' in results && 'statistics' in results) {
-        const discoveredResults = results as { entities: DiscoveredEntity[]; statistics: DiscoveryStats };
+        const _discoveredResults = results as { entities: DiscoveredEntity[]; statistics: DiscoveryStats };
+        void _discoveredResults; // Preserved for future entity discovery display
         return (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-4">

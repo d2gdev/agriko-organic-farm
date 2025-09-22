@@ -93,7 +93,8 @@ export function ReviewsList({ productId, initialReviews }: ReviewsListProps) {
   const handleRatingFilter = (rating: number) => {
     if (filters.rating === rating) {
       // Remove filter if clicking the same rating
-      const { rating: _, ...newFilters } = filters;
+      const { rating: _rating, ...newFilters } = filters;
+      void _rating; // Destructured rating not used after filter removal
       setFilters(newFilters);
       fetchReviews(newFilters);
     } else {

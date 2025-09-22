@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { 
-  getGlobalCacheStatus, 
-  forceGlobalCacheCleanup, 
-  updateGlobalMemoryLimit 
+import {
+  getGlobalCacheStatus,
+  forceGlobalCacheCleanup,
+  updateGlobalMemoryLimit
 } from '@/lib/global-cache-coordinator';
 import { logger } from '@/lib/logger';
 import { validateApiAuthSecure } from '@/lib/unified-auth';

@@ -2,7 +2,7 @@
 import { getSession } from './memgraph';
 import { logger } from '@/lib/logger';
 
-import neo4j from 'neo4j-driver';
+// import neo4j from 'neo4j-driver'; // Preserved for future Neo4j integration
 
 // Neo4j type interfaces
 interface Neo4jValue {

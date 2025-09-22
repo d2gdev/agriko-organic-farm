@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { WCProduct } from '@/types/woocommerce';
 import { cn } from '@/lib/utils';
 import Button from '@/components/Button';
 
 export interface SearchFilters {
-  category?: string;
+  category?: string | string[];
   minPrice?: number;
   maxPrice?: number;
   sortBy?: 'name' | 'price_low' | 'price_high' | 'newest' | 'popularity';
@@ -22,13 +22,52 @@ interface SearchFiltersProps {
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
   className?: string;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  isLoading?: boolean;
 }
+
+interface SectionHeaderProps {
+  title: string;
+  section: string;
+  expandedSections: Set<string>;
+  onToggleSection: (section: string) => void;
+}
+
+const SectionHeader = React.memo(function SectionHeader({
+  title,
+  section,
+  expandedSections,
+  onToggleSection
+}: SectionHeaderProps) {
+  return (
+    <button
+      onClick={() => onToggleSection(section)}
+      className="w-full flex items-center justify-between text-sm font-medium text-neutral-900 hover:text-primary-700 transition-colors py-2"
+    >
+      <span>{title}</span>
+      <svg
+        className={cn('w-4 h-4 transition-transform duration-200',
+          expandedSections.has(section) && 'rotate-180'
+        )}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+  );
+});
 
 const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
   products,
   filters,
   onFiltersChange,
-  className
+  className,
+  searchQuery = '',
+  onSearchChange,
+  isLoading = false
 }: SearchFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['sort', 'price']));
@@ -36,6 +75,12 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
     min: filters.minPrice?.toString() ?? '',
     max: filters.maxPrice?.toString() ?? ''
   });
+  const [tempPriceRange, setTempPriceRange] = useState({
+    min: filters.minPrice?.toString() ?? '',
+    max: filters.maxPrice?.toString() ?? ''
+  });
+
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Memoized expensive calculations to prevent unnecessary re-renders
   const categories = useMemo(() => {
@@ -49,7 +94,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
   }, [products]);
 
   const { prices, minProductPrice, maxProductPrice } = useMemo(() => {
-    const prices = products.map(p => parseFloat(p.price)).filter(p => !isNaN(p));
+    const prices = products.map(p => parseFloat(p.price as string)).filter(p => !isNaN(p));
     return {
       prices,
       minProductPrice: prices.length > 0 ? Math.min(...prices) : 0,
@@ -74,13 +119,77 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
     };
   }, [products]);
 
+  // Calculate filter result previews
+  const filterPreviews = useMemo(() => {
+    const getFilteredCount = (testFilters: SearchFilters) => {
+      return products.filter(product => {
+        // Apply filters to count matching products
+        if (testFilters.category) {
+          const categories = Array.isArray(testFilters.category) ? testFilters.category : [testFilters.category];
+          if (!product.categories?.some(cat => categories.includes(cat.name))) {
+            return false;
+          }
+        }
+
+        if (testFilters.minPrice !== undefined) {
+          const price = parseFloat(product.price as string);
+          if (isNaN(price) || price < testFilters.minPrice) return false;
+        }
+
+        if (testFilters.maxPrice !== undefined) {
+          const price = parseFloat(product.price as string);
+          if (isNaN(price) || price > testFilters.maxPrice) return false;
+        }
+
+        if (testFilters.inStock && product.stock_status !== 'instock') return false;
+        if (testFilters.featured && !product.featured) return false;
+        if (testFilters.organic && !isOrganic(product)) return false;
+
+        return true;
+      }).length;
+    };
+
+    return { getFilteredCount };
+  }, [products]);
+
+  // Debounced price range update
+  const debouncedPriceUpdate = useCallback((min: string, max: string) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      const minPrice = min ? parseFloat(min) : undefined;
+      const maxPrice = max ? parseFloat(max) : undefined;
+
+      if (minPrice !== filters.minPrice || maxPrice !== filters.maxPrice) {
+        onFiltersChange({
+          ...filters,
+          minPrice,
+          maxPrice
+        });
+      }
+    }, 500); // 500ms debounce
+  }, [filters, onFiltersChange]);
+
   // Update price range when filters change
   useEffect(() => {
-    setPriceRange({
+    const newPriceRange = {
       min: filters.minPrice?.toString() ?? '',
       max: filters.maxPrice?.toString() ?? ''
-    });
+    };
+    setPriceRange(newPriceRange);
+    setTempPriceRange(newPriceRange);
   }, [filters.minPrice, filters.maxPrice]);
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleFilterChange = useCallback((key: keyof SearchFilters, value: string | number | boolean | string[] | undefined) => {
     onFiltersChange({
@@ -88,6 +197,27 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
       [key]: value
     });
   }, [filters, onFiltersChange]);
+
+  const handleCategoryToggle = useCallback((category: string) => {
+    const currentCategories = Array.isArray(filters.category)
+      ? filters.category
+      : filters.category ? [filters.category] : [];
+
+    let newCategories;
+    if (currentCategories.includes(category)) {
+      newCategories = currentCategories.filter(c => c !== category);
+    } else {
+      newCategories = [...currentCategories, category];
+    }
+
+    const categoryValue = newCategories.length === 0
+      ? undefined
+      : newCategories.length === 1
+        ? newCategories[0]
+        : newCategories;
+
+    handleFilterChange('category', categoryValue);
+  }, [filters.category, handleFilterChange]);
 
   const handlePriceRangeSubmit = useCallback(() => {
     const minPrice = priceRange.min ? parseFloat(priceRange.min) : undefined;
@@ -119,29 +249,48 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
     });
   }, []);
 
-  const SectionHeader = React.memo(({ title, section }: { title: string; section: string }) => (
-    <button
-      onClick={() => toggleSection(section)}
-      className="w-full flex items-center justify-between text-sm font-medium text-neutral-900 hover:text-primary-700 transition-colors py-2"
-    >
-      <span>{title}</span>
-      <svg
-        className={cn('w-4 h-4 transition-transform duration-200',
-          expandedSections.has(section) && 'rotate-180'
-        )}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
-    </button>
-  ));
-
-  SectionHeader.displayName = 'SectionHeader';
 
   return (
     <div className={cn('bg-white rounded-xl shadow-sm border border-neutral-200', className)}>
+      {/* No-JavaScript Fallback Form */}
+      <noscript>
+        <div className="p-4 border-b border-neutral-200 bg-yellow-50">
+          <div className="flex items-center text-sm text-yellow-800">
+            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            JavaScript is disabled. Use the form below for basic filtering.
+          </div>
+          <form method="GET" className="mt-4 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-neutral-700 mb-1">Category</label>
+                <select name="category" id="category" className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-primary-500 focus:border-primary-500">
+                  <option value="">All Categories</option>
+                  <option value="rice">Rice</option>
+                  <option value="spices">Spices</option>
+                  <option value="herbs">Herbs</option>
+                  <option value="blends">Health Blends</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="min_price" className="block text-sm font-medium text-neutral-700 mb-1">Min Price</label>
+                <input type="number" name="min_price" id="min_price" placeholder="₱0" className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-primary-500 focus:border-primary-500" />
+              </div>
+              <div>
+                <label htmlFor="max_price" className="block text-sm font-medium text-neutral-700 mb-1">Max Price</label>
+                <input type="number" name="max_price" id="max_price" placeholder="₱9999" className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-primary-500 focus:border-primary-500" />
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <button type="submit" className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors">
+                Apply Filters
+              </button>
+            </div>
+          </form>
+        </div>
+      </noscript>
+
       {/* Filter Header */}
       <div className="p-4 border-b border-neutral-200">
         <div className="flex items-center justify-between">
@@ -185,15 +334,47 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
       </div>
 
       {/* Filter Content */}
-      <div className={cn('lg:block', 
+      <div className={cn('lg:block',
         !isExpanded && 'hidden',
         isExpanded && 'block'
       )}>
         <div className="p-4 space-y-4">
 
+          {/* Search Input */}
+          {onSearchChange && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-neutral-900">Search Products</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  placeholder="Search for products..."
+                  disabled={isLoading}
+                  className={`w-full px-3 py-2 pl-10 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm ${
+                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                />
+                <svg className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                {isLoading && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Sort By Accordion */}
           <div className="border-b border-neutral-100 pb-4">
-            <SectionHeader title="Sort By" section="sort" />
+            <SectionHeader
+              title="Sort By"
+              section="sort"
+              expandedSections={expandedSections}
+              onToggleSection={toggleSection}
+            />
             {expandedSections.has('sort') && (
               <div className="mt-3 space-y-2">
                 {[
@@ -224,34 +405,62 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
           {/* Category Filter Accordion */}
           {categories.length > 0 && (
             <div className="border-b border-neutral-100 pb-4">
-              <SectionHeader title="Categories" section="category" />
+              <SectionHeader
+                title="Categories"
+                section="category"
+                expandedSections={expandedSections}
+                onToggleSection={toggleSection}
+              />
               {expandedSections.has('category') && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    onClick={() => handleFilterChange('category', undefined)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-full text-sm font-medium transition-all',
-                      !filters.category
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                <div className="mt-3 space-y-3">
+                  {/* Clear All Categories Button */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-neutral-500 font-medium">Select multiple categories</span>
+                    {filters.category && (
+                      <button
+                        onClick={() => handleFilterChange('category', undefined)}
+                        className="text-xs text-primary-600 hover:text-primary-800 font-medium"
+                      >
+                        Clear All
+                      </button>
                     )}
-                  >
-                    All
-                  </button>
-                  {categories.map(category => (
-                    <button
-                      key={category}
-                      onClick={() => handleFilterChange('category', category)}
-                      className={cn(
-                        'px-3 py-1.5 rounded-full text-sm font-medium transition-all',
-                        filters.category === category
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                      )}
-                    >
-                      {category}
-                    </button>
-                  ))}
+                  </div>
+
+                  {/* Category Checkboxes */}
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {categories.map(category => {
+                      const currentCategories = Array.isArray(filters.category)
+                        ? filters.category
+                        : filters.category ? [filters.category] : [];
+                      const isSelected = currentCategories.includes(category);
+
+                      return (
+                        <label
+                          key={category}
+                          className="flex items-center space-x-3 cursor-pointer hover:bg-neutral-50 p-2 rounded-lg transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleCategoryToggle(category)}
+                            className="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500 focus:ring-2"
+                          />
+                          <span className={cn(
+                            'text-sm flex-1',
+                            isSelected
+                              ? 'text-neutral-900 font-medium'
+                              : 'text-neutral-700'
+                          )}>
+                            {category}
+                          </span>
+                          {/* Product count for each category */}
+                          <span className="text-xs text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full">
+                            {products.filter(p => p.categories?.some(cat => cat.name === category)).length}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
@@ -260,59 +469,71 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
           {/* Price Range Accordion */}
           {prices.length > 0 && (
             <div className="border-b border-neutral-100 pb-4">
-              <SectionHeader title="Price Range" section="price" />
+              <SectionHeader
+                title="Price Range"
+                section="price"
+                expandedSections={expandedSections}
+                onToggleSection={toggleSection}
+              />
               {expandedSections.has('price') && (
                 <div className="mt-3 space-y-3">
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { value: 'all', label: 'All Prices' },
-                      { value: 'under-100', label: 'Under ₱100' },
-                      { value: '100-300', label: '₱100 - ₱300' },
-                      { value: '300-500', label: '₱300 - ₱500' },
-                      { value: 'over-500', label: 'Over ₱500' }
-                    ].map(range => (
-                      <button
-                        key={range.value}
-                        onClick={() => {
-                          if (range.value === 'all') {
-                            handleFilterChange('minPrice', undefined);
-                            handleFilterChange('maxPrice', undefined);
-                          } else if (range.value === 'under-100') {
-                            handleFilterChange('minPrice', undefined);
-                            handleFilterChange('maxPrice', 100);
-                          } else if (range.value === '100-300') {
-                            handleFilterChange('minPrice', 100);
-                            handleFilterChange('maxPrice', 300);
-                          } else if (range.value === '300-500') {
-                            handleFilterChange('minPrice', 300);
-                            handleFilterChange('maxPrice', 500);
-                          } else if (range.value === 'over-500') {
-                            handleFilterChange('minPrice', 500);
-                            handleFilterChange('maxPrice', undefined);
-                          }
-                        }}
-                        className={cn(
-                          'px-3 py-1.5 rounded-full text-sm font-medium transition-all',
-                          (range.value === 'all' && !filters.minPrice && !filters.maxPrice) ||
-                          (range.value === 'under-100' && !filters.minPrice && filters.maxPrice === 100) ||
-                          (range.value === '100-300' && filters.minPrice === 100 && filters.maxPrice === 300) ||
-                          (range.value === '300-500' && filters.minPrice === 300 && filters.maxPrice === 500) ||
-                          (range.value === 'over-500' && filters.minPrice === 500 && !filters.maxPrice)
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                        )}
-                      >
-                        {range.label}
-                      </button>
-                    ))}
+                      { value: 'all', label: 'All Prices', minPrice: undefined, maxPrice: undefined },
+                      { value: 'under-100', label: 'Under ₱100', minPrice: undefined, maxPrice: 100 },
+                      { value: '100-300', label: '₱100 - ₱300', minPrice: 100, maxPrice: 300 },
+                      { value: '300-500', label: '₱300 - ₱500', minPrice: 300, maxPrice: 500 },
+                      { value: 'over-500', label: 'Over ₱500', minPrice: 500, maxPrice: undefined }
+                    ].map(range => {
+                      const testFilters = { ...filters, minPrice: range.minPrice, maxPrice: range.maxPrice };
+                      const previewCount = filterPreviews.getFilteredCount(testFilters);
+
+                      return (
+                        <button
+                          key={range.value}
+                          onClick={() => {
+                            handleFilterChange('minPrice', range.minPrice);
+                            handleFilterChange('maxPrice', range.maxPrice);
+                          }}
+                          className={cn(
+                            'px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center space-x-2',
+                            (range.value === 'all' && !filters.minPrice && !filters.maxPrice) ||
+                            (range.value === 'under-100' && !filters.minPrice && filters.maxPrice === 100) ||
+                            (range.value === '100-300' && filters.minPrice === 100 && filters.maxPrice === 300) ||
+                            (range.value === '300-500' && filters.minPrice === 300 && filters.maxPrice === 500) ||
+                            (range.value === 'over-500' && filters.minPrice === 500 && !filters.maxPrice)
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                          )}
+                        >
+                          <span>{range.label}</span>
+                          <span className={cn(
+                            'text-xs px-1.5 py-0.5 rounded-full',
+                            (range.value === 'all' && !filters.minPrice && !filters.maxPrice) ||
+                            (range.value === 'under-100' && !filters.minPrice && filters.maxPrice === 100) ||
+                            (range.value === '100-300' && filters.minPrice === 100 && filters.maxPrice === 300) ||
+                            (range.value === '300-500' && filters.minPrice === 300 && filters.maxPrice === 500) ||
+                            (range.value === 'over-500' && filters.minPrice === 500 && !filters.maxPrice)
+                              ? 'bg-white/20 text-white'
+                              : 'bg-neutral-200 text-neutral-600'
+                          )}>
+                            {previewCount}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                   <div className="flex items-center gap-2 text-sm text-neutral-600">
                     <span>Custom:</span>
                     <input
                       type="number"
                       placeholder="Min"
-                      value={priceRange.min}
-                      onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                      value={tempPriceRange.min}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        setTempPriceRange(prev => ({ ...prev, min: newValue }));
+                        debouncedPriceUpdate(newValue, tempPriceRange.max);
+                      }}
                       className="w-20 px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500"
                       min={minProductPrice}
                       max={maxProductPrice}
@@ -321,8 +542,12 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                     <input
                       type="number"
                       placeholder="Max"
-                      value={priceRange.max}
-                      onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                      value={tempPriceRange.max}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        setTempPriceRange(prev => ({ ...prev, max: newValue }));
+                        debouncedPriceUpdate(tempPriceRange.min, newValue);
+                      }}
                       className="w-20 px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500"
                       min={minProductPrice}
                       max={maxProductPrice}
@@ -342,7 +567,12 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
           {/* Health Benefits Accordion */}
           {healthBenefits.length > 0 && (
             <div className="border-b border-neutral-100 pb-4">
-              <SectionHeader title="Health Benefits" section="benefits" />
+              <SectionHeader
+                title="Health Benefits"
+                section="benefits"
+                expandedSections={expandedSections}
+                onToggleSection={toggleSection}
+              />
               {expandedSections.has('benefits') && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {healthBenefits.slice(0, 8).map(benefit => (
@@ -372,67 +602,96 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
 
           {/* Product Options Accordion */}
           <div className="pb-4">
-            <SectionHeader title="Product Options" section="options" />
+            <SectionHeader
+              title="Product Options"
+              section="options"
+              expandedSections={expandedSections}
+              onToggleSection={toggleSection}
+            />
             {expandedSections.has('options') && (
               <div className="mt-3 space-y-2">
                 <button
                   onClick={() => handleFilterChange('inStock', filters.inStock ? undefined : true)}
                   className={cn(
-                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all',
+                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group',
                     filters.inStock
                       ? 'bg-primary-100 text-primary-800'
                       : 'hover:bg-neutral-50 text-neutral-700'
                   )}
+                  title={`${filters.inStock ? 'Remove' : 'Apply'} in-stock filter`}
                 >
                   <span className="text-sm font-medium">In Stock Only</span>
-                  <span className={cn(
-                    'px-2 py-0.5 rounded-full text-xs font-medium',
-                    filters.inStock
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-neutral-100 text-neutral-600'
-                  )}>
-                    {productCounts.inStock}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={cn(
+                      'px-2 py-0.5 rounded-full text-xs font-medium',
+                      filters.inStock
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-neutral-100 text-neutral-600'
+                    )}>
+                      {filters.inStock ? filterPreviews.getFilteredCount(filters) : productCounts.inStock}
+                    </span>
+                    {!filters.inStock && (
+                      <span className="text-xs text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        → {filterPreviews.getFilteredCount({ ...filters, inStock: true })}
+                      </span>
+                    )}
+                  </div>
                 </button>
 
                 <button
                   onClick={() => handleFilterChange('featured', filters.featured ? undefined : true)}
                   className={cn(
-                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all',
+                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group',
                     filters.featured
                       ? 'bg-primary-100 text-primary-800'
                       : 'hover:bg-neutral-50 text-neutral-700'
                   )}
+                  title={`${filters.featured ? 'Remove' : 'Apply'} featured products filter`}
                 >
                   <span className="text-sm font-medium">⭐ Featured Products</span>
-                  <span className={cn(
-                    'px-2 py-0.5 rounded-full text-xs font-medium',
-                    filters.featured
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-neutral-100 text-neutral-600'
-                  )}>
-                    {productCounts.featured}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={cn(
+                      'px-2 py-0.5 rounded-full text-xs font-medium',
+                      filters.featured
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-neutral-100 text-neutral-600'
+                    )}>
+                      {filters.featured ? filterPreviews.getFilteredCount(filters) : productCounts.featured}
+                    </span>
+                    {!filters.featured && (
+                      <span className="text-xs text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        → {filterPreviews.getFilteredCount({ ...filters, featured: true })}
+                      </span>
+                    )}
+                  </div>
                 </button>
 
                 <button
                   onClick={() => handleFilterChange('organic', filters.organic ? undefined : true)}
                   className={cn(
-                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all',
+                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group',
                     filters.organic
                       ? 'bg-primary-100 text-primary-800'
                       : 'hover:bg-neutral-50 text-neutral-700'
                   )}
+                  title={`${filters.organic ? 'Remove' : 'Apply'} organic products filter`}
                 >
                   <span className="text-sm font-medium">🌿 Organic Certified</span>
-                  <span className={cn(
-                    'px-2 py-0.5 rounded-full text-xs font-medium',
-                    filters.organic
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-neutral-100 text-neutral-600'
-                  )}>
-                    {productCounts.organic}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={cn(
+                      'px-2 py-0.5 rounded-full text-xs font-medium',
+                      filters.organic
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-neutral-100 text-neutral-600'
+                    )}>
+                      {filters.organic ? filterPreviews.getFilteredCount(filters) : productCounts.organic}
+                    </span>
+                    {!filters.organic && (
+                      <span className="text-xs text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        → {filterPreviews.getFilteredCount({ ...filters, organic: true })}
+                      </span>
+                    )}
+                  </div>
                 </button>
               </div>
             )}
@@ -446,16 +705,33 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
         <div className="p-4 border-t border-neutral-200 bg-neutral-50">
           <div className="flex flex-wrap gap-2">
             {filters.category && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                {filters.category}
-                <button
-                  onClick={() => handleFilterChange('category', undefined)}
-                  className="ml-2 text-primary-600 hover:text-primary-800"
-                  aria-label={`Remove ${filters.category} filter`}
-                >
-                  ×
-                </button>
-              </span>
+              Array.isArray(filters.category) ? (
+                // Multiple categories selected
+                filters.category.map(category => (
+                  <span key={category} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                    {category}
+                    <button
+                      onClick={() => handleCategoryToggle(category)}
+                      className="ml-2 text-primary-600 hover:text-primary-800"
+                      aria-label={`Remove ${category} filter`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))
+              ) : (
+                // Single category selected
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                  {filters.category}
+                  <button
+                    onClick={() => handleFilterChange('category', undefined)}
+                    className="ml-2 text-primary-600 hover:text-primary-800"
+                    aria-label={`Remove ${filters.category} filter`}
+                  >
+                    ×
+                  </button>
+                </span>
+              )
             )}
             
             {(filters.minPrice ?? filters.maxPrice) && (
@@ -549,29 +825,53 @@ SearchFiltersComponent.displayName = 'SearchFiltersComponent';
 
 export default SearchFiltersComponent;
 
-// Helper function to extract health benefits from product data
+// Memoized health keywords lookup - moved outside function for better performance
+const HEALTH_KEYWORDS = {
+  'anti-inflammatory': ['anti-inflammatory', 'inflammation', 'reduce inflammation'],
+  'immune support': ['immune', 'immunity', 'immune system', 'boost immunity'],
+  'digestive health': ['digestive', 'digestion', 'gut health', 'stomach'],
+  'heart health': ['heart', 'cardiovascular', 'circulation', 'blood pressure'],
+  'energy boost': ['energy', 'energizing', 'vitality', 'stamina'],
+  'brain health': ['brain', 'cognitive', 'memory', 'mental clarity'],
+  'weight management': ['weight', 'metabolism', 'slimming', 'weight loss'],
+  'antioxidant rich': ['antioxidant', 'antioxidants', 'free radicals'],
+  'blood sugar': ['blood sugar', 'glucose', 'diabetic', 'glycemic'],
+  'skin health': ['skin', 'complexion', 'beauty', 'glowing'],
+  'bone health': ['bone', 'calcium', 'osteoporosis', 'joint'],
+  'respiratory': ['respiratory', 'breathing', 'lungs', 'airways']
+} as const;
+
+// Cache for processed product health benefits to avoid recomputation
+const healthBenefitsCache = new Map<string, string[]>();
+
+// Helper function to extract health benefits from product data with caching
 function extractHealthBenefits(product: WCProduct): string[] {
+  // Create a cache key from product id and modification date for cache invalidation
+  const cacheKey = `${product.id}-${product.date_modified || 'no-date'}`;
+
+  // Return cached result if available
+  if (healthBenefitsCache.has(cacheKey)) {
+    const cached = healthBenefitsCache.get(cacheKey);
+    if (cached) return cached;
+  }
+
   const text = `${product.name} ${product.description ?? ''} ${product.short_description ?? ''}`.toLowerCase();
   const benefits: string[] = [];
 
-  const healthKeywords = {
-    'anti-inflammatory': ['anti-inflammatory', 'inflammation', 'reduce inflammation'],
-    'immune support': ['immune', 'immunity', 'immune system', 'boost immunity'],
-    'digestive health': ['digestive', 'digestion', 'gut health', 'stomach'],
-    'heart health': ['heart', 'cardiovascular', 'circulation', 'blood pressure'],
-    'energy boost': ['energy', 'energizing', 'vitality', 'stamina'],
-    'brain health': ['brain', 'cognitive', 'memory', 'mental clarity'],
-    'weight management': ['weight', 'metabolism', 'slimming', 'weight loss'],
-    'antioxidant rich': ['antioxidant', 'antioxidants', 'free radicals'],
-    'blood sugar': ['blood sugar', 'glucose', 'diabetic', 'glycemic'],
-    'skin health': ['skin', 'complexion', 'beauty', 'glowing'],
-    'bone health': ['bone', 'calcium', 'osteoporosis', 'joint'],
-    'respiratory': ['respiratory', 'breathing', 'lungs', 'airways']
-  };
-
-  for (const [benefit, keywords] of Object.entries(healthKeywords)) {
+  for (const [benefit, keywords] of Object.entries(HEALTH_KEYWORDS)) {
     if (keywords.some(keyword => text.includes(keyword))) {
       benefits.push(benefit);
+    }
+  }
+
+  // Cache the result
+  healthBenefitsCache.set(cacheKey, benefits);
+
+  // Limit cache size to prevent memory leaks
+  if (healthBenefitsCache.size > 1000) {
+    const firstKey = healthBenefitsCache.keys().next().value;
+    if (firstKey !== undefined) {
+      healthBenefitsCache.delete(firstKey);
     }
   }
 

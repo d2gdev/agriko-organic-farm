@@ -1,9 +1,10 @@
 // Recommendation caching system for improved performance
 import { RecommendationScore, UserProfile, RecommendationContext } from './multi-factor-recommendations';
+import { MemoryOptimizedCache } from './memory-optimizer';
 
 import { logger } from '@/lib/logger';
 
-interface CacheEntry {
+interface _CacheEntry {
   data: RecommendationScore[];
   timestamp: number;
   expiresAt: number;
@@ -19,7 +20,7 @@ interface CacheStats {
 }
 
 export class RecommendationCache {
-  private cache = new Map<string, CacheEntry>();
+  private cache = new MemoryOptimizedCache(1000, 300000);
   private readonly defaultTTL = 60 * 60 * 1000; // 1 hour in milliseconds
   private readonly maxEntries = 1000;
   private readonly cleanupInterval = 10 * 60 * 1000; // 10 minutes
@@ -114,26 +115,18 @@ export class RecommendationCache {
     additionalParams?: Record<string, unknown>
   ): RecommendationScore[] | null {
     const key = this.generateCacheKey(type, userProfile, context, additionalParams);
-    const entry = this.cache.get(key);
+    const data = this.cache.get(key);
 
-    if (!entry) {
+    if (!data) {
       this.stats.misses++;
       return null;
     }
 
-    // Check if entry is expired
-    if (Date.now() > entry.expiresAt) {
-      this.cache.delete(key);
-      this.stats.misses++;
-      return null;
-    }
-
-    // Update hit counter and stats
-    entry.hits++;
+    // MemoryOptimizedCache handles TTL internally
     this.stats.hits++;
-    
+
     logger.info(`🎯 Cache hit for recommendation type: ${type}`);
-    return entry.data;
+    return data as RecommendationScore[];
   }
 
   // Set recommendations in cache
@@ -143,33 +136,25 @@ export class RecommendationCache {
     userProfile?: UserProfile,
     context?: RecommendationContext,
     additionalParams?: Record<string, unknown>,
-    ttl?: number
+    _ttl?: number
   ): void {
-    // Check cache size and remove oldest entries if necessary
-    if (this.cache.size >= this.maxEntries) {
-      this.evictOldest();
-    }
+    // MemoryOptimizedCache handles size limits automatically
 
     const key = this.generateCacheKey(type, userProfile, context, additionalParams);
-    const now = Date.now();
-    const expiresAt = now + (ttl ?? this.defaultTTL);
 
-    const entry: CacheEntry = {
-      data: JSON.parse(JSON.stringify(data)), // Deep copy to prevent mutations
-      timestamp: now,
-      expiresAt,
-      hits: 0
-    };
+    // MemoryOptimizedCache handles TTL internally, so we just store the data
+    const dataCopy = JSON.parse(JSON.stringify(data)); // Deep copy to prevent mutations
 
-    this.cache.set(key, entry);
-    logger.info(`💾 Cached recommendations for type: ${type}, expires at: ${new Date(expiresAt).toISOString()}`);
+    this.cache.set(key, dataCopy);
+    logger.info(`💾 Cached recommendations for type: ${type}`);
   }
 
   // Invalidate cache entries that might be affected by new data
   invalidate(productIds?: number[], categories?: string[], healthBenefits?: string[]): void {
     const keysToDelete: string[] = [];
 
-    for (const [key, entry] of this.cache.entries()) {
+    for (const [key, _entry] of this.cache.entries()) {
+      void _entry; // Entry not needed for key-based invalidation logic
       let shouldInvalidate = false;
 
       // Invalidate if specific products are mentioned
@@ -223,38 +208,14 @@ export class RecommendationCache {
 
   // Clean up expired entries
   private cleanup(): void {
-    const now = Date.now();
-    const keysToDelete: string[] = [];
-
-    for (const [key, entry] of this.cache.entries()) {
-      if (now > entry.expiresAt) {
-        keysToDelete.push(key);
-      }
-    }
-
-    keysToDelete.forEach(key => this.cache.delete(key));
-    
-    if (keysToDelete.length > 0) {
-      logger.info(`🧹 Cleaned up ${keysToDelete.length} expired cache entries`);
-    }
+    // MemoryOptimizedCache handles cleanup automatically
+    logger.info(`🧹 Cache cleanup triggered (handled internally)`);
   }
 
   // Evict oldest entries based on LRU
   private evictOldest(): void {
-    let oldestKey = '';
-    let oldestTimestamp = Date.now();
-
-    for (const [key, entry] of this.cache.entries()) {
-      if (entry.timestamp < oldestTimestamp) {
-        oldestTimestamp = entry.timestamp;
-        oldestKey = key;
-      }
-    }
-
-    if (oldestKey) {
-      this.cache.delete(oldestKey);
-      logger.info(`⏰ Evicted oldest cache entry: ${oldestKey}`);
-    }
+    // MemoryOptimizedCache handles LRU eviction automatically
+    logger.info(`⏰ Cache eviction triggered (handled internally)`);
   }
 
   // Get cache statistics
@@ -263,13 +224,9 @@ export class RecommendationCache {
     const totalRequests = this.stats.hits + this.stats.misses;
     const hitRate = totalRequests > 0 ? this.stats.hits / totalRequests : 0;
     
-    // Estimate memory usage (rough calculation)
-    let memoryUsage = 0;
-    for (const [key, entry] of this.cache.entries()) {
-      memoryUsage += key.length * 2; // Rough string size in bytes
-      memoryUsage += JSON.stringify(entry.data).length * 2; // Rough data size
-      memoryUsage += 100; // Overhead for entry metadata
-    }
+    // Estimate memory usage using MemoryOptimizedCache stats
+    const cacheStats = this.cache.getStats();
+    const memoryUsage = cacheStats.totalEstimatedSize || entries * 1000; // Fallback estimate
 
     return {
       hits: this.stats.hits,
@@ -289,12 +246,15 @@ export class RecommendationCache {
     logger.info(`📊 Would warm up cache with ${commonUserProfiles.length} user profiles and ${commonContexts.length} contexts`);
   }
 
-  // Get cache entries sorted by popularity (hit count)
+  // Get cache entries (simplified since MemoryOptimizedCache doesn't track individual hits)
   getPopularEntries(limit: number = 10): Array<{ key: string; hits: number; data: RecommendationScore[] }> {
-    const entries = Array.from(this.cache.entries())
-      .map(([key, entry]) => ({ key, hits: entry.hits, data: entry.data }))
-      .sort((a, b) => b.hits - a.hits)
-      .slice(0, limit);
+    const entries = Array.from(this.cache.keys())
+      .slice(0, limit)
+      .map(key => ({
+        key,
+        hits: 0, // MemoryOptimizedCache doesn't track individual entry hits
+        data: this.cache.get(key) as RecommendationScore[] || []
+      }));
 
     return entries;
   }

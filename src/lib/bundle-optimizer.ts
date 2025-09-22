@@ -1,402 +1,230 @@
-import { logger } from '@/lib/logger';
-// JavaScript bundle optimization utilities
-// Helps reduce bundle size and improve First Input Delay (FID)
+import { logger } from './logger';
 
-// Dynamic import utilities for code splitting
-export const DynamicImports = {
-  // Lazy load heavy components
-  lazy: {
-    // Analytics components
-    AnalyticsDashboard: () => import('@/components/AnalyticsDashboard'),
-    SemanticSearchModal: () => import('@/components/SemanticSearchModal'),
-    
-    // Feature-specific components
-    ABTestVariant: () => import('@/components/ABTestVariant'),
-  },
+interface PerformanceConfig {
+  enableImageOptimization: boolean;
+  enableCodeSplitting: boolean;
+  enablePreloading: boolean;
+  enableCSSOptimization: boolean;
+}
 
-  // Preload important modules on interaction
-  preload: {
-    searchModal: () => {
-      const link = document.createElement('link');
-      link.rel = 'modulepreload';
-      link.href = '/_next/static/chunks/semantic-search.js';
-      document.head.appendChild(link);
-    },
-    
-    checkout: () => {
-      const link = document.createElement('link');
-      link.rel = 'modulepreload';
-      link.href = '/_next/static/chunks/checkout.js';
-      document.head.appendChild(link);
-    }
-  },
+export class BundleOptimizer {
+  private static instance: BundleOptimizer;
+  private config: PerformanceConfig;
+  private isOptimizing = false;
 
-  // Load modules on user interaction
-  loadOnInteraction: {
-    search: () => DynamicImports.lazy.SemanticSearchModal(),
-    analytics: () => DynamicImports.lazy.AnalyticsDashboard(),
+  constructor(config: Partial<PerformanceConfig> = {}) {
+    this.config = {
+      enableImageOptimization: true,
+      enableCodeSplitting: true,
+      enablePreloading: true,
+      enableCSSOptimization: true,
+      ...config
+    };
   }
-};
 
-// Critical resource hints
-export const ResourceHints = {
-  // DNS prefetch for external domains
-  dnsPrefetch: [
-    'https://agrikoph.com',
-    'https://www.googletagmanager.com',
-    'https://fonts.googleapis.com',
-    'https://fonts.gstatic.com'
-  ],
+  static getInstance(config?: Partial<PerformanceConfig>): BundleOptimizer {
+    if (!BundleOptimizer.instance) {
+      BundleOptimizer.instance = new BundleOptimizer(config);
+    }
+    return BundleOptimizer.instance;
+  }
 
-  // Preconnect to critical domains
-  preconnect: [
-    { href: 'https://agrikoph.com', crossorigin: true },
-    { href: 'https://fonts.googleapis.com', crossorigin: false },
-    { href: 'https://fonts.gstatic.com', crossorigin: true }
-  ],
+  // Initialize all optimizations
+  initializeOptimizations() {
+    if (this.isOptimizing || typeof window === 'undefined') return;
+
+    this.isOptimizing = true;
+
+    try {
+      if (this.config.enablePreloading) {
+        this.preloadCriticalResources();
+      }
+
+      if (this.config.enableCSSOptimization) {
+        this.optimizeCSS();
+      }
+
+      if (this.config.enableImageOptimization) {
+        this.optimizeImages();
+      }
+    } catch (error) {
+      logger.error('BundleOptimizer.initializeOptimizations failed', { error });
+    }
+  }
 
   // Preload critical resources
-  preload: [
-    { href: '/images/hero-organic-farm.jpg', as: 'image' },
-    { href: '/images/logo.png', as: 'image' },
-  ]
-};
+  private preloadCriticalResources() {
+    try {
+      // Skip local font preloading - using Google Fonts instead
 
-// Code splitting configuration
-export const CodeSplitting = {
-  // Vendor chunks configuration
-  vendors: {
-    react: ['react', 'react-dom'],
-    ui: ['@headlessui/react', 'react-hot-toast'],
-    analytics: ['@/lib/gtag', '@/lib/performance'],
-    search: ['@/lib/pinecone', '@/lib/embeddings']
-  },
-
-  // Route-based splitting
-  routes: {
-    '/analytics-dashboard': 'analytics',
-    '/admin': 'admin',
-    '/checkout': 'checkout',
-    '/product/*': 'product'
-  }
-};
-
-// Bundle size optimization utilities
-export class BundleOptimizer {
-  private static loadedModules = new Set<string>();
-  private static pendingModules = new Map<string, Promise<unknown>>();
-
-  // Load module with deduplication
-  static async loadModule(moduleId: string, loader: () => Promise<unknown>): Promise<unknown> {
-    // Return if already loaded
-    if (this.loadedModules.has(moduleId)) {
-      return;
+      // Preload checkout functionality
+      BundleOptimizer.preloadCheckout();
+    } catch (error) {
+      logger.error('BundleOptimizer.preloadCriticalResources failed', { error });
     }
-
-    // Return pending promise if already loading
-    if (this.pendingModules.has(moduleId)) {
-      return this.pendingModules.get(moduleId);
-    }
-
-    // Start loading
-    const promise = loader()
-      .then((module) => {
-        this.loadedModules.add(moduleId);
-        this.pendingModules.delete(moduleId);
-        return module;
-      })
-      .catch((error) => {
-        this.pendingModules.delete(moduleId);
-        throw error;
-      });
-
-    this.pendingModules.set(moduleId, promise);
-    return promise;
-  }
-
-  // Preload modules on interaction
-  static setupInteractionPreloading() {
-    // Preload search on hover
-    document.addEventListener('mouseover', (e) => {
-      const target = e.target as HTMLElement;
-      if (target.matches('[data-search-trigger]')) {
-        this.preloadSearch();
-      }
-    });
-
-    // Preload checkout on cart interaction
-    document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      if (target.matches('[data-cart-trigger]')) {
-        this.preloadCheckout();
-      }
-    });
-  }
-
-  // Preload search functionality
-  private static preloadSearch() {
-    this.loadModule('search', DynamicImports.lazy.SemanticSearchModal);
-    ResourceHints.preload.forEach(hint => {
-      if (hint.href.includes('search')) {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.href = hint.href;
-        link.as = hint.as;
-        document.head.appendChild(link);
-      }
-    });
   }
 
   // Preload checkout functionality
   private static preloadCheckout() {
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.href = '/checkout';
-    document.head.appendChild(link);
+    try {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = '/checkout';
+      document.head.appendChild(link);
+    } catch (error) {
+      logger.error('BundleOptimizer.preloadCheckout failed', { error });
+    }
   }
 
   // Remove unused CSS (purge CSS optimization)
-  static optimizeCSS() {
-    // This would be handled by the build process, but we can track usage
-    const usedClasses = new Set<string>();
+  optimizeCSS() {
+    if (typeof window === 'undefined') return;
 
-    // Track used Tailwind classes
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as Element;
-            // Handle both regular elements and SVG elements
-            let classes: string[] = [];
+    try {
+      // This would be handled by the build process, but we can track usage
+      const usedClasses = new Set<string>();
 
-            try {
-              const className = element.className;
+      // Track used Tailwind classes
+      const observer = new MutationObserver((mutations) => {
+        try {
+          mutations.forEach((mutation) => {
+            if (!mutation.addedNodes) return;
 
-              // More robust className handling
-              if (typeof className === 'string' && className) {
-                classes = className.split(' ');
-              } else if (className && typeof className === 'object') {
-                // Handle SVGAnimatedString
-                if ('baseVal' in className) {
-                  const baseVal = (className as SVGAnimatedString).baseVal;
-                  if (typeof baseVal === 'string') {
-                    classes = baseVal.split(' ');
+            // Convert NodeList to Array to ensure forEach is available
+            Array.from(mutation.addedNodes).forEach((node) => {
+              try {
+                if (node && node.nodeType === Node.ELEMENT_NODE) {
+                  const element = node as Element;
+                  // Handle both regular elements and SVG elements
+                  let classes: string[] = [];
+
+                  try {
+                    // Use getAttribute for the most reliable className access
+                    const classAttr = element.getAttribute('class');
+                    if (classAttr && typeof classAttr === 'string' && classAttr.trim().length > 0) {
+                      classes = classAttr.trim().split(/\s+/).filter(Boolean);
+                    }
+
+                    // Add classes to tracking set
+                    classes.forEach(cls => {
+                      if (cls && typeof cls === 'string') {
+                        usedClasses.add(cls);
+                      }
+                    });
+
+                    // Also check existing elements for their classes (recursive scan)
+                    if (element.children && element.children.length > 0) {
+                      Array.from(element.querySelectorAll('*')).forEach(child => {
+                        try {
+                          const childClassAttr = child.getAttribute('class');
+                          if (childClassAttr && typeof childClassAttr === 'string' && childClassAttr.trim().length > 0) {
+                            const childClasses = childClassAttr.trim().split(/\s+/).filter(Boolean);
+                            childClasses.forEach(cls => {
+                              if (cls && typeof cls === 'string') {
+                                usedClasses.add(cls);
+                              }
+                            });
+                          }
+                        } catch {
+                          // Silent fail for child className processing
+                        }
+                      });
+                    }
+
+                  } catch (classError) {
+                    // Silent fail for className processing
+                    logger.error('BundleOptimizer.optimizeCSS.className failed', { error: classError });
                   }
                 }
-                // Handle DOMTokenList (modern browsers)
-                else if ('toString' in className && typeof (className as Record<string, unknown>).toString === 'function') {
-                  const classStr = String((className as Record<string, unknown>).toString());
-                  if (classStr && typeof classStr === 'string') {
-                    classes = classStr.split(' ');
-                  }
-                }
-              }
-
-              // Final fallback: use getAttribute
-              if (classes.length === 0 && element.getAttribute) {
-                const classAttr = element.getAttribute('class');
-                if (classAttr && typeof classAttr === 'string') {
-                  classes = classAttr.split(' ');
-                }
-              }
-            } catch (error) {
-              // Silently skip elements that cause issues
-              logger.debug('Bundle optimizer: Skipping element due to className access error:', { error: error instanceof Error ? error.message : String(error) });
-              return;
-            }
-
-            classes.forEach(cls => {
-              if (cls && typeof cls === 'string' && cls.trim()) {
-                usedClasses.add(cls.trim());
+              } catch (nodeError) {
+                // Silent fail for node processing
+                logger.error('BundleOptimizer.optimizeCSS.node failed', { error: nodeError });
               }
             });
-          }
-        });
-      });
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-
-    // Return cleanup function
-    return () => observer.disconnect();
-  }
-
-  // Tree shaking helper for development
-  static analyzeUnusedImports() {
-    if (process.env.NODE_ENV !== 'development') return;
-
-    // Track module usage for bundle analysis
-    const moduleUsage = new Map<string, number>();
-    
-    // Override require/import for tracking
-    const originalRequire = (window as unknown as Record<string, unknown>).require as ((moduleName: string, ...args: unknown[]) => unknown) | undefined;
-    if (originalRequire) {
-      (window as unknown as Record<string, unknown>).require = function(moduleName: string, ...args: unknown[]) {
-        const count = moduleUsage.get(moduleName) ?? 0;
-        moduleUsage.set(moduleName, count + 1);
-        return originalRequire?.apply(this, [moduleName, ...args]);
-      };
-    }
-
-    // Log usage statistics after 5 seconds
-    setTimeout(() => {
-      console.group('📦 Module Usage Analysis');
-      console.table(Array.from(moduleUsage.entries()).map(([module, count]) => ({
-        module,
-        count,
-        category: this.categorizeModule(module)
-      })));
-      console.groupEnd();
-    }, 5000);
-  }
-
-  // Categorize modules for analysis
-  private static categorizeModule(moduleName: string): string {
-    if (moduleName.includes('react')) return 'React';
-    if (moduleName.includes('@/components')) return 'Components';
-    if (moduleName.includes('@/lib')) return 'Utilities';
-    if (moduleName.includes('node_modules')) return 'Third-party';
-    if (moduleName.includes('analytics')) return 'Analytics';
-    return 'Other';
-  }
-
-  // Get bundle optimization recommendations
-  static getOptimizationRecommendations(): string[] {
-    const recommendations: string[] = [];
-
-    // Check for large bundles
-    if (this.loadedModules.size > 50) {
-      recommendations.push('Consider lazy loading more components');
-    }
-
-    // Check for third-party libraries
-    const hasHeavyLibraries = Array.from(this.loadedModules).some(module =>
-      ['chart.js', 'moment', 'lodash'].some(lib => module.includes(lib))
-    );
-
-    if (hasHeavyLibraries) {
-      recommendations.push('Replace heavy libraries with lighter alternatives');
-    }
-
-    // Check for duplicate code
-    const duplicates = this.findPotentialDuplicates();
-    if (duplicates.length > 0) {
-      recommendations.push(`Potential code duplication found in: ${duplicates.join(', ')}`);
-    }
-
-    return recommendations;
-  }
-
-  // Find potential duplicate code patterns
-  private static findPotentialDuplicates(): string[] {
-    // This would be more sophisticated in a real implementation
-    const moduleNames = Array.from(this.loadedModules);
-    const duplicates: string[] = [];
-
-    // Simple pattern matching for similar module names
-    moduleNames.forEach((name, index) => {
-      moduleNames.slice(index + 1).forEach(otherName => {
-        if (this.areSimilar(name, otherName)) {
-          duplicates.push(`${name} & ${otherName}`);
+          });
+        } catch (mutationError) {
+          logger.error('BundleOptimizer.optimizeCSS.mutation failed', { error: mutationError });
         }
       });
-    });
 
-    return duplicates;
+      // Start observing
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class']
+      });
+
+      // Store reference for cleanup
+      (window as any).__cssOptimizationObserver = observer;
+
+    } catch (error) {
+      logger.error('BundleOptimizer.optimizeCSS failed', { error });
+    }
   }
 
-  // Check if two module names are similar (potential duplicates)
-  private static areSimilar(name1: string, name2: string): boolean {
-    // Simple similarity check
-    const words1 = name1.split(/[\/\-_]/);
-    const words2 = name2.split(/[\/\-_]/);
-    
-    const commonWords = words1.filter(word => 
-      words2.includes(word) && word.length > 3
-    );
+  // Optimize images
+  private optimizeImages() {
+    try {
+      // Lazy load images that are not in viewport
+      const images = document.querySelectorAll('img[data-src]');
 
-    return commonWords.length > 0;
+      if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const img = entry.target as HTMLImageElement;
+              if (img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+                imageObserver.unobserve(img);
+              }
+            }
+          });
+        });
+
+        Array.from(images).forEach(img => imageObserver.observe(img));
+      }
+    } catch (error) {
+      logger.error('BundleOptimizer.optimizeImages failed', { error });
+    }
+  }
+
+  // Cleanup method
+  cleanup() {
+    try {
+      if ((window as any).__cssOptimizationObserver) {
+        (window as any).__cssOptimizationObserver.disconnect();
+        delete (window as any).__cssOptimizationObserver;
+      }
+      this.isOptimizing = false;
+    } catch (error) {
+      logger.error('BundleOptimizer.cleanup failed', { error });
+    }
   }
 }
 
-// Performance budget utilities
-export const PerformanceBudget = {
-  // Bundle size limits (in KB)
-  limits: {
-    main: 250,      // Main bundle
-    vendor: 200,    // Vendor libraries
-    async: 100,     // Async chunks
-    css: 50,        // CSS files
-    images: 500,    // Image assets per page
-  },
-
-  // Check if bundle exceeds budget
-  checkBudget(bundleName: string, size: number): boolean {
-    const limit = (this.limits as Record<string, number>)[bundleName] ?? 100;
-    const exceeded = size > limit;
-    
-    if (exceeded) {
-      logger.warn(`📊 Performance Budget Exceeded:`, {
-        bundle: bundleName,
-        size: `${size}KB`,
-        limit: `${limit}KB`,
-        overage: `${size - limit}KB`
-      });
-    }
-
-    return !exceeded;
-  },
-
-  // Get budget status
-  getBudgetStatus(): { [key: string]: { size: number; limit: number; ok: boolean } } {
-    // This would integrate with build tools to get actual sizes
-    return Object.keys(this.limits).reduce((status, bundleName) => {
-      status[bundleName] = {
-        size: 0, // Would be populated by build process
-        limit: (this.limits as Record<string, number>)[bundleName] ?? 0,
-        ok: true
-      };
-      return status;
-    }, {} as { [key: string]: { size: number; limit: number; ok: boolean } });
-  }
-};
-
-// Initialize bundle optimizations
-export function initializeBundleOptimizations(): (() => void) | void {
+// Export initialization function
+export function initializeBundleOptimizations(config?: Partial<PerformanceConfig>) {
   if (typeof window === 'undefined') return;
 
-  // Setup resource hints
-  ResourceHints.dnsPrefetch.forEach(domain => {
-    const link = document.createElement('link');
-    link.rel = 'dns-prefetch';
-    link.href = domain;
-    document.head.appendChild(link);
-  });
+  try {
+    const optimizer = BundleOptimizer.getInstance(config);
+    optimizer.initializeOptimizations();
 
-  ResourceHints.preconnect.forEach(({ href, crossorigin }) => {
-    const link = document.createElement('link');
-    link.rel = 'preconnect';
-    link.href = href;
-    if (crossorigin) link.crossOrigin = 'anonymous';
-    document.head.appendChild(link);
-  });
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      optimizer.cleanup();
+    });
 
-  // Setup interaction-based preloading
-  BundleOptimizer.setupInteractionPreloading();
-
-  // Enable CSS optimization tracking
-  const cleanupCSS = BundleOptimizer.optimizeCSS();
-
-  // Analyze bundle usage in development
-  BundleOptimizer.analyzeUnusedImports();
-
-  logger.info('⚡ Bundle optimizations initialized');
-
-  // Cleanup function
-  return () => {
-    cleanupCSS();
-  };
+    return optimizer;
+  } catch (error) {
+    logger.error('initializeBundleOptimizations failed', { error });
+    return null;
+  }
 }
+
+export default {
+  BundleOptimizer,
+  initializeBundleOptimizations
+};

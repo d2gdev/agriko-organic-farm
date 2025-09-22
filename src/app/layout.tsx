@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import { Inter, Crimson_Pro, Caveat } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
@@ -8,37 +8,18 @@ import CartDrawer from '@/components/CartDrawer';
 import Footer from '@/components/Footer';
 import { Toaster } from 'react-hot-toast';
 import { SkipLinks } from '@/components/SkipLink';
-import GlobalErrorBoundary from '@/components/GlobalErrorBoundary';
+// import ClientInitializer from '@/components/ClientInitializer'; // Temporarily disabled
+// import PathnameTracker from '@/components/PathnameTracker'; // temporarily disabled
+// import ErrorHandler from '@/components/ErrorHandler'; // temporarily disabled
 
-// Lazy load analytics and performance components
-const GoogleAnalytics = lazy(() => import('@/components/GoogleAnalytics'));
-const PageAnalytics = lazy(() => import('@/components/PageAnalytics'));
-const PerformanceOptimizer = lazy(() => import('@/components/PerformanceOptimizer'));
-import setupGlobalErrorHandlers from '@/lib/errorHandler';
+// Direct imports instead of lazy loading to fix manifest error
+import GoogleAnalytics from '@/components/GoogleAnalytics';
+import PageAnalytics from '@/components/PageAnalytics';
+// import PerformanceOptimizer from '@/components/PerformanceOptimizer';
 import { initializeEnvironmentValidation } from '@/lib/startup-validation';
-
-// Initialize global error handlers
-if (typeof window !== 'undefined') {
-  // Only initialize on client-side to avoid SSR issues
-  setupGlobalErrorHandlers();
-}
-
-// Validate environment variables on startup
-if (typeof window === 'undefined') {
-  // Only run on server-side to prevent client-side execution
-  try {
-    initializeEnvironmentValidation();
-  } catch (error) {
-    console.error('💥 Application startup failed due to environment validation:', error);
-
-    // During build process, we should not exit but log the error
-    // The app will still fail at runtime if env vars are missing
-    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production' && !process.env.NEXT_PHASE) {
-      // Only exit in production runtime, not during build
-      process.exit(1);
-    }
-  }
-}
+import { URL_CONSTANTS, urlHelpers } from '@/lib/url-constants';
+import { logger } from '@/lib/logger';
+// import GlobalErrorBoundary from '@/components/GlobalErrorBoundary'; // Temporarily disabled
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -62,8 +43,27 @@ const caveat = Caveat({
   weight: ['400', '700'],
 });
 
+// Validate environment variables on startup (server-side only)
+if (typeof window === 'undefined') {
+  // Only run on server-side to prevent client-side execution
+  try {
+    initializeEnvironmentValidation();
+  } catch (error) {
+    logger.warn('⚠️ Environment validation warnings (app will continue):', error as Record<string, unknown>);
+
+    // In development, continue with warnings instead of failing
+    if (process.env.NODE_ENV === 'development') {
+      logger.info('🔧 Development mode: API endpoints may have limited functionality without proper environment variables');
+    } else if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production' && !process.env.NEXT_PHASE) {
+      // Only exit in production runtime, not during build
+      logger.error('💥 Production environment validation failed - some features may not work');
+      // Don't exit immediately, let the app start but log critical error
+    }
+  }
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://shop.agrikoph.com'),
+  metadataBase: new URL(urlHelpers.getShopUrl()),
   title: 'Agriko Organic Farm - Premium Rice & Health Products',
   description: 'Premium organic rice varieties, pure herbal powders, and health blends from our sustainable family farm. Black, Brown, Red, White rice, Turmeric, Ginger, Moringa powders.',
   keywords: 'organic rice, black rice, brown rice, turmeric powder, moringa powder, ginger powder, organic honey, health products, sustainable farming',
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://shop.agrikoph.com',
+    url: urlHelpers.getShopUrl(),
     siteName: 'Agriko',
     title: 'Agriko Organic Farm - Premium Rice & Health Products',
     description: 'Premium organic rice varieties, pure herbal powders, and health blends from our sustainable family farm.',
@@ -109,43 +109,138 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${crimsonPro.variable} ${caveat.variable}`} data-scroll-behavior="smooth">
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://agrikoph.com" />
-        <link rel="dns-prefetch" href="https://agrikoph.com" />
+        <link rel="preconnect" href={URL_CONSTANTS.COMPANY_BASE_URL} />
+        <link rel="dns-prefetch" href={URL_CONSTANTS.COMPANY_BASE_URL} />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* Prevent font loading hydration mismatch */
+            :root {
+              --font-inter: 'Inter', system-ui, sans-serif;
+              --font-crimson: 'Crimson Pro', Georgia, serif;
+              --font-caveat: 'Caveat', cursive;
+            }
+            /* Ensure font fallbacks during loading */
+            .font-loading {
+              font-display: swap;
+              font-synthesis: none;
+            }
+          `
+        }} />
       </head>
-      <body className={`${inter.variable} ${crimsonPro.variable} ${caveat.variable} font-sans min-h-screen flex flex-col bg-cream`}>
-        {/* Google Analytics wrapped in Suspense to allow useSearchParams */}
+      <body className="font-sans min-h-screen flex flex-col bg-cream font-loading">
+        {/* Client-side initialization - temporarily disabled */}
+        {/* <ClientInitializer /> */}
+        
+        {/* Google Analytics */}
         <Suspense fallback={null}>
           <GoogleAnalytics />
         </Suspense>
+
+        {/* Page Analytics and User Behavior Tracking */}
+        <PageAnalytics pageType="other" />
         
-        {/* Page Analytics and User Behavior Tracking - Lazy loaded */}
-        <Suspense fallback={null}>
-          <PageAnalytics pageType="other" />
-        </Suspense>
-        
-        {/* Performance Optimizations - Lazy loaded */}
-        <Suspense fallback={null}>
-          <PerformanceOptimizer />
-        </Suspense>
+        {/* Performance Optimizations - temporarily disabled to fix preload warnings */}
+        {/* <PerformanceOptimizer /> */}
+
+        {/* Service Worker Registration and Legacy Preload Cleanup */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Aggressively remove legacy preloads immediately
+              function removeLegacyPreloads() {
+                const legacyImages = ['hero-organic-farm.jpg', 'products-hero.jpg'];
+                legacyImages.forEach(function(imageName) {
+                  const links = document.querySelectorAll('link[rel="preload"][href*="' + imageName + '"]');
+                  links.forEach(function(link) {
+                    console.warn('🗑️ Removing legacy preload:', link.href);
+                    link.remove();
+                  });
+                });
+              }
+
+              // Run cleanup immediately and periodically
+              removeLegacyPreloads();
+              setInterval(removeLegacyPreloads, 1000);
+
+              // Set up mutation observer to catch dynamically added preloads
+              if (typeof MutationObserver !== 'undefined') {
+                const observer = new MutationObserver(function(mutations) {
+                  mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                      if (node.nodeType === 1 && node.nodeName === 'LINK' && node.rel === 'preload') {
+                        if (node.href && (node.href.includes('hero-organic-farm.jpg') || node.href.includes('products-hero.jpg'))) {
+                          console.warn('🚫 Blocked dynamic legacy preload:', node.href);
+                          node.remove();
+                        }
+                      }
+                    });
+                  });
+                });
+                observer.observe(document.head, { childList: true, subtree: true });
+              }
+
+              // Register fixed service worker
+              if ('serviceWorker' in navigator && typeof window !== 'undefined') {
+                window.addEventListener('load', function() {
+                  // First clear old registrations and caches
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for (let registration of registrations) {
+                      console.log('🗑️ Unregistering old SW:', registration.scope);
+                      registration.unregister();
+                    }
+
+                    // Clear all old caches
+                    if ('caches' in window) {
+                      caches.keys().then(function(cacheNames) {
+                        cacheNames.forEach(function(cacheName) {
+                          console.log('🗑️ Deleting old cache:', cacheName);
+                          caches.delete(cacheName);
+                        });
+                      });
+                    }
+
+                    // Wait a moment then register new service worker
+                    setTimeout(function() {
+                      navigator.serviceWorker.register('/sw.js')
+                        .then(function(registration) {
+                          console.log('✅ Fixed SW registered successfully');
+                        })
+                        .catch(function(error) {
+                          console.log('❌ SW registration failed:', error);
+                        });
+                    }, 1000);
+                  });
+                });
+              }
+            `,
+          }}
+        />
         
         {/* Skip links for screen reader navigation */}
         <SkipLinks />
-        
+
+        {/* Track pathname for CSS-based conditional styling - temporarily disabled */}
+        {/* <PathnameTracker /> */}
+
+        {/* Global error handler - temporarily disabled due to SSR issues */}
+        {/* <ErrorHandler /> */}
+
         <CartProvider>
+          {/* GlobalErrorBoundary temporarily removed */}
           {/* Site navigation */}
-          <header 
+          <header
             id="site-navigation"
-            role="banner" 
+            role="banner"
             aria-label="Site navigation"
           >
             <NavbarWrapper />
           </header>
-          
+
           {/* Main content area */}
           <main
             id="main-content"
@@ -153,16 +248,15 @@ export default function RootLayout({
             className="flex-1 pt-16"
             aria-label="Main content"
           >
-            <GlobalErrorBoundary>
-              {children}
-            </GlobalErrorBoundary>
+            {children}
           </main>
           
           {/* Site footer */}
-          <footer 
+          <footer
             id="site-footer"
-            role="contentinfo" 
+            role="contentinfo"
             aria-label="Site footer"
+            className="admin-hide-footer"
           >
             <Footer />
           </footer>

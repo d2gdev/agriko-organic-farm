@@ -43,11 +43,11 @@ export async function POST() {
           id: product.id,
           name: product.name,
           slug: product.slug,
-          price: parseFloat(product.price) || 0,
-          categories: product.categories.map(cat => cat.name),
+          price: parseFloat(product.price as string) || 0,
+          categories: product.categories?.map(cat => cat.name) || [],
           description: product.description || product.short_description || '',
           inStock: product.stock_status === 'instock',
-          featured: product.featured,
+          featured: Boolean(product.featured),
         };
         
         const addedToGraph = await addProductToGraph(productData);

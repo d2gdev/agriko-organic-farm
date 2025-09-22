@@ -1,144 +1,114 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
-
-import { hybridSearch, runSearchExperiment, HybridSearchOptions } from '@/lib/hybrid-search';
+import { performHybridSearch } from '@/lib/hybrid-search';
+import { contextualSearch } from '@/lib/contextual-search';
+import { trackSearchEvent } from '@/lib/search-quality-metrics';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q');
-    const mode = searchParams.get('mode') as 'hybrid' | 'semantic_only' | 'keyword_only' || 'hybrid';
+    const query = searchParams.get('q') || '';
     const limit = parseInt(searchParams.get('limit') || '20');
-    const category = searchParams.get('category');
-    const inStock = searchParams.get('inStock');
-    const featured = searchParams.get('featured');
+    const expandQuery = searchParams.get('expand') !== 'false';
+    const category = searchParams.get('category') || undefined;
+    const inStockOnly = searchParams.get('inStock') !== 'false';
 
     if (!query) {
-      return NextResponse.json(
-        { error: 'Query parameter "q" is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        success: false,
+        error: 'Query parameter is required'
+      }, { status: 400 });
     }
 
-    logger.info(`🔍 Hybrid search GET: "${query}" (mode: ${mode})`);
+    logger.info(`🔍 Enhanced hybrid search API called: "${query}"`);
 
-    const options: HybridSearchOptions = {
-      mode,
-      maxResults: limit,
-      category: category || undefined,
-      inStock: inStock === 'true' ? true : undefined,
-      featured: featured === 'true' ? true : undefined,
-    };
+    // Generate session ID for tracking
+    const sessionId = request.headers.get('x-session-id') ||
+                      request.headers.get('x-forwarded-for') ||
+                      `anon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    const { results, searchStats } = await hybridSearch(query, options);
+    try {
+      // Use enhanced contextual search with hybrid capabilities
+      const { results: contextualResults, contextualInsights, qualityMetrics } = await contextualSearch(query, {
+        sessionId,
+        userId: searchParams.get('userId') || undefined,
+        limit,
+        category,
+        inStockOnly,
+        enablePersonalization: searchParams.get('personalization') !== 'false',
+        enableSemanticClustering: true,
+        enableIntentAnalysis: true,
+        enableQueryExpansion: expandQuery
+      });
 
-    return NextResponse.json({
-      success: true,
-      query,
-      mode,
-      results,
-      count: results.length,
-      searchType: 'hybrid',
-      stats: searchStats,
-    });
+      // Track search event
+      trackSearchEvent({
+        sessionId,
+        query,
+        searchType: 'hybrid',
+        results: contextualResults.slice(0, 10).map((result, index) => ({
+          productId: result.product.id,
+          position: index + 1,
+          score: result.score,
+          title: result.product.name,
+          relevanceScore: result.score,
+          personalizationBoost: result.personalizationBoost
+        })),
+        userActions: {
+          clickedResults: [],
+          purchasedResults: [],
+          dwellTimes: {},
+          abandonedSession: false
+        },
+        metadata: {
+          responseTime: 0,
+          totalResults: contextualResults.length
+        }
+      });
 
-  } catch (error) {
-    logger.error('❌ Hybrid search GET error:', error as Record<string, unknown>);
-    return NextResponse.json(
-      { 
-        error: 'Hybrid search failed', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { 
-      query, 
-      mode = 'hybrid',
-      semanticWeight = 0.6,
-      keywordWeight = 0.4,
-      maxResults = 20,
-      filters = {},
-      keywordOptions = {},
-      runExperiment = false,
-      experiments = []
-    } = body;
-
-    if (!query) {
-      return NextResponse.json(
-        { error: 'Query is required in request body' },
-        { status: 400 }
-      );
-    }
-
-    logger.info(`🔍 Advanced hybrid search POST: "${query}"`);
-    logger.info('🎯 Options:', { mode, semanticWeight, keywordWeight, filters });
-
-    // Handle A/B testing experiment mode
-    if (runExperiment && experiments.length > 0) {
-      logger.info('🧪 Running search experiments...');
-      
-      const experimentResults = await runSearchExperiment(query, experiments, maxResults);
-      
       return NextResponse.json({
         success: true,
-        query,
-        experimentMode: true,
-        experiments: experimentResults.experiments,
-        comparison: experimentResults.comparison,
-        searchType: 'hybrid_experiment'
+        data: {
+          query,
+          count: contextualResults.length,
+          results: contextualResults,
+          insights: {
+            intent: (contextualInsights as any).searchIntent,
+            clusters: (contextualInsights as any).semanticClusters?.slice(0, 3),
+            personalizedBoosts: Object.keys(contextualInsights.personalizedBoosts).length,
+            qualityScore: (qualityMetrics as any)?.relevanceScore
+          }
+        }
+      });
+
+    } catch (contextualError) {
+      logger.warn('Enhanced search failed, falling back to basic hybrid:', contextualError as Record<string, unknown>);
+
+      // Fallback to basic hybrid search
+      const results = await performHybridSearch(query, {
+        limit,
+        expandQuery,
+        category,
+        inStockOnly
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          query,
+          count: results.length,
+          results,
+          fallback: true
+        }
       });
     }
 
-    // Standard hybrid search
-    const options: HybridSearchOptions = {
-      mode,
-      semanticWeight,
-      keywordWeight,
-      maxResults,
-      ...filters,
-      keywordOptions
-    };
-
-    const { results, searchStats } = await hybridSearch(query, options);
-
-    return NextResponse.json({
-      success: true,
-      query,
-      mode,
-      weights: { semantic: semanticWeight, keyword: keywordWeight },
-      results,
-      count: results.length,
-      searchType: 'hybrid_advanced',
-      stats: searchStats,
-      filters
-    });
-
   } catch (error) {
-    logger.error('❌ Advanced hybrid search POST error:', error as Record<string, unknown>);
-    return NextResponse.json(
-      { 
-        error: 'Advanced hybrid search failed', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
-      },
-      { status: 500 }
-    );
+    logger.error('❌ Hybrid search API error:', error as Record<string, unknown>);
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to perform hybrid search',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
-}
-
-// OPTIONS method for CORS support
-export async function OPTIONS(request: NextRequest) {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
 }

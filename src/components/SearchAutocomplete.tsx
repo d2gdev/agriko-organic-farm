@@ -51,12 +51,13 @@ export default function SearchAutocomplete({
   const router = useRouter();
 
   // Focus trap for dropdown
-  const { focusFirst } = useFocusTrap(dropdownRef, {
+  const { focusFirst: _focusFirst } = useFocusTrap(dropdownRef, {
     isActive: isOpen,
     initialFocus: inputRef,
     escapeDeactivates: true,
     allowOutsideClick: true
   });
+  void _focusFirst;
 
   // Pre-defined trending and popular searches
   const trendingSuggestions: AutocompleteItem[] = useMemo(() => [
@@ -248,7 +249,7 @@ export default function SearchAutocomplete({
   };
 
   // Handle input blur
-  const handleInputBlur = (e: React.FocusEvent) => {
+  const handleInputBlur = (_e: React.FocusEvent) => {
     // Delay closing to allow for click events on suggestions
     const timeoutId = setTimeout(() => {
       try {

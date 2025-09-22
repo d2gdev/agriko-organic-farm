@@ -36,7 +36,7 @@ describe('UnifiedConfigurationManager', () => {
     process.env.JWT_SECRET = 'test_jwt_secret_with_minimum_32_characters_for_validation';
     process.env.NEXTAUTH_SECRET = 'test_nextauth_secret_with_minimum_32_chars_validation';
     process.env.NEXTAUTH_URL = 'http://localhost:3000';
-    process.env.NODE_ENV = 'test';
+    (process.env as any).NODE_ENV ='test';
 
     // Clear module cache to force re-import with new environment
     jest.resetModules();
@@ -98,14 +98,14 @@ describe('UnifiedConfigurationManager', () => {
       const config = manager.getConfig();
 
       // Optional configs should be undefined when not set
-      expect(config.optional?.openai).toBeUndefined();
-      expect(config.optional?.pinecone).toBeUndefined();
+      expect((config as any).optional?.openai).toBeUndefined();
+      expect((config as any).optional?.pinecone).toBeUndefined();
     });
   });
 
   describe('environment detection', () => {
     it('should detect development environment', async () => {
-      process.env.NODE_ENV = 'development';
+      (process.env as any).NODE_ENV ='development';
       process.env.NEXT_PUBLIC_WC_API_URL = 'https://test.com/wp-json/wc/v3';
       process.env.WC_CONSUMER_KEY = 'ck_test_consumer_key_1234567890abcdef';
       process.env.WC_CONSUMER_SECRET = 'cs_test_consumer_secret_1234567890abcdef';
@@ -126,7 +126,7 @@ describe('UnifiedConfigurationManager', () => {
     it('should detect production environment', async () => {
       // Instead of testing actual production mode which causes validation exit,
       // test the environment detection logic during build phase
-      process.env.NODE_ENV = 'production';
+      (process.env as any).NODE_ENV ='production';
       process.env.NEXT_PHASE = 'phase-production-build'; // Build phase prevents production validation
       process.env.NEXT_PUBLIC_WC_API_URL = 'https://test.com/wp-json/wc/v3';
       process.env.WC_CONSUMER_KEY = 'ck_test_consumer_key_1234567890abcdef';
@@ -173,7 +173,7 @@ describe('UnifiedConfigurationManager', () => {
       process.env.JWT_SECRET = 'test_jwt_secret_with_minimum_32_characters_for_validation';
       process.env.NEXTAUTH_SECRET = 'test_nextauth_secret_with_minimum_32_chars_validation';
       process.env.NEXTAUTH_URL = 'http://localhost:3000';
-      process.env.NODE_ENV = 'test';
+      (process.env as any).NODE_ENV ='test';
 
       // Clear optional variables
       delete process.env.OPENAI_API_KEY;
@@ -184,8 +184,8 @@ describe('UnifiedConfigurationManager', () => {
       const { UnifiedConfigurationManager } = await import('@/lib/unified-config');
       const manager = UnifiedConfigurationManager.getInstance();
       const config = manager.getConfig();
-      expect(config.optional?.openai).toBeUndefined();
-      expect(config.optional?.pinecone).toBeUndefined();
+      expect((config as any).optional?.openai).toBeUndefined();
+      expect((config as any).optional?.pinecone).toBeUndefined();
     });
   });
 
@@ -197,7 +197,7 @@ describe('UnifiedConfigurationManager', () => {
       process.env.JWT_SECRET = 'test_jwt_secret_with_minimum_32_characters_for_validation';
       process.env.NEXTAUTH_SECRET = 'test_nextauth_secret_with_minimum_32_chars_validation';
       process.env.NEXTAUTH_URL = 'http://localhost:3000';
-      process.env.NODE_ENV = 'test';
+      (process.env as any).NODE_ENV ='test';
     });
 
     it('should provide all configuration as object', async () => {

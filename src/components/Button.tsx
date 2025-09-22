@@ -101,11 +101,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     className
   );
 
-  // Loading spinner component
-  const LoadingSpinner = () => (
-    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-  );
-
   return (
     <button
       ref={ref}
@@ -116,7 +111,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     >
       {loading ? (
         <>
-          <LoadingSpinner />
+          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
           <span>Loading...</span>
         </>
       ) : (

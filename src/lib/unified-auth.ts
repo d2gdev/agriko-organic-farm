@@ -3,7 +3,8 @@ import jwt from 'jsonwebtoken';
 import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import { logger } from '@/lib/logger';
 import { getValidatedJwtSecret } from './jwt-config';
-import { getSessionStore, SessionData } from './session-store';
+import { getSessionStore } from './session-store';
+// import { SessionData } from './session-store'; // Preserved for future session data integration
 
 // Unified auth types
 export interface AuthUser {

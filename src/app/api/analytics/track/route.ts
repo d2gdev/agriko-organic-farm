@@ -116,7 +116,7 @@ async function processEvent(eventData: EventData, request: NextRequest): Promise
     id: eventData.id ?? generateEventId(),
     userId: eventData.userId,
     sessionId: eventData.sessionId ?? generateSessionId(),
-    timestamp: eventData.timestamp ? new Date(eventData.timestamp as string | Date) : new Date(),
+    timestamp: eventData.timestamp ? new Date(eventData.timestamp) : new Date(),
     type: eventData.type,
     data: eventData.data ?? {},
     metadata: { ...metadata, ...eventData.metadata }
@@ -169,9 +169,9 @@ async function processEvent(eventData: EventData, request: NextRequest): Promise
 
     case 'search_performed':
       if (typeof event.data.query === 'string' && event.data.query) {
-        trackSearch(event.data.query as string, {
+        trackSearch(event.data.query, {
           resultsCount: typeof event.data.resultsCount === 'number' ? event.data.resultsCount : 0,
-          searchType: typeof event.data.searchType === 'string' && 
+          searchType: typeof event.data.searchType === 'string' &&
                       ['keyword', 'semantic', 'hybrid'].includes(event.data.searchType)
                       ? event.data.searchType as 'keyword' | 'semantic' | 'hybrid'
                       : 'keyword',

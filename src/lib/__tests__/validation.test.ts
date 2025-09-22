@@ -548,8 +548,8 @@ describe('Validation Schemas', () => {
           const validationError = error as ValidationError;
           expect(validationError.issues).toBeDefined();
           expect(validationError.issues.length).toBeGreaterThan(0);
-          expect(validationError.issues[0].field).toBeDefined();
-          expect(validationError.issues[0].message).toBeDefined();
+          expect(validationError.issues[0]?.field).toBeDefined();
+          expect(validationError.issues[0]?.message).toBeDefined();
         }
       });
     });

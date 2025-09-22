@@ -44,6 +44,7 @@ export default function Footer() {
                     src="/images/agriko-turmeric-5in1-blend-500g-health-supplement.jpg"
                     alt="5-in-1 Turmeric Tea Blend"
                     fill
+                    sizes="(max-width: 768px) 256px, 256px"
                     className="object-cover rounded-xl shadow-lg"
                   />
                   <div className="absolute -top-4 -right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
@@ -72,7 +73,7 @@ export default function Footer() {
               {/* Social Icons */}
               <div className="flex space-x-4">
                 <a
-                  href="https://www.facebook.com/AgrikoPH/"
+                  href="https://facebook.com/agrikofarm"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-600 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md"
@@ -92,7 +93,9 @@ export default function Footer() {
                 </a>
 
                 <a
-                  href="#"
+                  href="https://www.instagram.com/agrikoph/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-600 hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-600 hover:text-white hover:border-purple-600 transition-all duration-300 shadow-sm hover:shadow-md"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -100,14 +103,6 @@ export default function Footer() {
                   </svg>
                 </a>
 
-                <a
-                  href="#"
-                  className="w-10 h-10 bg-white border border-neutral-200 rounded-full flex items-center justify-center text-neutral-600 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300 shadow-sm hover:shadow-md"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.347-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.748-1.378 0 0-.599 2.282-.744 2.840-.282 1.073-1.073 2.436-1.574 3.259C9.787 23.664 10.892 24 12.017 24c6.624 0 11.99-5.367 11.99-11.987C24.007 5.367 18.641.001 12.017.001z"/>
-                  </svg>
-                </a>
               </div>
             </div>
 
@@ -211,6 +206,69 @@ export default function Footer() {
                     Subscribe
                   </button>
                 </form>
+              </div>
+            </div>
+          </div>
+
+          {/* Trust Signals */}
+          <div className="mt-8 pt-8 border-t border-neutral-200">
+            <div className="flex flex-col items-center space-y-6">
+              {/* Payment Methods */}
+              <div className="text-center">
+                <p className="text-sm text-neutral-600 mb-4">Secure Payment Methods</p>
+                <div className="flex items-center justify-center space-x-4">
+                  {/* Cash */}
+                  <div className="bg-white p-2 rounded-lg border border-neutral-200 shadow-sm">
+                    <svg className="w-8 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1.81.45 1.61 1.67 1.61 1.16 0 1.6-.64 1.6-1.31 0-.68-.45-1.11-1.93-1.51-2.02-.53-3.29-1.42-3.29-3.04 0-1.74 1.46-2.91 3.06-3.19V5.5h2.67v1.77c1.07.28 2.02 1.04 2.14 2.55h-1.96c-.05-.72-.38-1.41-1.44-1.41-1.07 0-1.53.59-1.53 1.22 0 .69.68 1.01 2.09 1.41 1.93.56 3.12 1.43 3.12 3.08-.01 1.9-1.61 3.1-3.23 3.47z"/>
+                    </svg>
+                  </div>
+                  {/* Credit Card */}
+                  <div className="bg-white p-2 rounded-lg border border-neutral-200 shadow-sm">
+                    <svg className="w-8 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                    </svg>
+                  </div>
+                  {/* Bank Transfer */}
+                  <div className="bg-white p-2 rounded-lg border border-neutral-200 shadow-sm">
+                    <svg className="w-8 h-6 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zm-4.5-9L2 6v2h19V6l-9.5-5z"/>
+                    </svg>
+                  </div>
+                  {/* GCash */}
+                  <div className="bg-white px-3 py-2 rounded-lg border border-neutral-200 shadow-sm">
+                    <span className="text-blue-600 font-bold text-sm">GCash</span>
+                  </div>
+                  {/* PayMaya */}
+                  <div className="bg-white px-3 py-2 rounded-lg border border-neutral-200 shadow-sm">
+                    <span className="text-green-600 font-bold text-sm">Maya</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Certifications and Trust Badges */}
+              <div className="text-center">
+                <div className="flex items-center justify-center space-x-6">
+                  {/* Organic Certified */}
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-sm text-neutral-600 font-medium">Certified Organic</span>
+                  </div>
+                  {/* SSL Secured */}
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-sm text-neutral-600 font-medium">SSL Secured</span>
+                  </div>
+                  {/* Proudly Filipino */}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xl">🇵🇭</span>
+                    <span className="text-sm text-neutral-600 font-medium">Proudly Filipino-Owned</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

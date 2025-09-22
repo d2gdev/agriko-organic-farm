@@ -1,6 +1,7 @@
 // Qdrant vector database integration for semantic search
 import { logger } from '@/lib/logger';
 import { WCProduct } from '@/types/woocommerce';
+// Removed APP_CONSTANTS import due to dependency issues
 
 // Qdrant client configuration
 interface QdrantConfig {
@@ -12,13 +13,13 @@ interface QdrantConfig {
 interface QdrantPoint {
   id: string | number;
   vector: number[];
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
 }
 
 interface QdrantSearchResult {
   id: string | number;
   score: number;
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
 }
 
 class QdrantClient {
@@ -36,7 +37,7 @@ class QdrantClient {
   }
 
   // Create collection if it doesn't exist
-  async createCollection(vectorSize: number = 384): Promise<void> {
+  async createCollection(vectorSize: number = 768): Promise<void> {
     try {
       // Check if collection exists
       const checkResponse = await fetch(
@@ -112,7 +113,7 @@ class QdrantClient {
   async search(
     vector: number[],
     limit: number = 10,
-    filter?: Record<string, any>
+    filter?: Record<string, unknown>
   ): Promise<QdrantSearchResult[]> {
     try {
       const response = await fetch(
@@ -186,7 +187,7 @@ export function initializeQdrant(): QdrantClient {
 }
 
 // Simple text embedding using TF-IDF (fallback when no embedding model)
-function createSimpleEmbedding(text: string, dimensions: number = 384): number[] {
+function createSimpleEmbedding(text: string, dimensions: number = 768): number[] {
   // This is a simple hash-based embedding for demonstration
   // In production, use a proper embedding model like:
   // - OpenAI embeddings
@@ -196,7 +197,7 @@ function createSimpleEmbedding(text: string, dimensions: number = 384): number[]
   const words = text.toLowerCase().split(/\s+/);
   const embedding = new Array(dimensions).fill(0);
 
-  words.forEach((word, idx) => {
+  words.forEach((word) => {
     // Simple hash function to distribute words across dimensions
     let hash = 0;
     for (let i = 0; i < word.length; i++) {
@@ -240,8 +241,8 @@ export function createProductEmbedding(product: WCProduct): number[] {
 export async function indexProducts(products: WCProduct[]): Promise<void> {
   const client = initializeQdrant();
 
-  // Create collection if needed
-  await client.createCollection(384);
+  // Create collection if needed (768 dimensions for MPNet)
+  await client.createCollection(768);
 
   // Create points for each product
   const points: QdrantPoint[] = products.map(product => ({
@@ -250,15 +251,15 @@ export async function indexProducts(products: WCProduct[]): Promise<void> {
     payload: {
       name: product.name,
       slug: product.slug,
-      price: parseFloat(product.price),
+      price: product.price ? parseFloat(product.price) : 0,
       sale_price: product.sale_price ? parseFloat(product.sale_price) : null,
       categories: product.categories?.map(c => c.slug) || [],
       tags: product.tags?.map(t => t.slug) || [],
       in_stock: product.stock_status === 'instock',
-      featured: (product as any).featured || false,
+      featured: (product as unknown as { featured?: boolean }).featured || false,
       image: product.images?.[0]?.src || '',
       short_description: product.short_description?.replace(/<[^>]*>/g, '').slice(0, 200),
-      total_sales: (product as any).total_sales || 0,
+      total_sales: (product as unknown as { total_sales?: number }).total_sales || 0,
       average_rating: product.average_rating || '0',
       indexed_at: new Date().toISOString()
     }
@@ -291,7 +292,7 @@ export async function searchWithQdrant(
   const queryVector = createSimpleEmbedding(query);
 
   // Build filter
-  const must: any[] = [];
+  const must: Record<string, unknown>[] = [];
 
   if (options.category) {
     must.push({
@@ -345,7 +346,7 @@ export async function hybridQdrantSearch(
 ): Promise<Array<{
   id: string | number;
   score: number;
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
   matchType: 'semantic' | 'keyword' | 'hybrid';
 }>> {
   const { limit = 20, semanticWeight = 0.7 } = options;
@@ -362,8 +363,8 @@ export async function hybridQdrantSearch(
 
   semanticResults.forEach(result => {
     let keywordScore = 0;
-    const name = (result.payload.name || '').toLowerCase();
-    const description = (result.payload.short_description || '').toLowerCase();
+    const name = (typeof result.payload.name === 'string' ? result.payload.name : '').toLowerCase();
+    const description = (typeof result.payload.short_description === 'string' ? result.payload.short_description : '').toLowerCase();
 
     queryWords.forEach(word => {
       if (name.includes(word)) keywordScore += 2;
@@ -383,13 +384,13 @@ export async function hybridQdrantSearch(
     const combinedScore = (semanticScore * semanticWeight) +
                          (keywordScore * (1 - semanticWeight));
 
-    const matchType = keywordScore > 0 && semanticScore > 0 ? 'hybrid' :
+    const matchType: 'semantic' | 'keyword' | 'hybrid' = keywordScore > 0 && semanticScore > 0 ? 'hybrid' :
                      keywordScore > 0 ? 'keyword' : 'semantic';
 
     return {
       ...result,
       score: combinedScore,
-      matchType: matchType as 'semantic' | 'keyword' | 'hybrid'
+      matchType
     };
   });
 
@@ -398,13 +399,59 @@ export async function hybridQdrantSearch(
   return combinedResults.slice(0, limit);
 }
 
+// Safe wrapper for upserting vectors with error handling
+export async function safeUpsertVectors(
+  vectors: Array<{
+    id: string;
+    values: number[];
+    metadata: Record<string, unknown>;
+  }>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const client = initializeQdrant();
+
+    // Ensure collection exists (768 dimensions for MPNet)
+    await client.createCollection(768);
+
+    // Convert to Qdrant point format
+    const points: QdrantPoint[] = vectors.map(v => ({
+      id: v.id,
+      vector: v.values,
+      payload: v.metadata
+    }));
+
+    // Upsert points
+    await client.upsertPoints(points);
+
+    return { success: true };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Failed to upsert vectors to Qdrant:', { error: errorMessage });
+    return { success: false, error: errorMessage };
+  }
+}
+
+// Search by text query (simple wrapper for searchWithQdrant)
+export async function searchByText(
+  query: string,
+  options: {
+    limit?: number;
+    category?: string;
+    inStock?: boolean;
+    minPrice?: number;
+    maxPrice?: number;
+  } = {}
+): Promise<Array<QdrantSearchResult & { product?: WCProduct }>> {
+  return searchWithQdrant(query, options);
+}
+
 // Health check for Qdrant
 export async function checkQdrantHealth(): Promise<boolean> {
   try {
     const client = initializeQdrant();
     const response = await fetch(
-      `${(client as any).baseUrl}/collections`,
-      { headers: (client as any).headers }
+      `${(client as unknown as { baseUrl: string }).baseUrl}/collections`,
+      { headers: (client as unknown as { headers: HeadersInit }).headers }
     );
     return response.ok;
   } catch (error) {

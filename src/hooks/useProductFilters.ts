@@ -27,9 +27,9 @@ export function useProductFilters({
     // Text search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(product => 
+      filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query) ||
+        product.description?.toLowerCase().includes(query) ||
         product.short_description?.toLowerCase().includes(query) ||
         product.categories?.some(cat => cat.name.toLowerCase().includes(query)) ||
         product.tags?.some(tag => tag.name.toLowerCase().includes(query))
@@ -46,14 +46,14 @@ export function useProductFilters({
     // Price range filter
     if (filters.minPrice !== undefined) {
       filtered = filtered.filter(product => {
-        const price = parseFloat(product.price);
+        const price = parseFloat(product.price as string);
         return !isNaN(price) && price >= (filters.minPrice || 0);
       });
     }
 
     if (filters.maxPrice !== undefined) {
       filtered = filtered.filter(product => {
-        const price = parseFloat(product.price);
+        const price = parseFloat(product.price as string);
         return !isNaN(price) && price <= (filters.maxPrice || Number.MAX_VALUE);
       });
     }
@@ -74,10 +74,10 @@ export function useProductFilters({
             return a.name.localeCompare(b.name);
           
           case 'price_low':
-            return parseFloat(a.price) - parseFloat(b.price);
+            return parseFloat(a.price as string) - parseFloat(b.price as string);
           
           case 'price_high':
-            return parseFloat(b.price) - parseFloat(a.price);
+            return parseFloat(b.price as string) - parseFloat(a.price as string);
           
           case 'newest':
             return new Date(b.date_created || 0).getTime() - new Date(a.date_created || 0).getTime();
@@ -112,7 +112,7 @@ export function useProductFilters({
     ).sort();
 
     // Get price range
-    const prices = products.map(p => parseFloat(p.price)).filter(p => !isNaN(p));
+    const prices = products.map(p => parseFloat(p.price as string)).filter(p => !isNaN(p));
     const priceRange = prices.length > 0 ? {
       min: Math.min(...prices),
       max: Math.max(...prices)
@@ -171,14 +171,14 @@ export function useProductFilters({
     
     getProductsInPriceRange: (min: number, max: number) =>
       products.filter(p => {
-        const price = parseFloat(p.price);
+        const price = parseFloat(p.price as string);
         return !isNaN(price) && price >= min && price <= max;
       }),
 
     searchProducts: (query: string) => {
-      const searchResults = products.filter(product => 
+      const searchResults = products.filter(product =>
         product.name.toLowerCase().includes(query.toLowerCase()) ||
-        product.description.toLowerCase().includes(query.toLowerCase()) ||
+        product.description?.toLowerCase().includes(query.toLowerCase()) ||
         product.short_description?.toLowerCase().includes(query.toLowerCase())
       );
       return searchResults;
@@ -222,7 +222,7 @@ export function useProductSearch(products: WCProduct[], debounceMs: number = 300
       }
 
       // Search in description
-      if (product.description.toLowerCase().includes(searchTerm)) {
+      if (product.description?.toLowerCase().includes(searchTerm)) {
         return true;
       }
 

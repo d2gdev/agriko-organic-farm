@@ -56,16 +56,14 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     logger.error('Search Console API error:', error as Record<string, unknown>);
-    
-    // Fallback to mock data if real API fails
-    const fallbackData = getMockSearchConsoleData(metric, days);
+
+    // Return error state instead of mock data
     return NextResponse.json({
-      success: true,
-      data: fallbackData,
-      source: 'fallback_mock',
-      warning: 'Search Console API unavailable, showing fallback data',
+      success: false,
+      error: 'Search Console API unavailable',
+      message: 'Please configure Google Search Console API credentials',
       timestamp: new Date().toISOString()
-    });
+    }, { status: 503 });
   }
 }
 

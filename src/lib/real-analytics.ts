@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
-import { productCacheSafe, apiCacheSafe } from '@/lib/thread-safe-cache';
+// import { productCacheSafe, apiCacheSafe } from '@/lib/thread-safe-cache';
 import { monitoring } from '@/lib/monitoring-service';
-import { config } from '@/lib/unified-config';
+// import { config } from '@/lib/unified-config';
 
 // Real analytics data structures
 export interface AnalyticsEvent {

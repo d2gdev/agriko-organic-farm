@@ -114,7 +114,7 @@ export default function GraphAdminPage() {
       } else {
         alert('No recommendations found or error occurred');
       }
-    } catch (error) {
+    } catch {
       alert('Failed to test recommendations');
     }
   };

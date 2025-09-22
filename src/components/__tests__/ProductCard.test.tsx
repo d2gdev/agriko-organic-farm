@@ -7,16 +7,16 @@ import { WCProduct } from '@/types/woocommerce';
 // Mock Next.js components
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: ({ src, alt, width, height, className, priority, onLoad, onError, fetchPriority, fill, ...props }: Record<string, unknown>) => (
+  default: ({ src, alt, width, height, className, priority, onLoad, onError, fetchPriority, fill, ...props }: any) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      className={className}
-      onLoad={onLoad}
-      onError={onError}
+      src={src as string}
+      alt={alt as string}
+      width={width as number}
+      height={height as number}
+      className={className as string}
+      onLoad={onLoad as React.ReactEventHandler<HTMLImageElement>}
+      onError={onError as React.ReactEventHandler<HTMLImageElement>}
       {...(fill ? {} : props)}
     />
   ),
@@ -24,9 +24,9 @@ jest.mock('next/image', () => ({
 
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href, ...props }: Record<string, unknown>) => (
-    <a href={href} {...props}>
-      {children}
+  default: ({ children, href, ...props }: any) => (
+    <a href={href as string} {...props}>
+      {children as React.ReactNode}
     </a>
   ),
 }));

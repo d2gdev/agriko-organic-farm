@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { urlHelpers } from '@/lib/url-constants';
 
 export const metadata: Metadata = {
   title: 'Frequently Asked Questions - Agriko Organic Farm',
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
     title: 'FAQ - Agriko Organic Farm',
     description: 'Everything you need to know about Agriko organic products, health benefits, and farming practices.',
     type: 'website',
-    url: 'https://shop.agrikoph.com/faq',
+    url: `${urlHelpers.getShopUrl()}/faq`,
     images: [
       {
         url: '/images/og-faq.jpg',

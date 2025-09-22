@@ -108,13 +108,44 @@
       "Bash(del:*)",
       "WebFetch(domain:github.com)",
       "Read(//c/Users/Sean/.ssh/**)",
-      "mcp__github-official__create_or_update_file"
+      "mcp__github-official__create_or_update_file",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/lib/performance-queue.ts --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/lib/entity-discovery.ts --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/AutoTrackingProvider.tsx --max-warnings=0)",
+      "Bash(npm run lint:*)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/lib/enhanced-webhook-security.ts --max-warnings=0)",
+      "Bash(npm cache clean:*)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/lib/client-event-system.ts --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/hooks/useAutoTracking.ts --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/lib/woocommerce.ts --max-warnings=0)",
+      "Bash(cmd /c:*)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/AutoTrackingProvider.tsx src/components/ClientOnlyAutoTrackingProvider.tsx --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/SimpleTracking.tsx --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/ProductCard.tsx src/context/CartContext.tsx src/components/SearchModal.tsx --max-warnings=0)",
+      "Bash(nc localhost 3004)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/app/admin --max-warnings=0)",
+      "Bash(SKIP_ENV_VALIDATION=true npx next build --no-lint)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/ProductsWithFilters.tsx --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/SearchFilters.tsx src/components/ProductsWithFilters.tsx src/components/SearchModal.tsx src/lib/woocommerce.ts --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/*.tsx --format=compact)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/app/about/page.tsx --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/app/about/founder-story/page.tsx --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/app/about/page.tsx src/app/about/founder-story/page.tsx --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/Testimonials.tsx src/app/about/page.tsx --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/app/about/page.tsx src/components/Testimonials.tsx --max-warnings=0)",
+      "Bash(findstr:*)",
+      "Bash(tasklist)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/lib/bundle-optimizer.ts src/lib/performance.ts --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/PerformanceOptimizer.tsx src/lib/session-management.ts --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/app/api/health/route.ts src/lib/startup-validation.ts --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/TrustBadges.tsx src/components/Testimonials.tsx src/components/Breadcrumb.tsx --max-warnings=0)"
     ],
     "deny": [],
     "ask": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "github-official"
+    "github-official",
+    "context7"
   ]
 }
