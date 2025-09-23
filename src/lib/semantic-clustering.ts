@@ -12,7 +12,7 @@ function createSimpleEmbedding(text: string): number[] {
   const uniqueWords = [...new Set(words)];
   const embedding = new Array(256).fill(0); // Fixed size embedding
 
-  uniqueWords.forEach((word, index) => {
+  uniqueWords.forEach((word, _index) => {
     const hash = simpleHash(word) % 256;
     embedding[hash] += 1 / Math.sqrt(uniqueWords.length); // TF-IDF approximation
   });
