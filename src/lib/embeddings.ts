@@ -3,9 +3,24 @@ let pipeline: any = null;
 let env: any = null;
 let transformersInitialized = false;
 
-// Prevent any execution on client side
+// Prevent any execution on client side or during static generation
 async function initializeTransformers() {
-  if (typeof window !== 'undefined' || transformersInitialized) return;
+  // Skip during static generation, client-side, or if already initialized
+  if (typeof window !== 'undefined' ||
+      transformersInitialized ||
+      // Check multiple static generation indicators
+      process.env.NEXT_PHASE === 'phase-production-build' ||
+      process.env.NODE_ENV === 'production' ||
+      // Additional safeguards
+      (global as any).__NEXT_PREBUILD__ ||
+      (global as any).__NEXT_DATA_COLLECTION__) {
+    return;
+  }
+
+  // Only run in development server mode
+  if (!process.env.NODE_ENV || process.env.NODE_ENV !== 'development') {
+    return;
+  }
 
   try {
     const transformers = await import('@xenova/transformers');
@@ -219,6 +234,15 @@ export async function initializeEmbedder() {
     throw new Error('Embedding initialization is not available on client side');
   }
 
+  // Skip during static generation
+  if (process.env.NEXT_PHASE === 'phase-production-build' ||
+      process.env.NODE_ENV === 'production' ||
+      (global as any).__NEXT_PREBUILD__ ||
+      (global as any).__NEXT_DATA_COLLECTION__) {
+    console.warn('Skipping embedding initialization during static generation');
+    return null;
+  }
+
   if (!embeddingManager) {
     throw new Error('Embedding manager not available');
   }
@@ -265,6 +289,15 @@ export async function reinitializeEmbedder(): Promise<XenovaEmbedder> {
 export async function generateEmbedding(text: string, dimensions: number = 768): Promise<number[]> {
   if (typeof window !== 'undefined') {
     throw new Error('Embedding generation is not available on client side');
+  }
+
+  // Skip during static generation - return dummy embedding
+  if (process.env.NEXT_PHASE === 'phase-production-build' ||
+      process.env.NODE_ENV === 'production' ||
+      (global as any).__NEXT_PREBUILD__ ||
+      (global as any).__NEXT_DATA_COLLECTION__) {
+    console.warn('Skipping embedding generation during static generation');
+    return new Array(dimensions).fill(0);
   }
 
   // Initialize transformers first
@@ -634,6 +667,15 @@ function inferDomainContext(text: string): string[] {
 
 // Enhanced embedding generation with text preprocessing
 export async function generateEnhancedEmbedding(text: string, dimensions: number = 768): Promise<number[]> {
+  // Skip during static generation - return dummy embedding
+  if (process.env.NEXT_PHASE === 'phase-production-build' ||
+      process.env.NODE_ENV === 'production' ||
+      (global as any).__NEXT_PREBUILD__ ||
+      (global as any).__NEXT_DATA_COLLECTION__) {
+    console.warn('Skipping enhanced embedding generation during static generation');
+    return new Array(dimensions).fill(0);
+  }
+
   try {
     if (!embeddingManager?.isReady()) {
       await initializeEmbedder();

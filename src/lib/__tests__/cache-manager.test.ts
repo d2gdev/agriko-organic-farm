@@ -85,7 +85,7 @@ Object.defineProperty(global, 'localStorage', {
 const mockProcess = {
   on: jest.fn(),
 };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 (global as any).process = mockProcess;
 
 describe('MemoryCache', () => {
@@ -205,7 +205,7 @@ describe('MemoryCache', () => {
 
     it('should prevent operations on locked keys', () => {
       // Simulate concurrent operation by manually adding to operation lock
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (cache as any).operationLock.add('key1');
 
       expect(cache.set('key1', 'value1')).toBe(false);
@@ -267,7 +267,7 @@ describe('MemoryCache', () => {
 
     it('should handle browser environment cleanup', () => {
       // Store original window
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const originalWindow = (global as any).window;
 
       // Create a mock window and ensure it gets recognized
@@ -287,9 +287,9 @@ describe('MemoryCache', () => {
       const browserCache = new MemoryCache<string>({ maxSize: 10 });
 
       // Verify browser environment was detected by checking if cleanup handlers exist
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       expect((browserCache as any)._cleanupHandlers).toBeDefined();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       expect(typeof (browserCache as any)._cleanupHandlers).toBe('function');
 
       // The implementation should have called addEventListener
@@ -303,7 +303,7 @@ describe('MemoryCache', () => {
       expect(mockWindow.removeEventListener).toHaveBeenCalledWith('pagehide', expect.any(Function));
 
       // Cleanup handlers should be removed
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       expect((browserCache as any)._cleanupHandlers).toBeUndefined();
 
       // Restore original window
@@ -314,7 +314,7 @@ describe('MemoryCache', () => {
           configurable: true
         });
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         delete (global as any).window;
       }
     });
@@ -339,9 +339,9 @@ describe('MemoryCache', () => {
       cache.set('key2', 'value2');
 
       // Lock all keys
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (cache as any).operationLock.add('key1');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (cache as any).operationLock.add('key2');
 
       // Cleanup should skip locked keys
@@ -418,9 +418,9 @@ describe('SafeLocalStorage', () => {
       (SafeLocalStorage as any).getStorageSize = jest.fn().mockReturnValue(100);
 
       // Mock isLocalStorageAvailable to return true
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const originalIsAvailable = (SafeLocalStorage as any).isLocalStorageAvailable;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (SafeLocalStorage as any).isLocalStorageAvailable = jest.fn().mockReturnValue(true);
 
       const mockSetItem = jest.fn().mockImplementation(() => {
@@ -438,7 +438,7 @@ describe('SafeLocalStorage', () => {
 
       // Restore original methods
       (SafeLocalStorage as any).getStorageSize = originalGetStorageSize;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (SafeLocalStorage as any).isLocalStorageAvailable = originalIsAvailable;
     });
 
@@ -448,9 +448,9 @@ describe('SafeLocalStorage', () => {
       (SafeLocalStorage as any).getStorageSize = jest.fn().mockReturnValue(100);
 
       // Mock isLocalStorageAvailable to return true
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const originalIsAvailable = (SafeLocalStorage as any).isLocalStorageAvailable;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (SafeLocalStorage as any).isLocalStorageAvailable = jest.fn().mockReturnValue(true);
 
       const mockSetItem = jest.fn().mockImplementation(() => {
@@ -468,7 +468,7 @@ describe('SafeLocalStorage', () => {
 
       // Restore original methods
       (SafeLocalStorage as any).getStorageSize = originalGetStorageSize;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (SafeLocalStorage as any).isLocalStorageAvailable = originalIsAvailable;
     });
 
@@ -508,9 +508,9 @@ describe('SafeLocalStorage', () => {
       (SafeLocalStorage as any).getStorageSize = mockGetStorageSize;
 
       // Mock isLocalStorageAvailable to return true
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const originalIsAvailable = (SafeLocalStorage as any).isLocalStorageAvailable;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (SafeLocalStorage as any).isLocalStorageAvailable = jest.fn().mockReturnValue(true);
 
       const result = SafeLocalStorage.setItem('massiveKey', 'data');
@@ -522,7 +522,7 @@ describe('SafeLocalStorage', () => {
 
       // Restore original methods
       (SafeLocalStorage as any).getStorageSize = originalGetStorageSize;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (SafeLocalStorage as any).isLocalStorageAvailable = originalIsAvailable;
     });
 

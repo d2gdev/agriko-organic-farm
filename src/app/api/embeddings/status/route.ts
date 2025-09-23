@@ -88,8 +88,17 @@ export async function PUT() {
 
     // Warm up with a test embedding
     const embedder = await initializeEmbedder();
+
+    if (!embedder) {
+      return NextResponse.json({
+        status: 'unavailable',
+        error: 'Embedder not available during build phase',
+        message: 'Embedding functionality is disabled during static generation'
+      });
+    }
+
     const testText = "This is a test embedding to warm up the model.";
-    
+
     const startTime = Date.now();
     const result = await embedder(testText, { pooling: 'mean', normalize: true });
     const endTime = Date.now();

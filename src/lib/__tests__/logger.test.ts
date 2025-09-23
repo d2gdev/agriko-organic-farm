@@ -1,5 +1,5 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 import { logger, Logger, LogLevel } from '@/lib/logger';
 
 // Mock console methods

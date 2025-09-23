@@ -31,7 +31,7 @@ export default [
   },
   ...compat.extends('next/core-web-vitals'),
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -59,6 +59,17 @@ export default [
       'react-hooks/exhaustive-deps': 'error',
       // Type assertion warnings only
       '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+      // Anonymous exports allowed
+      'import/no-anonymous-default-export': 'off'
+    }
+  },
+  {
+    files: ['**/*.{js,jsx}'],
+    rules: {
+      'no-console': [
+        'error',
+        { allow: ['warn', 'error', 'group', 'groupEnd', 'table'] }
+      ],
       // Anonymous exports allowed
       'import/no-anonymous-default-export': 'off'
     }

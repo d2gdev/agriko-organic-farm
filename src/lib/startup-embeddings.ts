@@ -98,8 +98,12 @@ export class EmbeddingStartup {
       
       logger.info(`Embedding model loaded successfully in background (${loadTime}ms)`);
       
-      // Warm up with a test embedding
-      await this.warmUpModel(embedder);
+      // Warm up with a test embedding if embedder is available
+      if (embedder) {
+        await this.warmUpModel(embedder);
+      } else {
+        logger.info('Skipping embedding warmup during static generation');
+      }
       
     } catch (error) {
       logger.error('Background embedding initialization failed:', error as Record<string, unknown>);
@@ -118,8 +122,12 @@ export class EmbeddingStartup {
       
       logger.info(`Embedding model loaded synchronously (${loadTime}ms)`);
       
-      // Quick warm up
-      await this.warmUpModel(embedder, false);
+      // Quick warm up if embedder is available
+      if (embedder) {
+        await this.warmUpModel(embedder, false);
+      } else {
+        logger.info('Skipping sync embedding warmup during static generation');
+      }
       
     } catch (error) {
       logger.error('Synchronous embedding initialization failed:', error as Record<string, unknown>);
@@ -202,6 +210,17 @@ export class EmbeddingStartup {
       // Test a quick embedding to verify functionality
       const startTime = Date.now();
       const embedder = await initializeEmbedder();
+
+      if (!embedder) {
+        return {
+          status: 'error',
+          ready: false,
+          loading: false,
+          error: 'Embedder not available during build phase',
+          responseTime: 0
+        };
+      }
+
       await embedder("health check", { pooling: 'mean', normalize: true });
       const responseTime = Date.now() - startTime;
       

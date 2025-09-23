@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "prebuild": "node scripts/prebuild-fix.js --build",
+    "build": "npm run prebuild && next build",
     "start": "next start",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx src/",
     "lint:fix": "eslint --ext .ts,.tsx,.js,.jsx src/ --fix",

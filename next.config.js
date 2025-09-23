@@ -101,11 +101,66 @@ const nextConfig = {
   webpack: (config, { isServer, dev, webpack }) => {
     // Handle @xenova/transformers binary dependencies
     if (isServer) {
-      // External transformers to avoid Sharp conflicts
-      config.externals = config.externals || [];
-      config.externals.push({
-        '@xenova/transformers': '@xenova/transformers'
+      // During build phase, completely ignore transformers to prevent CSS loading issues
+      if (process.env.NODE_ENV === 'production' || !dev) {
+        config.externals = config.externals || [];
+        config.externals.push({
+          '@xenova/transformers': 'false'
+        });
+
+        // Block transformers completely during build
+        config.plugins.push(
+          new webpack.IgnorePlugin({
+            resourceRegExp: /@xenova\/transformers/,
+          })
+        );
+      } else {
+        // External transformers to avoid Sharp conflicts in development
+        config.externals = config.externals || [];
+        config.externals.push({
+          '@xenova/transformers': '@xenova/transformers'
+        });
+      }
+
+      // Add fallback for missing browser CSS files during build
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: 'empty',
+        path: 'empty',
+      };
+
+      // Custom plugin to create missing CSS file during build
+      config.plugins.push({
+        apply: (compiler) => {
+          compiler.hooks.beforeCompile.tap('CreateMissingCSSPlugin', () => {
+            const fs = require('fs');
+            const path = require('path');
+
+            try {
+              const browserDir = path.join(compiler.context, '.next', 'server', 'app', 'browser');
+              const cssFile = path.join(browserDir, 'default-stylesheet.css');
+
+              if (!fs.existsSync(browserDir)) {
+                fs.mkdirSync(browserDir, { recursive: true });
+              }
+
+              if (!fs.existsSync(cssFile)) {
+                fs.writeFileSync(cssFile, '/* Stub CSS for @xenova/transformers compatibility */');
+                console.log('Created stub CSS file for transformers compatibility');
+              }
+            } catch (error) {
+              console.warn('Could not create stub CSS file:', error.message);
+            }
+          });
+        }
       });
+
+      // Ignore missing browser-specific CSS files
+      config.plugins.push(
+        new webpack.IgnorePlugin({
+          resourceRegExp: /browser\/default-stylesheet\.css$/,
+        })
+      );
     }
 
     // Prevent Jest workers and other worker processes from being used in browser
