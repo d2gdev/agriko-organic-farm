@@ -1,8 +1,8 @@
 {
-  "rewrites": [
-    {
-      "source": "/((?!api|_next/static|_next/image|favicon.ico).*)",
-      "destination": "/index"
+  "functions": {
+    "src/app/**/*.{js,ts,jsx,tsx}": {
+      "runtime": "nodejs18.x"
     }
-  ]
+  },
+  "buildCommand": "npm run build"
 }
