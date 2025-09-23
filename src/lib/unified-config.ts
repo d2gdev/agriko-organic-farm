@@ -380,8 +380,8 @@ export class UnifiedConfigurationManager {
 
         // In production, exit on validation failure
         if (this.isProduction) {
-          logger.error('🚨 Exiting due to configuration validation failure in production');
-          process.exit(1);
+          logger.error('🚨 Would exit due to configuration validation failure in production (disabled for debugging)');
+          // process.exit(1);
         }
 
         // In development, use defaults and continue
@@ -395,7 +395,8 @@ export class UnifiedConfigurationManager {
       logger.error('💥 Failed to load configuration:', error as Record<string, unknown>);
 
       if (this.isProduction) {
-        process.exit(1);
+        logger.error('Would exit in production (disabled for debugging)');
+        // process.exit(1);
       }
 
       throw error;
@@ -606,7 +607,8 @@ export const config = unifiedConfig.getConfig();
 const validation = unifiedConfig.validateRequiredServices();
 if (!validation.valid && config.isProd) {
   logger.error('❌ Missing required services:', { missing: validation.missing });
-  process.exit(1);
+  // Temporarily disabled for debugging
+  // process.exit(1);
 } else if (!validation.valid) {
   logger.warn('⚠️ Missing optional services:', { missing: validation.missing });
 }

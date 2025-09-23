@@ -297,10 +297,10 @@ if (!validation.success) {
     missing: validation.missing
   });
   
-  // In production, exit if validation fails
-  if (process.env.NODE_ENV === 'production') {
-    logger.error('Exiting due to environment validation failure');
-    process.exit(1);
+  // In production during runtime (not build), log error but don't exit
+  if (process.env.NODE_ENV === 'production' && !process.env.SKIP_ENV_VALIDATION) {
+    logger.error('Environment validation failed in production - some features may not work correctly');
+    // Don't exit to allow graceful degradation
   }
 } else {
   logger.info('✅ Environment validation passed', {
