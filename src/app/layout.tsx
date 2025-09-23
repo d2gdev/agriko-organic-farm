@@ -163,13 +163,14 @@ export default function RootLayout({
                 });
               }
 
-              // Run cleanup immediately and periodically
+              // Run cleanup immediately and periodically with proper cleanup
               removeLegacyPreloads();
-              setInterval(removeLegacyPreloads, 1000);
+              const cleanupInterval = setInterval(removeLegacyPreloads, 1000);
 
               // Set up mutation observer to catch dynamically added preloads
+              let observer: MutationObserver | null = null;
               if (typeof MutationObserver !== 'undefined') {
-                const observer = new MutationObserver(function(mutations) {
+                observer = new MutationObserver(function(mutations) {
                   mutations.forEach(function(mutation) {
                     mutation.addedNodes.forEach(function(node) {
                       if (node.nodeType === 1 && node.nodeName === 'LINK' && node.rel === 'preload') {
@@ -183,6 +184,29 @@ export default function RootLayout({
                 });
                 observer.observe(document.head, { childList: true, subtree: true });
               }
+
+              // Cleanup function to prevent memory leaks
+              const cleanup = function() {
+                console.log('🧹 Cleaning up layout resources...');
+                if (cleanupInterval) {
+                  clearInterval(cleanupInterval);
+                }
+                if (observer) {
+                  observer.disconnect();
+                  observer = null;
+                }
+              };
+
+              // Register cleanup on page unload
+              window.addEventListener('beforeunload', cleanup);
+              window.addEventListener('pagehide', cleanup);
+
+              // Also cleanup on visibility change (when tab becomes hidden)
+              document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden') {
+                  cleanup();
+                }
+              });
 
               // Register fixed service worker
               if ('serviceWorker' in navigator && typeof window !== 'undefined') {
