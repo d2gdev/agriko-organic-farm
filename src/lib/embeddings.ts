@@ -19,7 +19,7 @@ async function initializeTransformers() {
       env.allowLocalModels = true;
     }
 
-    console.log('✅ Transformers.js initialized successfully');
+    // Transformers.js initialized successfully
   } catch (error) {
     console.warn('Transformers.js not available:', error);
   }
