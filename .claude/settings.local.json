@@ -138,7 +138,8 @@
       "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/lib/bundle-optimizer.ts src/lib/performance.ts --max-warnings=0)",
       "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/PerformanceOptimizer.tsx src/lib/session-management.ts --max-warnings=0)",
       "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/app/api/health/route.ts src/lib/startup-validation.ts --max-warnings=0)",
-      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/TrustBadges.tsx src/components/Testimonials.tsx src/components/Breadcrumb.tsx --max-warnings=0)"
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/TrustBadges.tsx src/components/Testimonials.tsx src/components/Breadcrumb.tsx --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/lib/semantic-clustering.ts --max-warnings=0)"
     ],
     "deny": [],
     "ask": []

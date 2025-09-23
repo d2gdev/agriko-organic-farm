@@ -49,6 +49,9 @@ const nextConfig = {
 
   serverExternalPackages: ['sharp', 'neo4j-driver', '@pinecone-database/pinecone', 'nodemailer', 'redis'],
 
+  // Handle ESM packages - do not transpile transformers due to Sharp conflicts
+  // transpilePackages: ['@xenova/transformers'],
+
   compiler: {
     removeConsole: {
       exclude: ['error', 'warn']
@@ -96,6 +99,15 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer, dev, webpack }) => {
+    // Handle @xenova/transformers binary dependencies
+    if (isServer) {
+      // External transformers to avoid Sharp conflicts
+      config.externals = config.externals || [];
+      config.externals.push({
+        '@xenova/transformers': '@xenova/transformers'
+      });
+    }
+
     // Prevent Jest workers and other worker processes from being used in browser
     if (!isServer) {
       config.resolve.fallback = {
@@ -108,10 +120,10 @@ const nextConfig = {
         os: false,
       };
 
-      // Block problematic modules that might spawn workers
+      // Block problematic modules that might spawn workers (client side only)
       config.resolve.alias = {
         ...config.resolve.alias,
-        '@xenova/transformers': false,
+        '@xenova/transformers': false, // Block on client side to prevent worker spawning
         'jest-worker': false,
         'worker_threads': false,
         'child_process': false,

@@ -1,19 +1,25 @@
 // Only import Transformers.js on server side to prevent worker spawning
 let pipeline: any = null;
 let env: any = null;
+let transformersInitialized = false;
 
 // Prevent any execution on client side
-if (typeof window === 'undefined' && typeof process !== 'undefined') {
+async function initializeTransformers() {
+  if (typeof window !== 'undefined' || transformersInitialized) return;
+
   try {
-    const transformers = require('@xenova/transformers');
+    const transformers = await import('@xenova/transformers');
     pipeline = transformers.pipeline;
     env = transformers.env;
+    transformersInitialized = true;
 
     // Disable remote models fallback to ensure local-only operation
     if (env) {
       env.allowRemoteModels = false;
       env.allowLocalModels = true;
     }
+
+    console.log('✅ Transformers.js initialized successfully');
   } catch (error) {
     console.warn('Transformers.js not available:', error);
   }
@@ -70,6 +76,9 @@ class EmbeddingManager {
     if (typeof window !== 'undefined') {
       throw new Error('Embedding generation is not available on client side');
     }
+
+    // Initialize transformers first
+    await initializeTransformers();
 
     if (!pipeline) {
       throw new Error('Transformers.js pipeline not available');
@@ -257,6 +266,9 @@ export async function generateEmbedding(text: string, dimensions: number = 768):
   if (typeof window !== 'undefined') {
     throw new Error('Embedding generation is not available on client side');
   }
+
+  // Initialize transformers first
+  await initializeTransformers();
 
   if (!embeddingManager) {
     throw new Error('Embedding manager not available');
