@@ -136,28 +136,29 @@ export default function Navbar({
   // Fixed hydration issues by using CSS classes instead of dynamic inline styles
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200`}
+      className={`fixed top-0 left-0 right-0 z-50 w-full max-w-full box-border transition-all duration-300 bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200`}
       role="navigation"
       aria-label="Main navigation"
+      style={{ boxSizing: 'border-box' }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="w-full max-w-full px-2 sm:px-4 lg:px-8 box-border">
+        <div className="flex justify-between items-center h-16 min-w-0 w-full max-w-full overflow-hidden">
 
           {/* Logo */}
-          <div className="flex-shrink-0 group">
+          <div className="flex-shrink-0 group min-w-0 max-w-[120px] sm:max-w-[140px]">
             <Link
               href="/"
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-1 sm:space-x-2"
               onClick={() => trackNavigation('Agriko Logo', '/', 'desktop')}
             >
-              <div className="relative">
+              <div className="relative max-w-full">
                 <Image
                   src="/images/Agriko-Logo.png"
                   alt="Agriko Organic Farm"
                   width={120}
                   height={60}
-                  className="h-12 w-auto transition-all duration-300 group-hover:scale-105"
-                  style={{ color: 'transparent' }}
+                  className="h-10 sm:h-12 w-auto max-w-full transition-all duration-300 group-hover:scale-105"
+                  style={{ color: 'transparent', maxWidth: '100%' }}
                   priority
                 />
                 {/* Subtle glow effect */}
@@ -229,7 +230,7 @@ export default function Navbar({
           </div>
 
           {/* Right side controls */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-3 flex-shrink-0 min-w-0 max-w-[200px] sm:max-w-[250px]">
             {/* Search Buttons - visible on medium and larger screens */}
             <div className="hidden md:flex items-center space-x-1">
               {/* Regular Search Button */}
@@ -244,11 +245,11 @@ export default function Navbar({
                     }).catch(() => {});
                   }
                 }}
-                className="p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hover:scale-110"
+                className="p-1.5 sm:p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hover:scale-110"
                 aria-label="Search products"
                 title="Traditional Search"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
@@ -265,11 +266,11 @@ export default function Navbar({
                     }).catch(() => {});
                   }
                 }}
-                className="p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hover:scale-110 relative group"
+                className="p-1.5 sm:p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hover:scale-110 relative group"
                 aria-label="Semantic AI search"
                 title="🧠 AI Smart Search"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
                 {/* AI indicator */}
@@ -290,10 +291,10 @@ export default function Navbar({
                   }).catch(() => {});
                 }
               }}
-              className="relative p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 group"
+              className="relative p-1.5 sm:p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 group"
               aria-label={hasMounted ? `Shopping cart with ${state.itemCount} items` : "Shopping cart"}
             >
-              <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5" />
               </svg>
               
@@ -317,7 +318,7 @@ export default function Navbar({
             {/* Enhanced Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200"
+              className="lg:hidden p-1.5 sm:p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200"
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             >
               <div className="relative w-6 h-6">

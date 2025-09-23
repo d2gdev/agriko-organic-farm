@@ -1,0 +1,80 @@
+import { FlatCompat } from '@eslint/eslintrc';
+import js from '@eslint/js';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import typescriptParser from '@typescript-eslint/parser';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+});
+
+export default [
+  {
+    ignores: [
+      'node_modules/',
+      '.next/',
+      'out/',
+      'scripts/',
+      '**/*.d.ts',
+      'jest.config.js',
+      'next.config.js',
+      'postcss.config.js',
+      'tailwind.config.js',
+      'src/__tests__/e2e-real-world.test.ts',
+      'src/__tests__/error-resilience.test.ts'
+    ]
+  },
+  ...compat.extends('next/core-web-vitals'),
+  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      parser: typescriptParser,
+      parserOptions: {
+        project: './tsconfig.json',
+        createDefaultProgram: true
+      }
+    },
+    plugins: {
+      '@typescript-eslint': typescriptEslint
+    },
+    rules: {
+      'no-console': [
+        'error',
+        { allow: ['warn', 'error', 'group', 'groupEnd', 'table'] }
+      ],
+      // Relaxed TypeScript rules for large codebase
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
+      '@typescript-eslint/prefer-optional-chain': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      // Unused vars warnings only for production
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'react-hooks/exhaustive-deps': 'error',
+      // Type assertion warnings only
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+      // Anonymous exports allowed
+      'import/no-anonymous-default-export': 'off'
+    }
+  },
+  {
+    files: ['src/lib/logger.ts', 'scripts/**/*.js', 'scripts/**/*.ts'],
+    rules: {
+      'no-console': 'off'
+    }
+  },
+  {
+    files: ['**/__tests__/**/*', '**/*.test.*', '**/*.spec.*'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-console': 'off'
+    }
+  }
+];
