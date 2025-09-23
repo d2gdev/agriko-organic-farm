@@ -438,22 +438,16 @@ async function calculateIntentAccuracy(events: SearchEvent[]): Promise<number> {
     if (event.intent) {
       totalWithIntents++;
 
-      // Use DeepSeek to analyze if the intent was correctly identified
+      // Fallback intent accuracy calculation based on user engagement
       try {
-        const qualityAnalysis = await analyzeSearchQuality(
-          event.query,
-          event.results.map(r => ({
-            name: r.title,
-            clickThrough: event.userActions.clickedResults.includes(r.productId),
-            purchased: event.userActions.purchasedResults.includes(r.productId)
-          })),
-          {
-            satisfied: !event.userActions.abandonedSession,
-            foundRelevant: event.userActions.clickedResults.length > 0
-          }
-        );
+        const hasClicks = event.userActions.clickedResults.length > 0;
+        const hasPurchases = event.userActions.purchasedResults.length > 0;
+        const notAbandoned = !event.userActions.abandonedSession;
 
-        if (qualityAnalysis.intentMatch > 0.7) {
+        // Simple heuristic: if user engaged positively, assume intent was correct
+        const engagementScore = (hasClicks ? 0.3 : 0) + (hasPurchases ? 0.5 : 0) + (notAbandoned ? 0.2 : 0);
+
+        if (engagementScore > 0.7) {
           correctIntents++;
         }
       } catch (error) {

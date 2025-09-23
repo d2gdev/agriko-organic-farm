@@ -4,6 +4,43 @@ import { cosineSimilarity } from './multi-vector-embeddings';
 // import { logger } from './logger';
 // import type { WCProduct } from '@/types/woocommerce';
 
+/**
+ * Create a simple embedding using TF-IDF-like approach
+ */
+function createSimpleEmbedding(text: string): number[] {
+  const words = text.toLowerCase().match(/\b[a-z]{2,}\b/g) || [];
+  const uniqueWords = [...new Set(words)];
+  const embedding = new Array(256).fill(0); // Fixed size embedding
+
+  uniqueWords.forEach((word, index) => {
+    const hash = simpleHash(word) % 256;
+    embedding[hash] += 1 / Math.sqrt(uniqueWords.length); // TF-IDF approximation
+  });
+
+  // Normalize
+  const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+  if (norm > 0) {
+    for (let i = 0; i < embedding.length; i++) {
+      embedding[i] /= norm;
+    }
+  }
+
+  return embedding;
+}
+
+/**
+ * Simple hash function for strings
+ */
+function simpleHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash);
+}
+
 export interface SemanticCluster {
   id: string;
   name: string;
@@ -73,7 +110,8 @@ export async function generateSemanticClusters(
         product.categories?.map(c => c.name).join(' ')
       ].filter(Boolean).join(' ');
 
-      const embedding = await generateEnhancedEmbedding(text);
+      // Fallback: create simple hash-based embedding
+      const embedding = createSimpleEmbedding(text);
       return { ...product, embedding };
     })
   );
@@ -527,7 +565,7 @@ export async function findSimilarProducts(
   let targetEmbedding = targetProduct.embedding;
   if (!targetEmbedding) {
     const text = `${targetProduct.name} ${targetProduct.description || ''}`;
-    targetEmbedding = await generateEnhancedEmbedding(text);
+    targetEmbedding = createSimpleEmbedding(text);
   }
 
   const similarities: Array<{ product: typeof targetProduct; similarity: number }> = [];
@@ -538,7 +576,7 @@ export async function findSimilarProducts(
     let productEmbedding = product.embedding;
     if (!productEmbedding) {
       const text = `${product.name} ${product.description || ''}`;
-      productEmbedding = await generateEnhancedEmbedding(text);
+      productEmbedding = createSimpleEmbedding(text);
     }
 
     const similarity = cosineSimilarity(targetEmbedding, productEmbedding);

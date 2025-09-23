@@ -583,7 +583,7 @@ export const ResourcePreloader = {
 
     // Debug logging to track what's being preloaded
     if (process.env.NODE_ENV === 'development') {
-      logger.debug('🔄 Preloading resources for path:', currentPath, criticalResources.map(r => r.href));
+      logger.debug('🔄 Preloading resources for path:', { currentPath, resources: criticalResources.map(r => r.href) });
     }
 
     criticalResources.forEach(resource => {
@@ -591,7 +591,7 @@ export const ResourcePreloader = {
       const existingLink = document.head.querySelector(`link[rel="preload"][href="${resource.href}"]`);
       if (existingLink) {
         if (process.env.NODE_ENV === 'development') {
-          logger.debug('⏭️ Skipping duplicate preload:', resource.href);
+          logger.debug('⏭️ Skipping duplicate preload:', { href: resource.href });
         }
         return;
       }
@@ -613,7 +613,7 @@ export const ResourcePreloader = {
       }
 
       if (process.env.NODE_ENV === 'development') {
-        logger.debug('✅ Preloading:', resource.href);
+        logger.debug('✅ Preloading:', { href: resource.href });
       }
 
       document.head.appendChild(link);
