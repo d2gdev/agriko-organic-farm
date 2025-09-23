@@ -362,10 +362,18 @@ function analyzeActivityTimePattern(interactions: any[]): string {
   return 'evening_shopper';
 }
 
+// Interval reference for cleanup
+let qdrantMaintenanceInterval: NodeJS.Timeout | null = null;
+
 // Schedule automatic Qdrant maintenance
 export async function scheduleQdrantMaintenance(): Promise<void> {
+  // Clear existing interval if any
+  if (qdrantMaintenanceInterval) {
+    clearInterval(qdrantMaintenanceInterval);
+  }
+
   // Clean up old search patterns every day
-  setInterval(async () => {
+  qdrantMaintenanceInterval = setInterval(async () => {
     try {
       const _client = initializeQdrant();
       const _cutoffTime = Date.now() - (30 * 24 * 60 * 60 * 1000); // 30 days ago
@@ -378,4 +386,26 @@ export async function scheduleQdrantMaintenance(): Promise<void> {
   }, 24 * 60 * 60 * 1000); // 24 hours
 
   logger.info('⏰ Qdrant automatic maintenance scheduler started');
+}
+
+// Stop scheduled maintenance
+export function stopQdrantMaintenance(): void {
+  if (qdrantMaintenanceInterval) {
+    clearInterval(qdrantMaintenanceInterval);
+    qdrantMaintenanceInterval = null;
+    logger.info('🛑 Qdrant automatic maintenance scheduler stopped');
+  }
+}
+
+// Graceful shutdown handler
+const cleanup = () => {
+  logger.info('🧹 Cleaning up Qdrant auto-sync...');
+  stopQdrantMaintenance();
+};
+
+// Register cleanup handlers
+if (typeof process !== 'undefined') {
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+  process.on('beforeExit', cleanup);
 }

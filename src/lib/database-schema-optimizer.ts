@@ -400,10 +400,22 @@ export async function initializeDatabaseOptimizations(): Promise<void> {
   }
 }
 
+// Interval references for cleanup
+let performanceMonitoringInterval: NodeJS.Timeout | null = null;
+let healthCheckInterval: NodeJS.Timeout | null = null;
+
 // Schedule regular performance monitoring
 export function schedulePerformanceMonitoring(): void {
+  // Clear existing intervals if any
+  if (performanceMonitoringInterval) {
+    clearInterval(performanceMonitoringInterval);
+  }
+  if (healthCheckInterval) {
+    clearInterval(healthCheckInterval);
+  }
+
   // Monitor performance every 5 minutes
-  setInterval(async () => {
+  performanceMonitoringInterval = setInterval(async () => {
     try {
       const stats = await databaseOptimizer.getPerformanceStats();
       logger.info('📊 Database performance stats updated:', {
@@ -425,7 +437,7 @@ export function schedulePerformanceMonitoring(): void {
   }, 5 * 60 * 1000); // 5 minutes
 
   // Health check every 15 minutes
-  setInterval(async () => {
+  healthCheckInterval = setInterval(async () => {
     try {
       const healthCheck = await databaseOptimizer.performHealthCheck();
 
@@ -440,4 +452,30 @@ export function schedulePerformanceMonitoring(): void {
   }, 15 * 60 * 1000); // 15 minutes
 
   logger.info('⏰ Database performance monitoring scheduled');
+}
+
+// Stop performance monitoring
+export function stopPerformanceMonitoring(): void {
+  if (performanceMonitoringInterval) {
+    clearInterval(performanceMonitoringInterval);
+    performanceMonitoringInterval = null;
+  }
+  if (healthCheckInterval) {
+    clearInterval(healthCheckInterval);
+    healthCheckInterval = null;
+  }
+  logger.info('🛑 Database performance monitoring stopped');
+}
+
+// Graceful shutdown handler
+const cleanup = () => {
+  logger.info('🧹 Cleaning up database schema optimizer...');
+  stopPerformanceMonitoring();
+};
+
+// Register cleanup handlers
+if (typeof process !== 'undefined') {
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+  process.on('beforeExit', cleanup);
 }

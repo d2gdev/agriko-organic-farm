@@ -412,9 +412,17 @@ export async function autoSyncProductSimilarity(): Promise<void> {
 }
 
 // Schedule automatic relationship updates
+// Interval reference for cleanup
+let memgraphUpdateInterval: NodeJS.Timeout | null = null;
+
 export async function scheduleMemgraphUpdates(): Promise<void> {
+  // Clear existing interval if any
+  if (memgraphUpdateInterval) {
+    clearInterval(memgraphUpdateInterval);
+  }
+
   // Run similarity analysis every hour
-  setInterval(async () => {
+  memgraphUpdateInterval = setInterval(async () => {
     try {
       await autoSyncProductSimilarity();
       logger.info('🔄 Scheduled Memgraph similarity update completed');
@@ -424,4 +432,26 @@ export async function scheduleMemgraphUpdates(): Promise<void> {
   }, 60 * 60 * 1000); // 1 hour
 
   logger.info('⏰ Memgraph automatic update scheduler started');
+}
+
+// Stop scheduled updates
+export function stopMemgraphUpdates(): void {
+  if (memgraphUpdateInterval) {
+    clearInterval(memgraphUpdateInterval);
+    memgraphUpdateInterval = null;
+    logger.info('🛑 Memgraph automatic update scheduler stopped');
+  }
+}
+
+// Graceful shutdown handler
+const cleanup = () => {
+  logger.info('🧹 Cleaning up Memgraph auto-sync...');
+  stopMemgraphUpdates();
+};
+
+// Register cleanup handlers
+if (typeof process !== 'undefined') {
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+  process.on('beforeExit', cleanup);
 }

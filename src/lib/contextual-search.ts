@@ -223,7 +223,11 @@ export async function contextualSearch(
   logger.info(`  🔍 Base search returned ${results.length} results`);
 
   // 7. Apply Enhanced Personalization
-  let personalizedResults = results.map(result => ({
+  let personalizedResults: Array<HybridSearchResult & {
+    personalizedScore: number;
+    personalizationBoost: number;
+    personalizationReasons: string[];
+  }> = results.map(result => ({
     ...result,
     personalizedScore: result.score,
     personalizationBoost: 1.0,
@@ -260,7 +264,7 @@ export async function contextualSearch(
           personalizationBoost: enhanced.personalizationBoost,
           personalizationReasons: enhanced.personalizationReasons
         };
-      }).filter(Boolean) as typeof results;
+      }).filter(Boolean) as typeof personalizedResults;
 
       contextualInsights.appliedContext.push('enhanced_personalization');
       logger.info(`  🎯 Enhanced personalization applied to ${personalizedResults.length} results`);

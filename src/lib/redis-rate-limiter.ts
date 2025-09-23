@@ -297,11 +297,18 @@ class RedisRateLimiter {
     }
   }
 
+  private fallbackCleanupInterval: NodeJS.Timeout | null = null;
+
   /**
    * Cleanup expired entries in fallback map
    */
   private startFallbackCleanup(): void {
-    setInterval(() => {
+    // Clear existing interval if any
+    if (this.fallbackCleanupInterval) {
+      clearInterval(this.fallbackCleanupInterval);
+    }
+
+    this.fallbackCleanupInterval = setInterval(() => {
       const now = Date.now();
       for (const [key, data] of this.fallbackMap.entries()) {
         if (data.resetTime <= now) {
@@ -309,6 +316,16 @@ class RedisRateLimiter {
         }
       }
     }, 60000); // Cleanup every minute
+  }
+
+  /**
+   * Stop fallback cleanup
+   */
+  public stopFallbackCleanup(): void {
+    if (this.fallbackCleanupInterval) {
+      clearInterval(this.fallbackCleanupInterval);
+      this.fallbackCleanupInterval = null;
+    }
   }
 
   /**
@@ -388,3 +405,16 @@ export async function checkTrackingRateLimit(sessionId: string): Promise<RateLim
 }
 
 export default rateLimiter;
+
+// Graceful shutdown handler
+const cleanup = () => {
+  logger.info('🧹 Cleaning up Redis rate limiter...');
+  rateLimiter.stopFallbackCleanup();
+};
+
+// Register cleanup handlers
+if (typeof process !== 'undefined') {
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+  process.on('beforeExit', cleanup);
+}

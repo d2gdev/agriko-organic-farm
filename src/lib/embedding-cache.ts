@@ -340,6 +340,11 @@ let embeddingCache: EmbeddingCache<number[]> | null = null;
 let multiVectorCache: EmbeddingCache<MultiVectorEmbedding> | null = null;
 let searchResultCache: EmbeddingCache<unknown[]> | null = null;
 
+// Interval references for cleanup
+let embeddingCleanupInterval: NodeJS.Timeout | null = null;
+let multiVectorCleanupInterval: NodeJS.Timeout | null = null;
+let searchResultCleanupInterval: NodeJS.Timeout | null = null;
+
 /**
  * Get or create embedding cache instance
  */
@@ -347,8 +352,13 @@ export function getEmbeddingCache(): EmbeddingCache<number[]> {
   if (!embeddingCache) {
     embeddingCache = new EmbeddingCache<number[]>(2000, 120); // 2000 items, 2 hours TTL
 
+    // Clear existing interval if any
+    if (embeddingCleanupInterval) {
+      clearInterval(embeddingCleanupInterval);
+    }
+
     // Set up periodic cleanup
-    setInterval(() => {
+    embeddingCleanupInterval = setInterval(() => {
       embeddingCache?.cleanup();
     }, 30 * 60 * 1000); // Clean up every 30 minutes
   }
@@ -363,8 +373,13 @@ export function getMultiVectorCache(): EmbeddingCache<MultiVectorEmbedding> {
   if (!multiVectorCache) {
     multiVectorCache = new EmbeddingCache<MultiVectorEmbedding>(500, 60); // 500 items, 1 hour TTL
 
+    // Clear existing interval if any
+    if (multiVectorCleanupInterval) {
+      clearInterval(multiVectorCleanupInterval);
+    }
+
     // Set up periodic cleanup
-    setInterval(() => {
+    multiVectorCleanupInterval = setInterval(() => {
       multiVectorCache?.cleanup();
     }, 15 * 60 * 1000); // Clean up every 15 minutes
   }
@@ -379,8 +394,13 @@ export function getSearchResultCache(): EmbeddingCache<unknown[]> {
   if (!searchResultCache) {
     searchResultCache = new EmbeddingCache<unknown[]>(100, 10); // 100 items, 10 minutes TTL
 
+    // Clear existing interval if any
+    if (searchResultCleanupInterval) {
+      clearInterval(searchResultCleanupInterval);
+    }
+
     // Set up periodic cleanup
-    setInterval(() => {
+    searchResultCleanupInterval = setInterval(() => {
       searchResultCache?.cleanup();
     }, 5 * 60 * 1000); // Clean up every 5 minutes
   }
@@ -538,6 +558,36 @@ export function reportCacheStats(): void {
       hitRate: `${searchCache.getHitRate().toFixed(2)}%`,
     },
   });
+}
+
+// Stop all cleanup intervals
+export function stopEmbeddingCacheCleanup(): void {
+  if (embeddingCleanupInterval) {
+    clearInterval(embeddingCleanupInterval);
+    embeddingCleanupInterval = null;
+  }
+  if (multiVectorCleanupInterval) {
+    clearInterval(multiVectorCleanupInterval);
+    multiVectorCleanupInterval = null;
+  }
+  if (searchResultCleanupInterval) {
+    clearInterval(searchResultCleanupInterval);
+    searchResultCleanupInterval = null;
+  }
+  logger.info('🛑 Embedding cache cleanup stopped');
+}
+
+// Graceful shutdown handler
+const cleanup = () => {
+  logger.info('🧹 Cleaning up embedding caches...');
+  stopEmbeddingCacheCleanup();
+};
+
+// Register cleanup handlers
+if (typeof process !== 'undefined') {
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+  process.on('beforeExit', cleanup);
 }
 
 // Cache management functions are already exported above

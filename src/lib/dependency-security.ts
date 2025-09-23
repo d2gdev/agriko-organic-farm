@@ -518,12 +518,19 @@ export class DependencySecurityManager {
     }
   }
 
+  private vulnerabilityMonitoringInterval: NodeJS.Timeout | null = null;
+
   // Monitor for new vulnerabilities
   setupVulnerabilityMonitoring(): void {
     logger.info('🛡️ Setting up vulnerability monitoring...');
-    
+
+    // Clear existing interval if any
+    if (this.vulnerabilityMonitoringInterval) {
+      clearInterval(this.vulnerabilityMonitoringInterval);
+    }
+
     // In real implementation, would set up periodic checking
-    setInterval(async () => {
+    this.vulnerabilityMonitoringInterval = setInterval(async () => {
       try {
         const vulnerabilities = await this.scanForVulnerabilities();
         if (vulnerabilities.size > 0) {
@@ -536,6 +543,14 @@ export class DependencySecurityManager {
         logger.error('Error in vulnerability monitoring:', error as Record<string, unknown>);
       }
     }, 24 * 60 * 60 * 1000); // Daily check
+  }
+
+  stopVulnerabilityMonitoring(): void {
+    if (this.vulnerabilityMonitoringInterval) {
+      clearInterval(this.vulnerabilityMonitoringInterval);
+      this.vulnerabilityMonitoringInterval = null;
+      logger.info('🛑 Vulnerability monitoring stopped');
+    }
   }
 }
 
@@ -581,5 +596,19 @@ const dependencySecurityModule = {
   performStartupSecurityCheck,
   VulnerabilityLevel,
 };
+
+// Graceful shutdown handler
+const cleanup = () => {
+  logger.info('🧹 Cleaning up dependency security monitoring...');
+  const manager = getDependencyManager();
+  manager.stopVulnerabilityMonitoring();
+};
+
+// Register cleanup handlers
+if (typeof process !== 'undefined') {
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+  process.on('beforeExit', cleanup);
+}
 
 export default dependencySecurityModule;

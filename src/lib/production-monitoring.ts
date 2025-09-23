@@ -47,6 +47,7 @@ class ProductionMonitoringService {
   private alerts: Alert[] = [];
   private metrics: Map<string, number[]> = new Map();
   private healthCheckTimer: NodeJS.Timeout | null = null;
+  private cleanupInterval: NodeJS.Timeout | null = null;
   private startTime: number;
 
   constructor(config: Partial<MonitoringConfig> = {}) {
@@ -76,7 +77,7 @@ class ProductionMonitoringService {
     }
 
     // Set up cleanup for old metrics
-    setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       this.cleanupOldMetrics();
     }, 300000); // Every 5 minutes
   }
@@ -375,6 +376,11 @@ class ProductionMonitoringService {
       this.healthCheckTimer = null;
     }
 
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+
     this.alerts = [];
     this.metrics.clear();
 
@@ -456,4 +462,17 @@ export function performanceMiddleware(name: string) {
 
     return descriptor;
   };
+}
+
+// Graceful shutdown handler
+const cleanup = () => {
+  logger.info('🧹 Cleaning up production monitoring...');
+  productionMonitoring.destroy();
+};
+
+// Register cleanup handlers
+if (typeof process !== 'undefined') {
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+  process.on('beforeExit', cleanup);
 }

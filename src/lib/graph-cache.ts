@@ -17,10 +17,11 @@ class GraphCache {
   private cache = new MemoryOptimizedCache(1000, 300000);
   private readonly DEFAULT_TTL = 3600000; // 1 hour in ms
   private readonly MAX_SIZE = 100;
+  private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     // Cleanup expired entries every 10 minutes
-    setInterval(() => this.cleanup(), 600000);
+    this.cleanupInterval = setInterval(() => this.cleanup(), 600000);
     logger.info('📦 Graph cache initialized (in-memory mode for Windows dev)');
   }
 
@@ -90,6 +91,28 @@ class GraphCache {
       maxSize: this.MAX_SIZE
     };
   }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+      logger.info('🛑 Graph cache cleanup interval stopped');
+    }
+    this.clear();
+  }
 }
 
 export const graphCache = new GraphCache();
+
+// Graceful shutdown handler
+const cleanup = () => {
+  logger.info('🧹 Cleaning up graph cache...');
+  graphCache.destroy();
+};
+
+// Register cleanup handlers
+if (typeof process !== 'undefined') {
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+  process.on('beforeExit', cleanup);
+}

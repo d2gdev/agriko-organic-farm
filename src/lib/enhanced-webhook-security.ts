@@ -48,22 +48,42 @@ export interface WebhookSecurityResult {
 const blockedIps = new Map<string, { blockedUntil: number; attempts: number }>();
 const usedNonces = new Set<string>();
 
-// Cleanup expired entries
-setInterval(() => {
-  const now = Date.now();
+// Cleanup interval reference
+let cleanupInterval: NodeJS.Timeout | null = null;
 
-  // Clean blocked IPs
-  for (const [ip, data] of blockedIps.entries()) {
-    if (data.blockedUntil <= now) {
-      blockedIps.delete(ip);
+// Initialize cleanup
+function startCleanup() {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+  }
+
+  cleanupInterval = setInterval(() => {
+    const now = Date.now();
+
+    // Clean blocked IPs
+    for (const [ip, data] of blockedIps.entries()) {
+      if (data.blockedUntil <= now) {
+        blockedIps.delete(ip);
+      }
     }
-  }
 
-  // Clean old nonces (keep only last hour)
-  if (usedNonces.size > 10000) {
-    usedNonces.clear(); // Simple cleanup for memory
+    // Clean old nonces (keep only last hour)
+    if (usedNonces.size > 10000) {
+      usedNonces.clear(); // Simple cleanup for memory
+    }
+  }, 60000); // Cleanup every minute
+}
+
+// Stop cleanup
+function stopCleanup() {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
   }
-}, 60000); // Cleanup every minute
+}
+
+// Start cleanup automatically
+startCleanup();
 
 export class EnhancedWebhookSecurity {
   private config: WebhookSecurityConfig;
@@ -594,6 +614,19 @@ export async function validateWebhookRequest(request: {
   method: string;
 }, sourceIp: string): Promise<WebhookSecurityResult> {
   return webhookSecurity.validateWebhookSecurity(request, sourceIp);
+}
+
+// Graceful shutdown handler
+const cleanup = () => {
+  logger.info('🧹 Cleaning up enhanced webhook security...');
+  stopCleanup();
+};
+
+// Register cleanup handlers
+if (typeof process !== 'undefined') {
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+  process.on('beforeExit', cleanup);
 }
 
 export default webhookSecurity;
