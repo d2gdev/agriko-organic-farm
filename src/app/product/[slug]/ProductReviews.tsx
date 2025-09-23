@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, lazy, Suspense } from 'react';
+import { useState } from 'react';
 import { ReviewsList } from '@/components/ReviewsList';
 import { ReviewSubmission } from '@/types/reviews';
-
-// Lazy load ReviewForm since it's only used when user wants to write a review
-const ReviewForm = lazy(() => import('@/components/ReviewForm').then(module => ({ default: module.ReviewForm })));
+import { ReviewForm } from '@/components/ReviewForm';
 
 interface ProductReviewsProps {
   productId: number;
@@ -47,28 +45,12 @@ export default function ProductReviews({ productId, productName }: ProductReview
           </button>
         </div>
 
-        <Suspense fallback={
-          <div className="bg-white rounded-lg p-6 max-w-2xl mx-auto">
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-              <div className="space-y-4">
-                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-32 bg-gray-200 rounded"></div>
-              </div>
-            </div>
-          </div>
-        }>
-          <ReviewForm
-            productId={productId}
-            productName={productName}
-            onSubmit={handleReviewSubmit}
-            onClose={handleCloseReviewForm}
-          />
-        </Suspense>
+        <ReviewForm
+          productId={productId}
+          productName={productName}
+          onSubmit={handleReviewSubmit}
+          onClose={handleCloseReviewForm}
+        />
       </div>
     );
   }

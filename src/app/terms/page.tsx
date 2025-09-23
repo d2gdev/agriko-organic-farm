@@ -122,7 +122,7 @@ export default function TermsOfServicePage() {
               </p>
               <div className="mt-4 p-4 bg-accent-50 rounded-lg">
                 <p className="text-neutral-700">
-                  <strong>Email:</strong> agrikoph@gmail.com<br/>
+                  <strong>Email:</strong> jc.paglinawan@agrikoph.com<br/>
                   <strong>Address:</strong> GF G&A Arcade, Wilson St., Lahug, Cebu City 6000<br/>
                   <strong>Farm Address:</strong> Paglinawan Organic Eco Farm, Purok 6, Libertad, Dumingag, Zamboanga Del Sur 7028<br/>
                   <strong>Facebook:</strong> <a href={URL_CONSTANTS.SOCIAL.FACEBOOK} className="text-primary-600 hover:text-primary-700">facebook.com/AgrikoPH</a>

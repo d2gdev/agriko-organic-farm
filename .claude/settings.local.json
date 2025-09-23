@@ -143,7 +143,9 @@
       "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/ --format=compact)",
       "Bash(npm start)",
       "Bash(npm start:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/app/page.tsx --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/app/product/[slug]/ProductReviews.tsx --max-warnings=0)"
     ],
     "deny": [],
     "ask": []

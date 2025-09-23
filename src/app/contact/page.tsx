@@ -57,7 +57,7 @@ export default function ContactPage() {
     "contactPoint": [
       {
         "@type": "ContactPoint",
-        "email": "agrikoph@gmail.com",
+        "email": "jc.paglinawan@agrikoph.com",
         "contactType": "customer service",
         "availableLanguage": ["English", "Filipino"],
         "areaServed": "PH",
@@ -171,24 +171,24 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 text-lg group-hover:text-amber-700 transition-colors duration-300">Email</h3>
-                    <a href="mailto:agrikoph@gmail.com" className="text-amber-600 hover:text-amber-700 font-medium text-sm transition-colors duration-300">
-                      agrikoph@gmail.com
+                    <a href="mailto:jc.paglinawan@agrikoph.com" className="text-amber-600 hover:text-amber-700 font-medium text-sm transition-colors duration-300">
+                      Contact Us
                     </a>
                     <p className="text-gray-600 text-xs">24hr response</p>
                   </div>
                 </div>
 
                 {/* Phone Block */}
-                <div className="flex items-center gap-4 group cursor-pointer p-4 rounded-2xl hover:bg-white/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                <a href="tel:+639669968578" className="flex items-center gap-4 group cursor-pointer p-4 rounded-2xl hover:bg-white/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                   <div className="w-16 h-16 bg-gradient-to-br from-amber-200 to-orange-200 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all duration-300">
                     <span className="text-3xl group-hover:scale-110 transition-transform duration-300">📞</span>
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 text-lg group-hover:text-amber-700 transition-colors duration-300">Call</h3>
-                    <p className="text-gray-700 text-sm">Contact via email</p>
+                    <p className="text-amber-600 hover:text-amber-700 font-medium text-sm transition-colors duration-300">+63 966 996 8578</p>
                     <p className="text-gray-600 text-xs">Mon-Fri 9AM-6PM</p>
                   </div>
-                </div>
+                </a>
               </div>
             </div>
           </div>
@@ -222,7 +222,7 @@ export default function ContactPage() {
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">Visit Our Farm</h3>
                   <p className="text-gray-700 mb-6">Experience sustainable farming firsthand at Paglinawan Organic Eco Farm in Mindanao.</p>
                   <a
-                    href="mailto:agrikoph@gmail.com?subject=Farm Visit Request"
+                    href="mailto:jc.paglinawan@agrikoph.com?subject=Farm Visit Request"
                     className="inline-flex items-center bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-all duration-300 transform hover:scale-105 shadow-md"
                   >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

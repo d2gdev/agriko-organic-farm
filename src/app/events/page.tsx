@@ -296,7 +296,7 @@ export default function EventsPage() {
                 Contact Us
               </Link>
               <Link 
-                href="mailto:agrikoph@gmail.com"
+                href="mailto:jc.paglinawan@agrikoph.com"
                 className="bg-accent-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-accent-700 transition-colors"
               >
                 Email Us

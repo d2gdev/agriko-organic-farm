@@ -87,7 +87,7 @@ export default function FindUsPage() {
     "contactPoint": [
       {
         "@type": "ContactPoint",
-        "email": "agrikoph@gmail.com",
+        "email": "jc.paglinawan@agrikoph.com",
         "contactType": "customer service",
         "availableLanguage": ["English", "Filipino"],
         "areaServed": "PH"
@@ -805,7 +805,7 @@ export default function FindUsPage() {
                       </div>
                       <div className="flex-1">
                         <p className="text-white/60 text-xs uppercase tracking-wider font-light">Email</p>
-                        <p className="text-white text-base font-medium mt-1 break-all">agrikoph@gmail.com</p>
+                        <p className="text-white text-base font-medium mt-1 break-all">jc.paglinawan@agrikoph.com</p>
                       </div>
                     </div>
 

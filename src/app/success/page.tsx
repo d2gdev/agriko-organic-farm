@@ -139,14 +139,14 @@ export default function SuccessPage() {
             </p>
             <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto">
               <a
-                href="mailto:agrikoph@gmail.com"
+                href="mailto:jc.paglinawan@agrikoph.com"
                 className="bg-white rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-green-100"
               >
                 <div className="flex items-center justify-center mb-2">
                   <span className="text-2xl mr-2">📧</span>
                   <span className="font-semibold text-gray-900">Email Us</span>
                 </div>
-                <p className="text-green-600 font-medium">agrikoph@gmail.com</p>
+                <p className="text-green-600 font-medium">jc.paglinawan@agrikoph.com</p>
                 <p className="text-sm text-gray-600">24-hour response time</p>
               </a>
 

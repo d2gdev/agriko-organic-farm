@@ -96,7 +96,7 @@ export default function AboutPage() {
     "contactPoint": [
       {
         "@type": "ContactPoint",
-        "email": "agrikoph@gmail.com",
+        "email": "jc.paglinawan@agrikoph.com",
         "contactType": "customer service",
         "availableLanguage": ["English", "Filipino"],
         "areaServed": "PH"

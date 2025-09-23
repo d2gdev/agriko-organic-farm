@@ -145,7 +145,7 @@ export default function FAQPage() {
         "name": "Can I visit your farm in Dumingag, Zamboanga Del Sur?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes! Farm visits are welcome by appointment. Contact us at agrikoph@gmail.com to arrange a tour of Paglinawan Organic Eco Farm where you can see our sustainable farming practices firsthand and meet founder Gerry Paglinawan."
+          "text": "Yes! Farm visits are welcome by appointment. Contact us at jc.paglinawan@agrikoph.com to arrange a tour of Paglinawan Organic Eco Farm where you can see our sustainable farming practices firsthand and meet founder Gerry Paglinawan."
         }
       }
     ]
@@ -252,7 +252,7 @@ export default function FAQPage() {
     },
     {
       question: "Can I visit your farm in Dumingag, Zamboanga Del Sur?",
-      answer: "Yes! Farm visits are welcome by appointment. Contact us at agrikoph@gmail.com to arrange a tour of Paglinawan Organic Eco Farm where you can see our sustainable farming practices firsthand and meet founder Gerry Paglinawan.",
+      answer: "Yes! Farm visits are welcome by appointment. Contact us at jc.paglinawan@agrikoph.com to arrange a tour of Paglinawan Organic Eco Farm where you can see our sustainable farming practices firsthand and meet founder Gerry Paglinawan.",
       icon: icons.farm,
       category: 'visit'
     }
@@ -477,7 +477,7 @@ export default function FAQPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:agrikoph@gmail.com"
+                href="mailto:jc.paglinawan@agrikoph.com"
                 className="inline-flex items-center justify-center bg-red-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg group"
               >
                 <span className="mr-2 text-xl">{icons.email}</span>

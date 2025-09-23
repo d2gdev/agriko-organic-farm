@@ -69,7 +69,7 @@ export default function FarmPage() {
     },
     "contactPoint": {
       "@type": "ContactPoint",
-      "email": "agrikoph@gmail.com",
+      "email": "jc.paglinawan@agrikoph.com",
       "contactType": "customer service",
       "availableLanguage": ["English", "Filipino"]
     },

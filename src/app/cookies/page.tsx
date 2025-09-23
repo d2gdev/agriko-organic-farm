@@ -143,7 +143,7 @@ export default function CookiePolicyPage() {
               </p>
               <div className="mt-4 p-4 bg-accent-50 rounded-lg">
                 <p className="text-neutral-700">
-                  <strong>Email:</strong> agrikoph@gmail.com<br/>
+                  <strong>Email:</strong> jc.paglinawan@agrikoph.com<br/>
                   <strong>Address:</strong> GF G&A Arcade, Wilson St., Lahug, Cebu City 6000<br/>
                   <strong>Facebook:</strong> <a href="URL_CONSTANTS.SOCIAL.FACEBOOK" className="text-primary-600 hover:text-primary-700">facebook.com/AgrikoPH</a>
                 </p>

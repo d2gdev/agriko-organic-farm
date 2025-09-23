@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { getAllProducts, getFeaturedProducts } from '@/lib/woocommerce';
 import HeroSection from '@/components/HeroSection';
 import { OrganicProductGridSkeleton } from '@/components/OrganicLoadingStates';
@@ -12,8 +12,8 @@ import { URL_CONSTANTS, urlHelpers } from '@/lib/url-constants';
 import ProductCard from '@/components/ProductCard';
 import Testimonials from '@/components/Testimonials';
 
-// Lazy load components that are not immediately visible
-const PageAnalytics = lazy(() => import('@/components/PageAnalytics'));
+// Import PageAnalytics directly to avoid webpack loading issues
+import PageAnalytics from '@/components/PageAnalytics';
 
 // Loading component for products grid (using organic theme)
 function ProductsGridSkeleton() {
@@ -315,7 +315,7 @@ export default function HomePage() {
     "contactPoint": [
       {
         "@type": "ContactPoint",
-        "email": "agrikoph@gmail.com",
+        "email": "jc.paglinawan@agrikoph.com",
         "contactType": "customer service",
         "availableLanguage": ["English", "Filipino"],
         "areaServed": "PH"
@@ -744,10 +744,8 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Page Analytics for Homepage - Lazy loaded */}
-      <Suspense fallback={null}>
-        <PageAnalytics pageType="homepage" />
-      </Suspense>
+      {/* Page Analytics for Homepage */}
+      <PageAnalytics pageType="homepage" />
       
       {/* Structured Data */}
       <script
