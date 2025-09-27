@@ -1,5 +1,6 @@
 // React Hooks for Automatic Event Tracking
 import { useEffect, useRef, useCallback } from 'react';
+import type { EntityMetadata } from '@/types/common';
 import {
   trackProductView,
   trackSearch,
@@ -208,7 +209,7 @@ export const useSearchTracking = () => {
 export const useOrderTracking = () => {
   const trackOrderCreated = useCallback(async (orderData: {
     orderId: string;
-    orderValue: number;
+    orderTotal: number;
     itemCount: number;
     paymentMethod?: string;
     shippingMethod?: string;
@@ -222,13 +223,19 @@ export const useOrderTracking = () => {
     const userId = getUserId();
 
     await trackOrder({
-      ...orderData,
+      orderId: orderData.orderId,
+      orderTotal: orderData.orderTotal,
+      items: orderData.items,
+      orderStatus: 'completed',
       sessionId,
       userId,
       metadata: {
         timestamp: Date.now(),
         userAgent: navigator.userAgent,
-      }
+        itemCount: orderData.itemCount,
+        paymentMethod: orderData.paymentMethod,
+        shippingMethod: orderData.shippingMethod
+      } as EntityMetadata
     });
   }, []);
 
@@ -283,13 +290,13 @@ export const useEngagementTracking = () => {
     };
   }, []);
 
-  const trackCustomEvent = useCallback(async (eventType: EventType, data: Record<string, unknown>) => {
+  const trackCustomEvent = useCallback(async (eventType: string, data: Record<string, unknown>) => {
     const sessionId = getSessionId();
     const userId = getUserId();
 
     await eventBus.emit({
       id: `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      type: eventType,
+      type: eventType as EventType,
       timestamp: Date.now(),
       sessionId,
       userId,
@@ -320,7 +327,7 @@ export const usePerformanceTracking = () => {
             userId,
             metadata: {
               name: entry.name,
-              value: (entry as Record<string, any>).duration || 0,
+              value: (entry as PerformanceEntry & { duration?: number }).duration || 0,
               entryType: entry.entryType,
               startTime: entry.startTime,
               pageUrl: window.location.pathname,

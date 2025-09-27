@@ -1,3 +1,5 @@
+import { Core } from '@/types/TYPE_REGISTRY';
+
 export interface WCProduct {
   id: number;
   name: string;
@@ -5,9 +7,9 @@ export interface WCProduct {
   permalink?: string;
   description?: string;
   short_description?: string;
-  price?: string;
-  regular_price?: string;
-  sale_price?: string;
+  price?: Core.Money;
+  regular_price?: Core.Money;
+  sale_price?: Core.Money;
   on_sale?: boolean;
   status?: 'draft' | 'pending' | 'private' | 'publish';
   featured?: boolean;

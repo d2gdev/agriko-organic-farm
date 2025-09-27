@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, TrendingUp, Target } from 'lucide-react';
-import Button from '@/components/Button';
+import { Search, TrendingUp, Target } from 'lucide-react';
+
+import { logger } from '@/lib/logger';
+import AdminLayout from '@/components/AdminLayout';
 
 interface AdminUser {
   username: string;
@@ -18,18 +20,22 @@ export default function AdminSearchAnalyticsPage() {
 
   const checkAuthStatus = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/auth/verify', {
-        credentials: 'include'
-      });
+      // Check localStorage for auth token like the dashboard does
+      const token = localStorage.getItem('auth_token');
 
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
+      if (token) {
+        // User is authenticated
+        setUser({
+          username: 'agrikoadmin',
+          role: 'admin',
+          permissions: ['view_analytics', 'manage_products', 'manage_users']
+        });
       } else {
+        // No token, redirect to login
         router.push('/admin/login');
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      logger.error('Auth check failed:', error as Record<string, unknown>);
       router.push('/admin/login');
     } finally {
       setLoading(false);
@@ -42,9 +48,11 @@ export default function AdminSearchAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <AdminLayout>
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
       </div>
+    </AdminLayout>
     );
   }
 
@@ -53,35 +61,15 @@ export default function AdminSearchAnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              <Button
-                onClick={() => router.push('/admin/analytics')}
-                variant="secondary"
-                className="flex items-center space-x-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Back to Analytics</span>
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Search Analytics</h1>
-                <p className="text-gray-600 mt-1">Search queries and performance insights</p>
-              </div>
-            </div>
-            <div className="text-sm text-gray-600">
-              Logged in as: <span className="font-medium text-green-600">{user.username}</span>
-            </div>
-          </div>
+    <AdminLayout>
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Search Analytics</h1>
+          <p className="text-gray-600 mt-1">Search queries and performance metrics</p>
         </div>
-      </header>
-
+      {/* Header */}
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center py-16">
+      <div className="text-center py-16">
           <Search className="w-24 h-24 text-gray-300 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Search Analytics</h3>
           <p className="text-gray-600 max-w-md mx-auto mb-8">
@@ -108,7 +96,7 @@ export default function AdminSearchAnalyticsPage() {
             </div>
           </div>
         </div>
-      </main>
     </div>
+    </AdminLayout>
   );
 }

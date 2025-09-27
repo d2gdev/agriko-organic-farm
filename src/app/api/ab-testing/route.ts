@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     logger.info(`🧪 A/B Testing API GET: action=${action}`);
 
     switch (action) {
-      case 'get_active_tests':
+      case 'get_active_tests': {
         const activeTests = abTesting.getActiveTests();
         return NextResponse.json({
           success: true,
@@ -22,8 +22,9 @@ export async function GET(request: NextRequest) {
           tests: activeTests,
           count: activeTests.length
         });
+      }
 
-      case 'get_user_experiments':
+      case 'get_user_experiments': {
         if (!userId) {
           return NextResponse.json(
             { error: 'userId parameter is required' },
@@ -38,8 +39,9 @@ export async function GET(request: NextRequest) {
           experiments: userExperiments,
           count: userExperiments.length
         });
+      }
 
-      case 'get_test_report':
+      case 'get_test_report': {
         if (!testId) {
           return NextResponse.json(
             { error: 'testId parameter is required' },
@@ -59,8 +61,9 @@ export async function GET(request: NextRequest) {
           testId,
           report: testReport
         });
+      }
 
-      case 'assign_user_to_test':
+      case 'assign_user_to_test': {
         if (!userId || !sessionId || !testId) {
           return NextResponse.json(
             { error: 'userId, sessionId, and testId parameters are required' },
@@ -76,8 +79,9 @@ export async function GET(request: NextRequest) {
           variantId,
           assigned: variantId !== null
         });
+      }
 
-      case 'get_variant':
+      case 'get_variant': {
         if (!userId || !testId) {
           return NextResponse.json(
             { error: 'userId and testId parameters are required' },
@@ -92,15 +96,17 @@ export async function GET(request: NextRequest) {
           testId,
           variantId: userVariant
         });
+      }
 
-      case 'get_common_tests':
+      case 'get_common_tests': {
         return NextResponse.json({
           success: true,
           action,
           tests: commonTests
         });
+      }
 
-      case 'calculate_significance':
+      case 'calculate_significance': {
         if (!testId) {
           return NextResponse.json(
             { error: 'testId parameter is required' },
@@ -116,6 +122,7 @@ export async function GET(request: NextRequest) {
           metric,
           significance: Object.fromEntries(significance)
         });
+      }
 
       default:
         return NextResponse.json(
@@ -145,7 +152,7 @@ export async function POST(request: NextRequest) {
     logger.info(`🧪 A/B Testing API POST: action=${action}`);
 
     switch (action) {
-      case 'create_test':
+      case 'create_test': {
         const { test } = body as { test?: ABTest };
         if (!test?.id || !test.name || !test.variants) {
           return NextResponse.json(
@@ -160,8 +167,9 @@ export async function POST(request: NextRequest) {
           testId: test.id,
           message: createSuccess ? 'Test created successfully' : 'Failed to create test'
         });
+      }
 
-      case 'start_test':
+      case 'start_test': {
         const { testId: startTestId } = body as { testId?: string };
         if (!startTestId) {
           return NextResponse.json(
@@ -176,8 +184,9 @@ export async function POST(request: NextRequest) {
           testId: startTestId,
           message: startSuccess ? 'Test started successfully' : 'Failed to start test'
         });
+      }
 
-      case 'stop_test':
+      case 'stop_test': {
         const { testId: stopTestId } = body as { testId?: string };
         if (!stopTestId) {
           return NextResponse.json(
@@ -192,8 +201,9 @@ export async function POST(request: NextRequest) {
           testId: stopTestId,
           message: stopSuccess ? 'Test stopped successfully' : 'Failed to stop test'
         });
+      }
 
-      case 'track_conversion':
+      case 'track_conversion': {
         const { userId, testId, metric, value } = body as { userId?: string; testId?: string; metric?: string; value?: number };
         if (!userId || !testId || !metric) {
           return NextResponse.json(
@@ -211,15 +221,16 @@ export async function POST(request: NextRequest) {
           value: value ?? 1,
           message: 'Conversion tracked successfully'
         });
+      }
 
-      case 'track_event':
-        const { 
-          eventType, 
-          userId: eventUserId, 
-          sessionId, 
-          testId: eventTestId, 
-          variantId, 
-          data 
+      case 'track_event': {
+        const {
+          eventType,
+          userId: eventUserId,
+          sessionId,
+          testId: eventTestId,
+          variantId,
+          data
         } = body as { eventType?: string; userId?: string; sessionId?: string; testId?: string; variantId?: string; data?: Record<string, unknown> };
         if (!eventType || !eventUserId || !sessionId || !eventTestId || !variantId) {
           return NextResponse.json(
@@ -236,8 +247,9 @@ export async function POST(request: NextRequest) {
           variantId,
           message: 'Event tracked successfully'
         });
+      }
 
-      case 'create_common_test':
+      case 'create_common_test': {
         const { testType } = body as { testType?: string };
         if (!testType || !commonTests[testType as keyof typeof commonTests]) {
           return NextResponse.json(
@@ -254,8 +266,9 @@ export async function POST(request: NextRequest) {
           testId: commonTest.id,
           message: commonTestSuccess ? 'Common test created successfully' : 'Failed to create common test'
         });
+      }
 
-      case 'batch_track_conversions':
+      case 'batch_track_conversions': {
         const { conversions } = body as { conversions?: Array<{ userId: string; testId: string; metric: string; value?: number }> };
         if (!conversions || !Array.isArray(conversions)) {
           return NextResponse.json(
@@ -263,7 +276,7 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        
+
         let successCount = 0;
         for (const conversion of conversions) {
           try {
@@ -287,6 +300,7 @@ export async function POST(request: NextRequest) {
           failedConversions: conversions.length - successCount,
           message: `Tracked ${successCount}/${conversions.length} conversions successfully`
         });
+      }
 
       default:
         return NextResponse.json(
@@ -323,12 +337,12 @@ export async function DELETE(request: NextRequest) {
     logger.info(`🗑️ A/B Testing DELETE: ${action}:${testId}`);
 
     switch (action) {
-      case 'archive_test':
+      case 'archive_test': {
         // For now, we'll implement basic test archiving
         // In production, you might want more sophisticated archiving
         const activeTests = abTesting.getActiveTests();
         const test = activeTests.find(t => t.id === testId);
-        
+
         if (!test) {
           return NextResponse.json(
             { error: 'Test not found' },
@@ -337,13 +351,14 @@ export async function DELETE(request: NextRequest) {
         }
 
         test.status = 'archived';
-        
+
         return NextResponse.json({
           success: true,
           action,
           testId,
           message: 'Test archived successfully'
         });
+      }
 
       default:
         return NextResponse.json(

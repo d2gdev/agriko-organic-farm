@@ -21,10 +21,9 @@ export async function POST(request: NextRequest) {
     
     const session = await getSession();
     const journey = [];
-    
-    try {
-      // Get starting product info
-      const startProductResult = await session.run(`
+
+    // Get starting product info
+    const startProductResult = await session.run(`
         MATCH (p:Product {id: $productId})
         RETURN p.name as name, p.id as id, p.price as price
       `, { productId: startProductId });
@@ -169,11 +168,7 @@ export async function POST(request: NextRequest) {
         journey,
         totalSteps: journey.length,
       });
-      
-    } catch (error) {
-      throw error;
-    }
-    
+
   } catch (error) {
     logger.error('❌ Customer journey analysis failed:', error as Record<string, unknown>);
     return NextResponse.json(

@@ -22,7 +22,7 @@ export const validations = {
   searchQuery: z.string()
     .min(1, "Search query cannot be empty")
     .max(MAX_QUERY_LENGTH, `Search query too long (max ${MAX_QUERY_LENGTH} characters)`)
-    .regex(/^[a-zA-Z0-9\s\-_.,!?'"()[\]{}:;@#$%&*+=<>\/\\|~`^]+$/, {
+    .regex(/^[a-zA-Z0-9\s\-_.,!?'"()[\]{}:;@#$%&*+=<>/\\|~`^]+$/, {
       message: "Search query contains invalid characters"
     }),
   

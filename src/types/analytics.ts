@@ -1,11 +1,13 @@
 // Analytics and tracking type definitions
 
+import { AnalyticsData, SearchFilterValues } from './common';
+
 export interface AnalyticsEvent {
   eventType: string;
   userId?: string;
   sessionId: string;
   timestamp: number;
-  data: Record<string, unknown>;
+  data: AnalyticsData;
   metadata?: AnalyticsMetadata;
 }
 
@@ -68,7 +70,7 @@ export interface SearchAnalyticsData {
   resultsCount: number;
   clickedResults: number[];
   searchType: 'keyword' | 'semantic' | 'hybrid';
-  filters?: Record<string, unknown>;
+  filters?: SearchFilterValues;
   timestamp: number;
 }
 

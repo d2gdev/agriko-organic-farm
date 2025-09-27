@@ -91,7 +91,7 @@ export function useFocusTrap(
           }
         }
       } catch (error) {
-        logger.error('Error in handleTabKey:', error as Record<string, unknown>);
+        logger.error('Error in handleTabKey', { error: error instanceof Error ? error.message : String(error) });
         // On error, perform safe cleanup
         safeCleanup();
       }
@@ -107,7 +107,7 @@ export function useFocusTrap(
           deactivateTrap();
         }
       } catch (error) {
-        logger.error('Error in handleEscapeKey:', error as Record<string, unknown>);
+        logger.error('Error in handleEscapeKey', { error: error instanceof Error ? error.message : String(error) });
         safeCleanup();
       }
     };
@@ -128,7 +128,7 @@ export function useFocusTrap(
           }
         }
       } catch (error) {
-        logger.error('Error in handleOutsideClick:', error as Record<string, unknown>);
+        logger.error('Error in handleOutsideClick', { error: error instanceof Error ? error.message : String(error) });
         safeCleanup();
       }
     };
@@ -153,13 +153,13 @@ export function useFocusTrap(
           try {
             cleanup();
           } catch (cleanupError) {
-            logger.error('Error in focus trap cleanup function:', cleanupError as Record<string, unknown>);
+            logger.error('Error in focus trap cleanup function', { error: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) });
           }
         });
         cleanupFunctions.current = [];
         
       } catch (error) {
-        logger.error('Error in safeCleanup:', error as Record<string, unknown>);
+        logger.error('Error in safeCleanup', { error: error instanceof Error ? error.message : String(error) });
       }
     };
 
@@ -194,7 +194,7 @@ export function useFocusTrap(
           ];
         }
       } catch (error) {
-        logger.error('Error in activateTrap:', error as Record<string, unknown>);
+        logger.error('Error in activateTrap', { error: error instanceof Error ? error.message : String(error) });
         safeCleanup();
       }
     };
@@ -212,12 +212,12 @@ export function useFocusTrap(
             try {
               elementToFocus.focus();
             } catch (focusError) {
-              logger.error('Error restoring focus:', focusError as Record<string, unknown>);
+              logger.error('Error restoring focus', { error: focusError instanceof Error ? focusError.message : String(focusError) });
             }
           }
         }
       } catch (error) {
-        logger.error('Error in deactivateTrap:', error as Record<string, unknown>);
+        logger.error('Error in deactivateTrap', { error: error instanceof Error ? error.message : String(error) });
       }
     };
 
@@ -246,7 +246,7 @@ export function useFocusTrap(
           (focusableElements[0] as HTMLElement)?.focus();
         }
       } catch (error) {
-        logger.error('Error in focusFirst:', error as Record<string, unknown>);
+        logger.error('Error in focusFirst', { error: error instanceof Error ? error.message : String(error) });
       }
     },
 
@@ -264,7 +264,7 @@ export function useFocusTrap(
           (lastElement as HTMLElement)?.focus();
         }
       } catch (error) {
-        logger.error('Error in focusLast:', error as Record<string, unknown>);
+        logger.error('Error in focusLast', { error: error instanceof Error ? error.message : String(error) });
       }
     },
 
@@ -274,7 +274,7 @@ export function useFocusTrap(
         if (isCleanedUp.current || !element) return false;
         return element.matches(FOCUSABLE_ELEMENTS);
       } catch (error) {
-        logger.error('Error in isFocusable:', error as Record<string, unknown>);
+        logger.error('Error in isFocusable', { error: error instanceof Error ? error.message : String(error) });
         return false;
       }
     }
@@ -302,25 +302,28 @@ export function useFocusManagement(containerRef: RefObject<HTMLElement>) {
         case 'first':
           (focusableElements[0] as HTMLElement)?.focus();
           break;
-        case 'last':
+        case 'last': {
           const lastElement = focusableElements[focusableElements.length - 1];
           (lastElement as HTMLElement)?.focus();
           break;
-        case 'next':
+        }
+        case 'next': {
           if (currentIndex < focusableElements.length - 1) {
             const nextElement = focusableElements[currentIndex + 1];
             (nextElement as HTMLElement)?.focus();
           }
           break;
-        case 'previous':
+        }
+        case 'previous': {
           if (currentIndex > 0) {
             const prevElement = focusableElements[currentIndex - 1];
             (prevElement as HTMLElement)?.focus();
           }
           break;
+        }
       }
     } catch (error) {
-      logger.error('Error in moveFocus:', error as Record<string, unknown>);
+      logger.error('Error in moveFocus', { error: error instanceof Error ? error.message : String(error) });
     }
   };
 
@@ -331,7 +334,7 @@ export function useFocusManagement(containerRef: RefObject<HTMLElement>) {
         if (!containerRef.current) return 0;
         return containerRef.current.querySelectorAll(FOCUSABLE_ELEMENTS).length;
       } catch (error) {
-        logger.error('Error in getFocusableCount:', error as Record<string, unknown>);
+        logger.error('Error in getFocusableCount', { error: error instanceof Error ? error.message : String(error) });
         return 0;
       }
     },
@@ -343,7 +346,7 @@ export function useFocusManagement(containerRef: RefObject<HTMLElement>) {
         );
         return focusableElements.indexOf(document.activeElement as HTMLElement);
       } catch (error) {
-        logger.error('Error in getCurrentFocusIndex:', error as Record<string, unknown>);
+        logger.error('Error in getCurrentFocusIndex', { error: error instanceof Error ? error.message : String(error) });
         return -1;
       }
     }
@@ -373,7 +376,7 @@ export function useFocusAnnouncement() {
             document.body.removeChild(announcement);
           }
         } catch (error) {
-          logger.error('Error removing focus announcement:', error as Record<string, unknown>);
+          logger.error('Error removing focus announcement', { error: error instanceof Error ? error.message : String(error) });
         }
       }, 1000);
 
@@ -385,11 +388,11 @@ export function useFocusAnnouncement() {
             document.body.removeChild(announcement);
           }
         } catch (error) {
-          logger.error('Error in manual focus announcement cleanup:', error as Record<string, unknown>);
+          logger.error('Error in manual focus announcement cleanup', { error: error instanceof Error ? error.message : String(error) });
         }
       };
     } catch (error) {
-      logger.error('Error creating focus announcement:', error as Record<string, unknown>);
+      logger.error('Error creating focus announcement', { error: error instanceof Error ? error.message : String(error) });
       return () => {}; // Return empty cleanup function
     }
   };

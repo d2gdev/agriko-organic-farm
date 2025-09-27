@@ -1,4 +1,5 @@
 import React from 'react';
+import { Core } from '@/types/TYPE_REGISTRY';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ProductCard from '../ProductCard';
@@ -7,8 +8,7 @@ import { WCProduct } from '@/types/woocommerce';
 // Mock Next.js components
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: ({ src, alt, width, height, className, priority, onLoad, onError, fetchPriority, fill, ...props }: any) => (
-    // eslint-disable-next-line @next/next/no-img-element
+  default: ({ src, alt, width, height, className, _priority, onLoad, onError, _fetchPriority, fill, ...props }: any) => (
     <img
       src={src as string}
       alt={alt as string}
@@ -61,9 +61,9 @@ const mockProduct: WCProduct = {
   id: 1,
   name: 'Test Organic Product',
   slug: 'test-organic-product',
-  price: '99.99',
-  regular_price: '129.99',
-  sale_price: '99.99',
+  price: 9999 as Core.Money,
+  regular_price: 12999 as Core.Money,
+  sale_price: 9999 as Core.Money,
   on_sale: true,
   stock_status: 'instock',
   manage_stock: false,
@@ -136,7 +136,7 @@ describe('ProductCard', () => {
   });
 
   it('should not show sale badge when product is not on sale', () => {
-    const regularProduct = { ...mockProduct, on_sale: false, sale_price: '' };
+    const regularProduct = { ...mockProduct, on_sale: false, sale_price: undefined };
     render(<ProductCard product={regularProduct} />);
 
     expect(screen.queryByText(/-\d+%/)).not.toBeInTheDocument();
@@ -204,7 +204,7 @@ describe('ProductCard', () => {
   });
 
   it('should handle missing or invalid prices', () => {
-    const productWithInvalidPrice = { ...mockProduct, price: '', regular_price: '' };
+    const productWithInvalidPrice = { ...mockProduct, price: undefined, regular_price: undefined };
     render(<ProductCard product={productWithInvalidPrice} />);
 
     expect(screen.getByText('N/A')).toBeInTheDocument();

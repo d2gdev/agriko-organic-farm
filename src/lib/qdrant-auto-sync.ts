@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger';
 import { initializeQdrant } from './qdrant';
 import { generateEmbedding } from './embeddings';
 import { getProduct } from './woocommerce';
+import { Core } from '@/types/TYPE_REGISTRY';
 
 // Auto-sync single product to Qdrant when product data changes
 export async function autoSyncProductToQdrant(productData: {
@@ -29,7 +30,7 @@ export async function autoSyncProductToQdrant(productData: {
       id: product.id,
       name: product.name,
       slug: product.slug,
-      price: product.price ? parseFloat(product.price) : 0,
+      price: product.price ? parseFloat(product.price.toString()) : (0 as Core.Money),
       categories: product.categories?.map(cat => cat.name) || [],
       tags: product.tags?.map(tag => tag.name) || [],
       stock_status: product.stock_status,
@@ -50,7 +51,7 @@ export async function autoSyncProductToQdrant(productData: {
       category_paths: product.categories?.map(cat => cat.name.toLowerCase()) || [],
 
       // Price tier for filtering
-      price_tier: getPriceTier(product.price ? parseFloat(product.price) : 0),
+      price_tier: getPriceTier(product.price ? parseFloat(product.price.toString()) : 0),
 
       // Search keywords
       search_keywords: generateSearchKeywords(product),
@@ -61,7 +62,7 @@ export async function autoSyncProductToQdrant(productData: {
     // Upsert to Qdrant
     const client = initializeQdrant();
     await client.upsertPoints([{
-      id: `product_${product.id}`,
+      id: product.id,
       vector: embedding,
       payload: metadata
     }]);
@@ -110,7 +111,7 @@ export async function autoSyncUserSearchToQdrant(searchData: {
     // Store search pattern in Qdrant for similarity matching
     const client = initializeQdrant();
     await client.upsertPoints([{
-      id: `search_${searchData.timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+      id: searchData.timestamp + Math.floor(Math.random() * 1000000),
       vector: queryEmbedding,
       payload: searchMetadata
     }]);
@@ -164,7 +165,7 @@ export async function autoSyncUserBehaviorToQdrant(behaviorData: {
     // Store user behavior vector
     const client = initializeQdrant();
     await client.upsertPoints([{
-      id: `user_behavior_${behaviorData.userId}_${Date.now()}`,
+      id: parseInt(behaviorData.userId, 10) * 1000000 + Date.now(),
       vector: userVector,
       payload: metadata
     }]);

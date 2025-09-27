@@ -1,9 +1,10 @@
 import React from 'react';
+import { Core } from '@/types/TYPE_REGISTRY';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 import CheckoutPage from '@/app/checkout/page';
-import { CartProvider } from '@/context/CartContext';
+// import { CartProvider } from '@/context/CartContext'; // Mock provided below
 import { WCProduct } from '@/types/woocommerce';
 
 // Mock Next.js router
@@ -44,9 +45,9 @@ const mockProduct: WCProduct = {
   id: 1,
   name: 'Test Organic Rice',
   slug: 'test-organic-rice',
-  price: '15.99',
-  regular_price: '15.99',
-  sale_price: '',
+  price: 1599 as Core.Money,
+  regular_price: 1599 as Core.Money,
+  sale_price: undefined,
   on_sale: false,
   stock_status: 'instock',
   description: 'Premium organic rice',
@@ -86,7 +87,7 @@ const mockProduct: WCProduct = {
 const renderCheckoutWithCart = (initialItems: Array<{ product: WCProduct; quantity: number; variation: null }> = []) => {
   const mockCartState = {
     items: initialItems,
-    total: initialItems.reduce((sum, item) => sum + parseFloat(item.product.price as string) * item.quantity, 0),
+    total: initialItems.reduce((sum, item) => sum + (item.product.price || 0) * item.quantity, 0) as Core.Money,
   };
 
   const mockUseCart = {
@@ -224,7 +225,7 @@ describe('Checkout Flow Integration', () => {
     ];
 
     it('should show shipping form when "Same as billing" is unchecked', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup(); // Not used in this test, uses fireEvent instead
       renderCheckoutWithCart(cartItems);
 
       const sameAsBillingCheckbox = screen.getByLabelText(/same as billing address/i);
@@ -386,7 +387,7 @@ describe('Checkout Flow Integration', () => {
             ...mockProduct,
             id: 2,
             name: 'Organic Honey',
-            price: '25.50',
+            price: 2550 as Core.Money,
           },
           quantity: 1,
           variation: null,

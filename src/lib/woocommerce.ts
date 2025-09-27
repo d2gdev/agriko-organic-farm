@@ -1,5 +1,8 @@
+import { Core } from '@/types/TYPE_REGISTRY';
 import { WCProduct, WCCategory, WCOrder, CheckoutData } from '@/types/woocommerce';
 import { logger } from '@/lib/logger';
+import type { WooCommerceOrderData } from '@/types/business-intelligence-types';
+import { EventType } from '@/types/events';
 import { apiCache } from '@/lib/cache-manager';
 import { handleError } from '@/lib/error-sanitizer';
 import { productCache } from '@/lib/productCache'; // Import from productCache.ts instead of cache-manager.ts
@@ -24,9 +27,9 @@ function getBuildTimeMockProducts(): WCProduct[] {
       permalink: `${shopBaseUrl}/product/premium-organic-black-rice`,
       description: "Our premium organic black rice is packed with antioxidants and nutrients. Perfect for health-conscious families seeking nutritious grains.",
       short_description: "Premium organic black rice rich in antioxidants and nutrients.",
-      price: "299.00",
-      regular_price: "299.00", 
-      sale_price: "",
+      price: 29900 as Core.Money, // 299.00 pesos as centavos
+      regular_price: 29900 as Core.Money, // 299.00 pesos as centavos 
+      sale_price: undefined,
       on_sale: false,
       status: "publish",
       featured: true,
@@ -55,9 +58,9 @@ function getBuildTimeMockProducts(): WCProduct[] {
       permalink: `${shopBaseUrl}/product/organic-brown-rice`, 
       description: "Wholesome organic brown rice with natural fiber and nutrients. Ideal for healthy meals and balanced nutrition.",
       short_description: "Nutritious organic brown rice with natural fiber.",
-      price: "249.00",
-      regular_price: "249.00",
-      sale_price: "",
+      price: 24900 as Core.Money, // 249.00 pesos as centavos
+      regular_price: 24900 as Core.Money, // 249.00 pesos as centavos
+      sale_price: undefined,
       on_sale: false,
       status: "publish",
       featured: true,
@@ -86,9 +89,9 @@ function getBuildTimeMockProducts(): WCProduct[] {
       permalink: `${shopBaseUrl}/product/pure-turmeric-powder`,
       description: "Freshly ground pure turmeric powder from our organic farm. Known for its anti-inflammatory properties and golden color.",
       short_description: "Pure organic turmeric powder with anti-inflammatory benefits.",
-      price: "199.00",
-      regular_price: "219.00",
-      sale_price: "199.00",
+      price: 19900 as Core.Money, // 199.00 pesos as centavos
+      regular_price: 21900 as Core.Money, // 219.00 pesos as centavos
+      sale_price: 19900 as Core.Money, // 199.00 pesos as centavos
       on_sale: true,
       status: "publish",
       featured: false,
@@ -222,7 +225,7 @@ function getBuildTimeMockOrder(): WCOrder {
         taxes: [],
         meta_data: [],
         sku: "AGRIKO-BLACK-RICE-1KG",
-        price: 299,
+        price: 299 as Core.Money,
         image: {
           id: 1,
           src: "",
@@ -261,6 +264,8 @@ import { config } from '@/lib/unified-config';
 const WC_API_URL = config.woocommerce.apiUrl;
 const WC_CONSUMER_KEY = config.woocommerce.consumerKey;
 const WC_CONSUMER_SECRET = config.woocommerce.consumerSecret;
+
+// Debug logging removed - credentials are working
 
 // Create authorization header
 const getAuthHeader = () => {
@@ -426,7 +431,7 @@ async function wcRequest<T>(endpoint: string, options: RequestInit = {}, retries
 
 // Auto-sync helper function
 async function triggerAutoSync(event: {
-  type: 'product_view' | 'product_search' | 'order_created' | 'user_interaction';
+  type: EventType;
   productId?: number;
   orderId?: string;
   userId?: string;
@@ -439,7 +444,7 @@ async function triggerAutoSync(event: {
 
   try {
     switch (event.type) {
-      case 'product_view':
+      case EventType.PRODUCT_VIEWED:
         if (event.productId) {
           await Promise.all([
             autoSyncProductToMemgraph({
@@ -459,7 +464,7 @@ async function triggerAutoSync(event: {
         }
         break;
 
-      case 'product_search':
+      case EventType.SEARCH_PERFORMED:
         if (event.searchQuery) {
           await Promise.all([
             autoSyncSearchToMemgraph({
@@ -482,15 +487,19 @@ async function triggerAutoSync(event: {
         }
         break;
 
-      case 'order_created':
+      case EventType.ORDER_CREATED:
         if (event.orderId && event.metadata?.orderData) {
-          const orderData = event.metadata.orderData as any;
+          const orderData = event.metadata.orderData as WooCommerceOrderData;
           await autoSyncOrderToMemgraph({
             eventType: 'order.created',
             orderId: event.orderId,
             userId: event.userId,
-            items: orderData.line_items || [],
-            orderValue: parseFloat(orderData.total || '0'),
+            items: (orderData.line_items || []).map(item => ({
+              productId: item.product_id,
+              quantity: item.quantity,
+              price: parseFloat(item.total) / item.quantity
+            })),
+            orderTotal: parseFloat(orderData.total || '0'),
             timestamp
           });
         }
@@ -500,7 +509,7 @@ async function triggerAutoSync(event: {
     // Always save to analytics DB
     await saveAnalyticsEvent({
       id: `${event.type}_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
-      type: event.type as any,
+      type: event.type,
       timestamp,
       sessionId,
       userId: event.userId,
@@ -652,7 +661,7 @@ export async function getProductById(id: number, trackingData?: {
     // Trigger auto-sync for product view even from cache
     if (trackingData) {
       await triggerAutoSync({
-        type: 'product_view',
+        type: EventType.PRODUCT_VIEWED,
         productId: id,
         userId: trackingData.userId,
         sessionId: trackingData.sessionId,
@@ -672,7 +681,7 @@ export async function getProductById(id: number, trackingData?: {
       // Trigger auto-sync for product view
       if (trackingData) {
         await triggerAutoSync({
-          type: 'product_view',
+          type: EventType.PRODUCT_VIEWED,
           productId: id,
           userId: trackingData.userId,
           sessionId: trackingData.sessionId,
@@ -809,7 +818,7 @@ export async function searchProducts(query: string, limit: number = 20, tracking
   // Trigger auto-sync for search tracking
   if (trackingData && query.trim()) {
     await triggerAutoSync({
-      type: 'product_search',
+      type: EventType.SEARCH_PERFORMED,
       searchQuery: query,
       userId: trackingData.userId,
       sessionId: trackingData.sessionId,
@@ -879,14 +888,14 @@ export async function createOrder(orderData: CheckoutData, trackingData?: {
   // Trigger auto-sync for order creation
   if (order && trackingData) {
     await triggerAutoSync({
-      type: 'order_created',
+      type: EventType.ORDER_CREATED,
       orderId: order.id.toString(),
       userId: trackingData.userId,
       sessionId: trackingData.sessionId,
       metadata: {
         ...trackingData.metadata,
         orderData: order,
-        orderValue: parseFloat(order.total),
+        orderTotal: parseFloat(order.total),
         itemCount: order.line_items.length
       }
     });

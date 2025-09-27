@@ -1,5 +1,5 @@
 // PostgreSQL Analytics Database for Comprehensive Data Storage
-import { Pool } from 'pg';
+import { Pool, PoolClient } from 'pg';
 import { logger } from '@/lib/logger';
 import { BaseEvent, ProductEvent, SearchEvent, PageEvent, OrderEvent } from './event-system';
 
@@ -337,7 +337,7 @@ export async function saveAnalyticsEvent(event: BaseEvent): Promise<void> {
 }
 
 // Save product interaction
-async function saveProductInteraction(client: any, event: ProductEvent): Promise<void> {
+async function saveProductInteraction(client: PoolClient, event: ProductEvent): Promise<void> {
   await client.query(`
     INSERT INTO product_interactions (
       event_id, product_id, product_name, product_price, product_category,
@@ -362,7 +362,7 @@ async function saveProductInteraction(client: any, event: ProductEvent): Promise
 }
 
 // Save search analytics
-async function saveSearchAnalytics(client: any, event: SearchEvent): Promise<void> {
+async function saveSearchAnalytics(client: PoolClient, event: SearchEvent): Promise<void> {
   await client.query(`
     INSERT INTO search_analytics (
       event_id, query, results_count, clicked_result_id, clicked_position,
@@ -382,7 +382,7 @@ async function saveSearchAnalytics(client: any, event: SearchEvent): Promise<voi
 }
 
 // Save page view
-async function savePageView(client: any, event: PageEvent): Promise<void> {
+async function savePageView(client: PoolClient, event: PageEvent): Promise<void> {
   await client.query(`
     INSERT INTO page_views (
       event_id, page_url, page_title, referrer, time_spent,
@@ -403,7 +403,13 @@ async function savePageView(client: any, event: PageEvent): Promise<void> {
 }
 
 // Save order analytics
-async function saveOrderAnalytics(client: any, event: OrderEvent): Promise<void> {
+async function saveOrderAnalytics(client: PoolClient, event: OrderEvent): Promise<void> {
+  // Extract metadata fields
+  const metadata = event.metadata || {};
+  const itemCount = metadata.itemCount as number || (event.items?.length || 0);
+  const paymentMethod = metadata.paymentMethod as string || null;
+  const shippingMethod = metadata.shippingMethod as string || null;
+
   // Insert order
   const orderResult = await client.query(`
     INSERT INTO order_analytics (
@@ -414,10 +420,10 @@ async function saveOrderAnalytics(client: any, event: OrderEvent): Promise<void>
   `, [
     event.id,
     event.orderId,
-    event.orderValue,
-    event.itemCount,
-    event.paymentMethod || null,
-    event.shippingMethod || null,
+    event.orderTotal,  // Use orderTotal instead of orderValue
+    itemCount,
+    paymentMethod,
+    shippingMethod,
     event.sessionId,
     event.userId || null,
     event.timestamp
@@ -426,23 +432,25 @@ async function saveOrderAnalytics(client: any, event: OrderEvent): Promise<void>
   const orderAnalyticsId = orderResult.rows[0].id;
 
   // Insert order items
-  for (const item of event.items) {
-    await client.query(`
-      INSERT INTO order_items (
-        order_analytics_id, product_id, quantity, unit_price, total_price
-      ) VALUES ($1, $2, $3, $4, $5)
-    `, [
-      orderAnalyticsId,
-      item.productId,
-      item.quantity,
-      item.price,
-      item.quantity * item.price
-    ]);
+  if (event.items) {
+    for (const item of event.items) {
+      await client.query(`
+        INSERT INTO order_items (
+          order_analytics_id, product_id, quantity, unit_price, total_price
+        ) VALUES ($1, $2, $3, $4, $5)
+      `, [
+        orderAnalyticsId,
+        item.productId,
+        item.quantity,
+        item.price,
+        item.quantity * item.price
+      ]);
+    }
   }
 }
 
 // Update user journey
-async function updateUserJourney(client: any, event: BaseEvent): Promise<void> {
+async function updateUserJourney(client: PoolClient, event: BaseEvent): Promise<void> {
   await client.query(`
     INSERT INTO user_journeys (session_id, user_id, journey_start, entry_page)
     VALUES ($1, $2, $3, $4)
@@ -455,12 +463,12 @@ async function updateUserJourney(client: any, event: BaseEvent): Promise<void> {
     event.sessionId,
     event.userId || null,
     event.timestamp,
-    (event as any).pageUrl || null
+    (event as PageEvent).pageUrl || null
   ]);
 }
 
 // Update user profile
-async function updateUserProfile(client: any, event: BaseEvent): Promise<void> {
+async function updateUserProfile(client: PoolClient, event: BaseEvent): Promise<void> {
   await client.query(`
     INSERT INTO user_profiles (user_id, last_active)
     VALUES ($1, $2)
@@ -471,7 +479,7 @@ async function updateUserProfile(client: any, event: BaseEvent): Promise<void> {
 }
 
 // Update product analytics aggregation
-async function updateProductAnalytics(client: any, event: ProductEvent): Promise<void> {
+async function updateProductAnalytics(client: PoolClient, event: ProductEvent): Promise<void> {
   const updateField = event.type === 'product.viewed' ? 'total_views = product_analytics.total_views + 1'
     : event.type === 'product.added_to_cart' ? 'total_cart_adds = product_analytics.total_cart_adds + 1'
     : event.type === 'product.purchased' ? 'total_purchases = product_analytics.total_purchases + 1, total_revenue = product_analytics.total_revenue + $3'
@@ -494,13 +502,18 @@ async function updateProductAnalytics(client: any, event: ProductEvent): Promise
 }
 
 // Export user journey data
-export async function saveUserJourney(journeyData: any): Promise<void> {
+export async function saveUserJourney(journeyData: Record<string, unknown>): Promise<void> {
   // Implementation for comprehensive user journey saving
   logger.info('Saving user journey:', journeyData);
 }
 
 // Analytics query functions
-export async function getAnalyticsSummary(timeframe: string = '7d'): Promise<any> {
+export async function getAnalyticsSummary(timeframe: string = '7d'): Promise<{
+  pageViews: number;
+  uniqueVisitors: number;
+  orders: number;
+  revenue: number;
+}> {
   const client = await pool.connect();
 
   try {

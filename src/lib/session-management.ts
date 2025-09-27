@@ -19,6 +19,7 @@ interface SessionJwtPayload {
 export interface SessionData {
   userId: string;
   username: string;
+  email?: string;
   role: string;
   permissions: string[];
   iat: number;
@@ -250,7 +251,6 @@ class MemorySessionStorage implements SessionStorage {
 }
 
 // Initialize storage based on environment
-let sessionStorage: SessionStorage;
 
 function initializeSessionStorage(): SessionStorage {
   const environment = process.env.NODE_ENV;
@@ -275,7 +275,7 @@ function initializeSessionStorage(): SessionStorage {
 }
 
 // Initialize storage
-sessionStorage = initializeSessionStorage();
+const sessionStorage = initializeSessionStorage();
 
 // Validate JWT secret at module initialization to catch issues early
 try {

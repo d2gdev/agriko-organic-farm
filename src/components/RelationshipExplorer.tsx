@@ -9,12 +9,12 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 interface Relationship {
   source: {
     type: string;
-    id: string | number;
+    id: number;
     name: string;
   };
   target: {
     type: string;
-    id: string | number;
+    id: number;
     name: string;
   };
   relationship: {
@@ -28,7 +28,7 @@ interface Relationship {
 interface RelationshipPath {
   nodes: Array<{
     type: string;
-    id: string | number;
+    id: number;
     name: string;
   }>;
   relationships: Array<{
@@ -42,7 +42,7 @@ interface RelationshipPath {
 interface ConnectedEntity {
   entity: {
     type: string;
-    id: string | number;
+    id: number;
     name: string;
     properties: Record<string, unknown>;
   };

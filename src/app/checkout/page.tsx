@@ -8,8 +8,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
-import { safePriceMultiply } from '@/lib/price-validation';
+import { Money } from '@/lib/money';
 import { CheckoutData, WCAddress } from '@/types/woocommerce';
+import { Core } from '@/types/TYPE_REGISTRY';
 import HeroSection from '@/components/HeroSection';
 import { PlantGrowingLoader } from '@/components/OrganicLoadingStates';
 import SafeLocalStorage from '@/lib/safe-localstorage';
@@ -639,8 +640,7 @@ export default function CheckoutPage() {
               <div className="space-y-4 mb-6">
                 {state.items.map((item) => {
                   const itemKey = `${item.product.id}-${item.variation?.id || 'no-variation'}`;
-                  const itemTotalResult = safePriceMultiply(item.product.price as string | number, item.quantity, `checkout-item-${item.product.id}`);
-                  const itemTotal = itemTotalResult.success ? itemTotalResult.value : 0;
+                  const itemTotal = Money.parse(String(item.product.price || '0')).multiply(item.quantity);
 
                   return (
                     <div key={itemKey} className="flex items-start space-x-3">
@@ -658,7 +658,7 @@ export default function CheckoutPage() {
                           {item.product.name}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          Qty: {item.quantity} × {formatPrice(item.product.price as string | number)}
+                          Qty: {item.quantity} × {formatPrice((item.product.price || 0) as Core.Money)}
                         </p>
                         <p className="text-sm font-medium text-gray-900">
                           {formatPrice(itemTotal)}

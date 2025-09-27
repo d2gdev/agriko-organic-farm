@@ -394,7 +394,7 @@ async function getNutritionalNeedRecommendations(
     return await withSession(
       async (session) => {
         // Build dynamic query based on nutritional needs
-        let whereClause = [];
+        const whereClause = [];
         const params: Record<string, unknown> = { ...nutritionalNeeds };
 
         if (nutritionalNeeds.targetProtein) {

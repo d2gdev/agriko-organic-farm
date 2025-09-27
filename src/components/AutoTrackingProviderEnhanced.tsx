@@ -6,7 +6,23 @@ import { useAutoTracking } from '@/hooks/useAutoTracking';
 import { jobProcessor } from '@/lib/job-processor';
 import { EventType } from '@/lib/event-system';
 import { logger } from '@/lib/logger';
+import { getErrorMessage } from '@/lib/error-utils';
 import { databaseOptimizer } from '@/lib/database-schema-optimizer';
+
+// Debug interface for development
+interface AgrikoTrackingDebug {
+  getStats: () => unknown;
+  getHealth: () => unknown;
+  isReady: boolean;
+  forceHealthCheck: () => Promise<unknown>;
+  getSlowQueries: () => Promise<unknown>;
+}
+
+declare global {
+  interface Window {
+    agrikoTracking?: AgrikoTrackingDebug;
+  }
+}
 import { initializeDatabaseOptimizations, schedulePerformanceMonitoring } from '@/lib/database-schema-optimizer';
 
 interface AutoTrackingContextType {
@@ -22,7 +38,7 @@ interface AutoTrackingContextType {
   trackSearchClick: (query: string, resultId: number, position: number) => Promise<void>;
   trackOrderCreated: (orderData: {
     orderId: string;
-    orderValue: number;
+    orderTotal: number;
     itemCount: number;
     paymentMethod?: string;
     shippingMethod?: string;
@@ -32,11 +48,19 @@ interface AutoTrackingContextType {
       price: number;
     }>;
   }) => Promise<void>;
-  trackCustomEvent: (eventType: any, data: Record<string, unknown>) => Promise<void>;
+  trackCustomEvent: (eventType: string, data: Record<string, unknown>) => Promise<void>;
   // Debug and monitoring features
   isReady: boolean;
-  getPerformanceStats: () => Promise<any>;
-  getHealthCheck: () => Promise<any>;
+  getPerformanceStats: () => Promise<{
+    totalEvents: number;
+    errorCount: number;
+    lastEvent: Date | null;
+  }>;
+  getHealthCheck: () => Promise<{
+    status: 'healthy' | 'degraded' | 'unhealthy';
+    uptime: number;
+    errors: string[];
+  }>;
 }
 
 const AutoTrackingContext = createContext<AutoTrackingContextType | null>(null);
@@ -60,7 +84,7 @@ class TrackingErrorBoundary extends Component<
   { children: ReactNode; onError?: (error: Error, errorInfo: ErrorInfo) => void },
   TrackingErrorBoundaryState
 > {
-  constructor(props: any) {
+  constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = {
       hasError: false,
@@ -84,7 +108,7 @@ class TrackingErrorBoundary extends Component<
     });
 
     // Log the error
-    logger.error('🔥 AutoTracking Error Boundary caught an error:', {
+    logger.error('🔥 AutoTracking Error Boundary caught an error', {
       error: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack
@@ -144,7 +168,7 @@ export const AutoTrackingProvider: React.FC<AutoTrackingProviderProps> = ({
         }
 
       } catch (error) {
-        logger.error('❌ Failed to initialize auto-tracking system:', error as Record<string, unknown>);
+        logger.error('❌ Failed to initialize auto-tracking system', { error: getErrorMessage(error) });
 
         // Still mark as ready but with limited functionality
         if (mounted) {
@@ -162,7 +186,7 @@ export const AutoTrackingProvider: React.FC<AutoTrackingProviderProps> = ({
         jobProcessor.stop();
         logger.info('🛑 Auto-tracking system stopped');
       } catch (error) {
-        logger.error('❌ Error stopping auto-tracking system:', error as Record<string, unknown>);
+        logger.error('❌ Error stopping auto-tracking system', { error: getErrorMessage(error) });
       }
     };
   }, [enablePerformanceMonitoring]);
@@ -173,18 +197,50 @@ export const AutoTrackingProvider: React.FC<AutoTrackingProviderProps> = ({
     isReady,
     getPerformanceStats: async () => {
       try {
-        return await databaseOptimizer.getPerformanceStats();
+        const stats = await databaseOptimizer.getPerformanceStats();
+        if (!stats) {
+          return { totalEvents: 0, errorCount: 0, lastEvent: null };
+        }
+        // Map database metrics to expected format
+        const totalEvents = (stats.memgraph?.nodeCount || 0) + (stats.qdrant?.vectorCount || 0);
+        const errorCount = 0; // Could be calculated from actual error tracking
+        const lastEvent = new Date(stats.lastUpdated || Date.now());
+
+        return {
+          totalEvents,
+          errorCount,
+          lastEvent
+        };
       } catch (error) {
-        logger.error('Failed to get performance stats:', error as Record<string, unknown>);
-        return null;
+        logger.error('Failed to get performance stats', { error: getErrorMessage(error) });
+        return { totalEvents: 0, errorCount: 0, lastEvent: null };
       }
     },
     getHealthCheck: async () => {
       try {
-        return await databaseOptimizer.performHealthCheck();
+        const healthData = await databaseOptimizer.performHealthCheck();
+        if (!healthData) {
+          return { status: 'unhealthy' as const, uptime: 0, errors: ['Health check failed'] };
+        }
+
+        // Map the health check data to expected format
+        const overallStatus = healthData.memgraph?.status === 'critical' || healthData.qdrant?.status === 'critical'
+          ? 'unhealthy' as const
+          : healthData.memgraph?.status === 'warning' || healthData.qdrant?.status === 'warning'
+          ? 'degraded' as const
+          : 'healthy' as const;
+
+        return {
+          status: overallStatus,
+          uptime: Date.now(),
+          errors: [
+            ...(healthData.memgraph?.details || []),
+            ...(healthData.qdrant?.details || [])
+          ]
+        };
       } catch (error) {
-        logger.error('Failed to perform health check:', error as Record<string, unknown>);
-        return null;
+        logger.error('Failed to perform health check', { error: getErrorMessage(error) });
+        return { status: 'unhealthy' as const, uptime: 0, errors: [getErrorMessage(error)] };
       }
     }
   };
@@ -201,7 +257,7 @@ export const AutoTrackingProvider: React.FC<AutoTrackingProviderProps> = ({
       });
     } catch (trackingError) {
       // Fallback logging if tracking fails
-      logger.error('Failed to track error event:', trackingError as Record<string, unknown>);
+      logger.error('Failed to track error event', { error: getErrorMessage(trackingError) });
     }
   };
 
@@ -209,7 +265,7 @@ export const AutoTrackingProvider: React.FC<AutoTrackingProviderProps> = ({
   useEffect(() => {
     if (enableDebugMode && typeof window !== 'undefined') {
       // Expose debug methods to window for development
-      (window as Window & { agrikoTracking?: any }).agrikoTracking = {
+      window.agrikoTracking = {
         getStats: contextValue.getPerformanceStats,
         getHealth: contextValue.getHealthCheck,
         isReady,

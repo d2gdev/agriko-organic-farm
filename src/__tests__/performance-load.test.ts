@@ -5,6 +5,7 @@ import { NextRequest } from 'next/server';
 import { POST } from '@/app/api/auto-sync/route';
 import { rateLimiter } from '@/lib/redis-rate-limiter';
 import { monitoring } from '@/lib/monitoring-observability';
+import { Core } from '@/types/TYPE_REGISTRY';
 
 // Performance testing configuration
 const PERFORMANCE_THRESHOLDS = {
@@ -40,7 +41,7 @@ describe('Performance Testing', () => {
         productData: {
           id: 1,
           name: 'Performance Test Product',
-          price: '29.99'
+          price: 2999 as Core.Money
         }
       };
 
@@ -60,7 +61,7 @@ describe('Performance Testing', () => {
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.SINGLE_REQUEST_MAX_MS);
       expect([200, 403, 422]).toContain(response.status);
 
-      console.log(`Single request performance: ${duration.toFixed(2)}ms`);
+      console.warn(`Single request performance: ${duration.toFixed(2)}ms`);
     });
 
     it('should handle validation-heavy payloads efficiently', async () => {
@@ -97,11 +98,11 @@ describe('Performance Testing', () => {
       });
 
       const startTime = performance.now();
-      const response = await POST(request);
+      const _response = await POST(request);
       const duration = performance.now() - startTime;
 
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.SINGLE_REQUEST_MAX_MS * 2); // Allow 2x for large payload
-      console.log(`Large payload validation: ${duration.toFixed(2)}ms`);
+      console.warn(`Large payload validation: ${duration.toFixed(2)}ms`);
     });
   });
 
@@ -114,7 +115,7 @@ describe('Performance Testing', () => {
         productData: {
           id: i + 1,
           name: `Batch Product ${i + 1}`,
-          price: '29.99'
+          price: 2999 as Core.Money
         }
       }));
 
@@ -139,7 +140,7 @@ describe('Performance Testing', () => {
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.BATCH_REQUEST_MAX_MS);
       expect(avgDuration).toBeLessThan(PERFORMANCE_THRESHOLDS.SINGLE_REQUEST_MAX_MS);
 
-      console.log(`Batch processing (${requestCount} requests): ${duration.toFixed(2)}ms total, ${avgDuration.toFixed(2)}ms average`);
+      console.warn(`Batch processing (${requestCount} requests): ${duration.toFixed(2)}ms total, ${avgDuration.toFixed(2)}ms average`);
     });
   });
 
@@ -159,7 +160,7 @@ describe('Performance Testing', () => {
               productData: {
                 id: i + 1,
                 name: `Concurrent Product ${i + 1}`,
-                price: '29.99'
+                price: 2999 as Core.Money
               }
             })
           });
@@ -179,8 +180,8 @@ describe('Performance Testing', () => {
           return acc;
         }, {} as Record<number, number>);
 
-        console.log(`${scenarioName} load test: ${duration.toFixed(2)}ms for ${config.concurrent} requests`);
-        console.log(`Status distribution:`, statusCodes);
+        console.warn(`${scenarioName} load test: ${duration.toFixed(2)}ms for ${config.concurrent} requests`);
+        console.warn(`Status distribution:`, statusCodes);
 
         // At least 70% should succeed (accounting for rate limiting)
         const successfulRequests = (statusCodes[200] || 0);
@@ -208,7 +209,7 @@ describe('Performance Testing', () => {
               productData: {
                 id: batch * 20 + i + 1,
                 name: `Memory Test Product ${batch * 20 + i + 1}`,
-                price: '29.99'
+                price: 2999 as Core.Money
               }
             })
           });
@@ -226,9 +227,9 @@ describe('Performance Testing', () => {
       const finalMemory = process.memoryUsage();
       const memoryGrowthMB = (finalMemory.heapUsed - initialMemory.heapUsed) / (1024 * 1024);
 
-      console.log(`Memory growth: ${memoryGrowthMB.toFixed(2)}MB`);
-      console.log(`Initial heap: ${(initialMemory.heapUsed / (1024 * 1024)).toFixed(2)}MB`);
-      console.log(`Final heap: ${(finalMemory.heapUsed / (1024 * 1024)).toFixed(2)}MB`);
+      console.warn(`Memory growth: ${memoryGrowthMB.toFixed(2)}MB`);
+      console.warn(`Initial heap: ${(initialMemory.heapUsed / (1024 * 1024)).toFixed(2)}MB`);
+      console.warn(`Final heap: ${(finalMemory.heapUsed / (1024 * 1024)).toFixed(2)}MB`);
 
       expect(memoryGrowthMB).toBeLessThan(PERFORMANCE_THRESHOLDS.MEMORY_GROWTH_MAX_MB);
     }, 60000);
@@ -262,7 +263,7 @@ describe('Performance Testing', () => {
       });
 
       const finalMetrics = rateLimiter.getMetrics();
-      console.log(`Rate limiting cleanup: ${initialEntries} → ${afterCreationMetrics.fallbackEntries} → ${finalMetrics.fallbackEntries} entries`);
+      console.warn(`Rate limiting cleanup: ${initialEntries} → ${afterCreationMetrics.fallbackEntries} → ${finalMetrics.fallbackEntries} entries`);
 
       // Should have cleaned up some entries
       expect(finalMetrics.fallbackEntries).toBeLessThanOrEqual(afterCreationMetrics.fallbackEntries);
@@ -298,7 +299,7 @@ describe('Performance Testing', () => {
         body: JSON.stringify({
           productId: 1,
           eventType: 'product.created',
-          productData: { id: 1, name: 'Slow DB Test', price: '29.99' }
+          productData: { id: 1, name: 'Slow DB Test', price: 2999 as Core.Money }
         })
       });
 
@@ -310,7 +311,7 @@ describe('Performance Testing', () => {
       expect(duration).toBeLessThan(500); // Less than sum of delays due to parallel execution
       expect([200, 500]).toContain(response.status);
 
-      console.log(`Slow database simulation: ${duration.toFixed(2)}ms`);
+      console.warn(`Slow database simulation: ${duration.toFixed(2)}ms`);
     });
 
     it('should timeout appropriately on very slow databases', async () => {
@@ -340,7 +341,7 @@ describe('Performance Testing', () => {
       expect(duration).toBeLessThan(30000); // 30 second max
       expect(response.status).toBeGreaterThanOrEqual(200);
 
-      console.log(`Database timeout handling: ${duration.toFixed(2)}ms`);
+      console.warn(`Database timeout handling: ${duration.toFixed(2)}ms`);
     }, 35000);
   });
 
@@ -370,14 +371,14 @@ describe('Performance Testing', () => {
       expect(results).toHaveLength(checkCount);
       expect(avgDuration).toBeLessThan(10); // Less than 10ms per check
 
-      console.log(`Rate limiting performance: ${checkCount} checks in ${duration.toFixed(2)}ms (${avgDuration.toFixed(3)}ms avg)`);
+      console.warn(`Rate limiting performance: ${checkCount} checks in ${duration.toFixed(2)}ms (${avgDuration.toFixed(3)}ms avg)`);
 
       // Verify results make sense
       const allowedCount = results.filter(r => r.allowed).length;
       const deniedCount = results.filter(r => !r.allowed).length;
 
       expect(allowedCount + deniedCount).toBe(checkCount);
-      console.log(`Rate limiting results: ${allowedCount} allowed, ${deniedCount} denied`);
+      console.warn(`Rate limiting results: ${allowedCount} allowed, ${deniedCount} denied`);
     });
   });
 
@@ -399,7 +400,7 @@ describe('Performance Testing', () => {
 
       expect(avgDuration).toBeLessThan(1); // Less than 1ms per metric
 
-      console.log(`Monitoring performance: ${metricCount} metrics in ${duration.toFixed(2)}ms (${avgDuration.toFixed(3)}ms avg)`);
+      console.warn(`Monitoring performance: ${metricCount} metrics in ${duration.toFixed(2)}ms (${avgDuration.toFixed(3)}ms avg)`);
     });
 
     it('should handle monitoring system under concurrent load', async () => {
@@ -422,7 +423,7 @@ describe('Performance Testing', () => {
 
       expect(duration).toBeLessThan(1000); // Should complete within 1 second
 
-      console.log(`Concurrent monitoring: ${concurrentMetrics} metrics in ${duration.toFixed(2)}ms`);
+      console.warn(`Concurrent monitoring: ${concurrentMetrics} metrics in ${duration.toFixed(2)}ms`);
     });
   });
 });
@@ -440,7 +441,7 @@ describe('Load Testing Scenarios', () => {
       ];
 
       for (const pattern of trafficPatterns) {
-        console.log(`Testing ${pattern.intensity} traffic: ${pattern.requests} requests`);
+        console.warn(`Testing ${pattern.intensity} traffic: ${pattern.requests} requests`);
 
         const startTime = performance.now();
 
@@ -476,8 +477,8 @@ describe('Load Testing Scenarios', () => {
           return acc;
         }, {} as Record<number, number>);
 
-        console.log(`${pattern.intensity} traffic completed in ${duration.toFixed(2)}ms`);
-        console.log(`Status distribution:`, statusCodes);
+        console.warn(`${pattern.intensity} traffic completed in ${duration.toFixed(2)}ms`);
+        console.warn(`Status distribution:`, statusCodes);
 
         // System should remain stable
         expect(responses).toHaveLength(pattern.requests);
@@ -524,7 +525,7 @@ describe('Load Testing Scenarios', () => {
       const responses = await Promise.all(webhookRequests.map(request => POST(request)));
       const duration = performance.now() - startTime;
 
-      console.log(`Webhook storm (${stormSize} webhooks) processed in ${duration.toFixed(2)}ms`);
+      console.warn(`Webhook storm (${stormSize} webhooks) processed in ${duration.toFixed(2)}ms`);
 
       // Should handle gracefully without crashing
       expect(responses).toHaveLength(stormSize);
@@ -534,7 +535,7 @@ describe('Load Testing Scenarios', () => {
         return acc;
       }, {} as Record<number, number>);
 
-      console.log('Webhook storm status distribution:', statusCodes);
+      console.warn('Webhook storm status distribution:', statusCodes);
 
       // Should not have any 5xx errors (server crashes)
       expect(statusCodes[500] || 0).toBe(0);
@@ -553,6 +554,6 @@ export const generatePerformanceReport = () => {
     memory: process.memoryUsage()
   };
 
-  console.log('Performance Test Report:', JSON.stringify(report, null, 2));
+  console.warn('Performance Test Report:', JSON.stringify(report, null, 2));
   return report;
 };

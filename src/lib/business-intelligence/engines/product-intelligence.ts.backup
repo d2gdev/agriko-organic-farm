@@ -1,0 +1,1353 @@
+// Business Intelligence - AI-Powered Product Intelligence Engine
+import { logger } from '@/lib/logger';
+import { deepSeekAIService } from '../services/deepseek-ai';
+import { memgraphBI } from '../memgraph/connection';
+import { semanticSearchService } from '../services/semantic-search';
+import type { CompetitorProduct } from '../types/competitor';
+
+// Product intelligence interfaces
+export interface ProductSimilarityAnalysis {
+  id: string;
+  sourceProductId: string;
+  targetProductId: string;
+  similarityScore: number; // 0-1, where 1 is identical
+  similarityType: 'feature_based' | 'semantic' | 'usage_based' | 'market_based' | 'comprehensive';
+  dimensions: {
+    features: {
+      score: number;
+      matchingFeatures: string[];
+      uniqueFeatures: {
+        source: string[];
+        target: string[];
+      };
+    };
+    pricing: {
+      score: number;
+      priceComparison: 'higher' | 'lower' | 'similar';
+      priceDifference: number;
+      valueProposition: string;
+    };
+    market: {
+      score: number;
+      targetAudienceOverlap: number;
+      marketPositioning: string;
+      competitiveAdvantage: string[];
+    };
+    semantic: {
+      score: number;
+      conceptualSimilarity: number;
+      descriptionOverlap: number;
+      keywordMatches: string[];
+    };
+  };
+  competitiveRelationship: 'direct_competitor' | 'indirect_competitor' | 'substitute' | 'complement' | 'unrelated';
+  strategicImplications: {
+    threats: string[];
+    opportunities: string[];
+    recommendations: string[];
+  };
+  confidence: number;
+  analysisDate: Date;
+  aiInsights: {
+    summary: string;
+    keyDifferentiators: string[];
+    marketGaps: string[];
+    innovationOpportunities: string[];
+  };
+}
+
+export interface ProductIntelligenceReport {
+  productId: string;
+  productName: string;
+  competitorId: string;
+  analysisDate: Date;
+  marketPosition: {
+    category: string;
+    subcategory: string;
+    positioning: 'leader' | 'challenger' | 'follower' | 'niche';
+    marketShare: {
+      estimated: number;
+      confidence: number;
+      basis: string[];
+    };
+  };
+  competitiveLandscape: {
+    directCompetitors: Array<{
+      productId: string;
+      productName: string;
+      competitorName: string;
+      similarityScore: number;
+      keyDifferences: string[];
+    }>;
+    substitutes: Array<{
+      productId: string;
+      productName: string;
+      substitutionRisk: 'low' | 'medium' | 'high';
+      substitutionFactors: string[];
+    }>;
+    complements: Array<{
+      productId: string;
+      productName: string;
+      synergies: string[];
+      partnershipPotential: 'low' | 'medium' | 'high';
+    }>;
+  };
+  featureAnalysis: {
+    coreFeatures: string[];
+    uniqueFeatures: string[];
+    missingFeatures: string[];
+    featureGaps: Array<{
+      feature: string;
+      importance: 'low' | 'medium' | 'high' | 'critical';
+      competitorCoverage: number;
+      implementationEffort: 'low' | 'medium' | 'high';
+    }>;
+  };
+  pricingAnalysis: {
+    pricePoint: number;
+    currency: string;
+    pricePositioning: 'premium' | 'mid_market' | 'budget' | 'value';
+    competitivePricing: {
+      aboveMarket: number;
+      belowMarket: number;
+      marketMedian: number;
+    };
+    valuePerception: string;
+    pricingRecommendations: string[];
+  };
+  innovationOpportunities: Array<{
+    category: 'feature_enhancement' | 'new_feature' | 'technology_upgrade' | 'user_experience' | 'integration';
+    opportunity: string;
+    marketDemand: 'low' | 'medium' | 'high';
+    competitiveAdvantage: 'low' | 'medium' | 'high';
+    implementationComplexity: 'low' | 'medium' | 'high';
+    timeToMarket: string;
+    estimatedImpact: string;
+  }>;
+  threatAssessment: {
+    overallRisk: 'low' | 'medium' | 'high' | 'critical';
+    threats: Array<{
+      type: 'new_entrant' | 'feature_parity' | 'price_competition' | 'technology_disruption' | 'market_shift';
+      severity: 'low' | 'medium' | 'high' | 'critical';
+      timeline: 'immediate' | 'short_term' | 'medium_term' | 'long_term';
+      mitigation: string[];
+    }>;
+  };
+  strategicRecommendations: Array<{
+    category: 'product_development' | 'pricing' | 'marketing' | 'partnerships' | 'competitive_response';
+    recommendation: string;
+    priority: 'low' | 'medium' | 'high' | 'critical';
+    timeline: 'immediate' | 'short_term' | 'medium_term' | 'long_term';
+    expectedImpact: 'low' | 'medium' | 'high';
+    effort: 'low' | 'medium' | 'high';
+    success_metrics: string[];
+  }>;
+  confidence: number;
+}
+
+export interface ProductClusterAnalysis {
+  clusterId: string;
+  clusterName: string;
+  products: Array<{
+    productId: string;
+    productName: string;
+    competitorName: string;
+    clusterRelevance: number;
+  }>;
+  characteristics: {
+    commonFeatures: string[];
+    priceRange: { min: number; max: number; median: number };
+    targetMarket: string[];
+    keyTrends: string[];
+  };
+  marketDynamics: {
+    competitiveIntensity: 'low' | 'medium' | 'high';
+    innovationRate: 'slow' | 'moderate' | 'fast';
+    customerSatisfaction: number;
+    marketGrowth: 'declining' | 'stable' | 'growing' | 'rapid_growth';
+  };
+  opportunities: string[];
+  threats: string[];
+  strategicInsights: string[];
+}
+
+export class ProductIntelligenceEngine {
+  private static instance: ProductIntelligenceEngine | null = null;
+
+  public static getInstance(): ProductIntelligenceEngine {
+    if (!ProductIntelligenceEngine.instance) {
+      ProductIntelligenceEngine.instance = new ProductIntelligenceEngine();
+    }
+    return ProductIntelligenceEngine.instance;
+  }
+
+  // Analyze product similarity using AI and semantic analysis
+  async analyzeProductSimilarity(
+    sourceProductId: string,
+    targetProductId: string,
+    analysisType: ProductSimilarityAnalysis['similarityType'] = 'feature_based'
+  ): Promise<ProductSimilarityAnalysis> {
+    try {
+      logger.debug('Analyzing product similarity', {
+        sourceProductId,
+        targetProductId,
+        analysisType
+      });
+
+      // Get product data
+      const sourceProduct = await this.getProductData(sourceProductId);
+      const targetProduct = await this.getProductData(targetProductId);
+
+      if (!sourceProduct || !targetProduct) {
+        throw new Error('Product data not found');
+      }
+
+      // Perform different types of similarity analysis
+      const featureAnalysis = await this.analyzeFeatureSimilarity(sourceProduct, targetProduct);
+      const pricingAnalysis = await this.analyzePricingSimilarity(sourceProduct, targetProduct);
+      const marketAnalysis = await this.analyzeMarketSimilarity(sourceProduct, targetProduct);
+      const semanticAnalysis = await this.analyzeSemanticSimilarity(sourceProduct, targetProduct);
+
+      // Calculate overall similarity score
+      const similarityScore = this.calculateOverallSimilarity(
+        featureAnalysis.score,
+        pricingAnalysis.score,
+        marketAnalysis.score,
+        semanticAnalysis.score,
+        analysisType
+      );
+
+      // Determine competitive relationship
+      const competitiveRelationship = this.determineCompetitiveRelationship(
+        similarityScore,
+        featureAnalysis,
+        pricingAnalysis,
+        marketAnalysis
+      );
+
+      // Generate AI-powered strategic insights
+      const aiInsights = await this.generateProductInsights(
+        sourceProduct,
+        targetProduct,
+        {
+          features: featureAnalysis,
+          pricing: pricingAnalysis,
+          market: marketAnalysis,
+          semantic: semanticAnalysis
+        }
+      );
+
+      // Generate strategic implications
+      const strategicImplications = await this.generateStrategicImplications(
+        sourceProduct,
+        targetProduct,
+        competitiveRelationship,
+        aiInsights
+      );
+
+      const analysisId = `similarity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      const analysis: ProductSimilarityAnalysis = {
+        id: analysisId,
+        sourceProductId,
+        targetProductId,
+        similarityScore,
+        similarityType: analysisType,
+        dimensions: {
+          features: featureAnalysis,
+          pricing: pricingAnalysis,
+          market: marketAnalysis,
+          semantic: semanticAnalysis
+        },
+        competitiveRelationship,
+        strategicImplications,
+        confidence: this.calculateAnalysisConfidence([
+          featureAnalysis.score,
+          pricingAnalysis.score,
+          marketAnalysis.score,
+          semanticAnalysis.score
+        ]),
+        analysisDate: new Date(),
+        aiInsights
+      };
+
+      // Store analysis results
+      await this.storeSimilarityAnalysis(analysis);
+
+      logger.info('Product similarity analysis completed', {
+        analysisId,
+        similarityScore,
+        competitiveRelationship,
+        confidence: analysis.confidence
+      });
+
+      return analysis;
+    } catch (error) {
+      logger.error('Failed to analyze product similarity:', {
+        sourceProductId,
+        targetProductId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
+
+  // Generate comprehensive product intelligence report
+  async generateProductIntelligenceReport(productId: string): Promise<ProductIntelligenceReport> {
+    try {
+      logger.debug('Generating product intelligence report', { productId });
+
+      const product = await this.getProductData(productId);
+      if (!product) {
+        throw new Error('Product not found');
+      }
+
+      // Find similar products for competitive analysis
+      const similarProducts = await semanticSearchService.findCompetingProducts(productId, 20, 0.3);
+
+      // Analyze competitive landscape
+      const competitiveLandscape = await this.analyzeCompetitiveLandscape(product, similarProducts);
+
+      // Analyze features and gaps
+      const featureAnalysis = await this.analyzeProductFeatures(product, similarProducts);
+
+      // Analyze pricing position
+      const pricingAnalysis = await this.analyzeProductPricing(product, similarProducts);
+
+      // Identify innovation opportunities
+      const innovationOpportunities = await this.identifyInnovationOpportunities(
+        product,
+        similarProducts,
+        featureAnalysis
+      );
+
+      // Assess threats
+      const threatAssessment = await this.assessProductThreats(product, similarProducts);
+
+      // Generate strategic recommendations using AI
+      const strategicRecommendations = await this.generateStrategicRecommendations(
+        product,
+        competitiveLandscape,
+        featureAnalysis,
+        pricingAnalysis,
+        innovationOpportunities,
+        threatAssessment
+      );
+
+      // Determine market position
+      const marketPosition = await this.analyzeMarketPosition(product, similarProducts);
+
+      const report: ProductIntelligenceReport = {
+        productId,
+        productName: product.name,
+        competitorId: product.competitorId,
+        analysisDate: new Date(),
+        marketPosition,
+        competitiveLandscape,
+        featureAnalysis,
+        pricingAnalysis,
+        innovationOpportunities,
+        threatAssessment,
+        strategicRecommendations,
+        confidence: this.calculateReportConfidence([
+          competitiveLandscape,
+          featureAnalysis,
+          pricingAnalysis,
+          innovationOpportunities
+        ])
+      };
+
+      // Store report
+      await this.storeIntelligenceReport(report);
+
+      logger.info('Product intelligence report generated', {
+        productId,
+        confidence: report.confidence,
+        competitorCount: competitiveLandscape.directCompetitors.length
+      });
+
+      return report;
+    } catch (error) {
+      logger.error('Failed to generate product intelligence report:', {
+        productId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
+
+  // Perform product clustering analysis
+  async performProductClustering(
+    productIds: string[],
+    clusteringMethod: 'feature_based' | 'market_based' | 'semantic' = 'feature_based'
+  ): Promise<ProductClusterAnalysis[]> {
+    try {
+      logger.debug('Performing product clustering', {
+        productCount: productIds.length,
+        method: clusteringMethod
+      });
+
+      // Get product data
+      const products = await Promise.all(
+        productIds.map(id => this.getProductData(id))
+      );
+
+      const validProducts = products.filter(p => p !== null) as CompetitorProduct[];
+
+      // Perform clustering based on method
+      const clusters = await this.clusterProducts(validProducts, clusteringMethod);
+
+      // Analyze each cluster
+      const clusterAnalyses = await Promise.all(
+        clusters.map(cluster => this.analyzeProductCluster(cluster))
+      );
+
+      logger.info('Product clustering completed', {
+        clusterCount: clusterAnalyses.length,
+        totalProducts: validProducts.length
+      });
+
+      return clusterAnalyses;
+    } catch (error) {
+      logger.error('Failed to perform product clustering:', {
+        productCount: productIds.length,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
+
+  // Batch analyze product similarities
+  async batchAnalyzeSimilarities(
+    productPairs: Array<{ sourceId: string; targetId: string }>,
+    analysisType: ProductSimilarityAnalysis['similarityType'] = 'feature_based'
+  ): Promise<ProductSimilarityAnalysis[]> {
+    const analyses: ProductSimilarityAnalysis[] = [];
+
+    logger.info('Starting batch similarity analysis', {
+      pairCount: productPairs.length,
+      analysisType
+    });
+
+    for (const pair of productPairs) {
+      try {
+        const analysis = await this.analyzeProductSimilarity(
+          pair.sourceId,
+          pair.targetId,
+          analysisType
+        );
+        analyses.push(analysis);
+
+        // Add delay to prevent API rate limiting
+        await this.delay(500);
+      } catch (error) {
+        logger.error('Batch similarity analysis failed for pair:', {
+          sourceId: pair.sourceId,
+          targetId: pair.targetId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+        continue;
+      }
+    }
+
+    logger.info('Batch similarity analysis completed', {
+      successCount: analyses.length,
+      totalRequested: productPairs.length
+    });
+
+    return analyses;
+  }
+
+  // Private helper methods
+  private async getProductData(productId: string): Promise<CompetitorProduct | null> {
+    try {
+      const result = await memgraphBI.executeQuery(`
+        MATCH (p:Product {id: $productId})
+        RETURN p
+      `, { productId });
+
+      if (result.records.length === 0) {
+        return null;
+      }
+
+      const props = result.records[0]?.get('p')?.properties;
+      if (!props) return null;
+      return {
+        id: props.id,
+        competitorId: props.competitorId,
+        name: props.name,
+        description: props.description,
+        category: props.category,
+        price: props.price,
+        currency: props.currency,
+        url: props.url,
+        features: JSON.parse(props.features || '[]'),
+        imageUrl: props.imageUrl,
+        inStock: props.inStock,
+        createdAt: new Date(props.createdAt),
+        updatedAt: new Date(props.updatedAt)
+      };
+    } catch (error) {
+      logger.error('Failed to get product data:', {
+        productId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      return null;
+    }
+  }
+
+  private async analyzeFeatureSimilarity(
+    sourceProduct: CompetitorProduct,
+    targetProduct: CompetitorProduct
+  ): Promise<ProductSimilarityAnalysis['dimensions']['features']> {
+    const sourceFeatures = new Set(sourceProduct.features);
+    const targetFeatures = new Set(targetProduct.features);
+
+    const intersection = new Set([...sourceFeatures].filter(f => targetFeatures.has(f)));
+    const union = new Set([...sourceFeatures, ...targetFeatures]);
+
+    const jaccardSimilarity = union.size === 0 ? 0 : intersection.size / union.size;
+
+    return {
+      score: jaccardSimilarity,
+      matchingFeatures: Array.from(intersection),
+      uniqueFeatures: {
+        source: [...sourceFeatures].filter(f => !targetFeatures.has(f)),
+        target: [...targetFeatures].filter(f => !sourceFeatures.has(f))
+      }
+    };
+  }
+
+  private async analyzePricingSimilarity(
+    sourceProduct: CompetitorProduct,
+    targetProduct: CompetitorProduct
+  ): Promise<ProductSimilarityAnalysis['dimensions']['pricing']> {
+    const priceDifference = Math.abs(sourceProduct.price - targetProduct.price);
+    const avgPrice = (sourceProduct.price + targetProduct.price) / 2;
+    const relativeDifference = avgPrice === 0 ? 0 : priceDifference / avgPrice;
+
+    // Similarity decreases as relative price difference increases
+    const score = Math.max(0, 1 - relativeDifference);
+
+    let priceComparison: 'higher' | 'lower' | 'similar';
+    if (relativeDifference < 0.1) {
+      priceComparison = 'similar';
+    } else if (sourceProduct.price > targetProduct.price) {
+      priceComparison = 'higher';
+    } else {
+      priceComparison = 'lower';
+    }
+
+    return {
+      score,
+      priceComparison,
+      priceDifference,
+      valueProposition: this.generateValueProposition(sourceProduct, targetProduct, priceComparison)
+    };
+  }
+
+  private async analyzeMarketSimilarity(
+    sourceProduct: CompetitorProduct,
+    targetProduct: CompetitorProduct
+  ): Promise<ProductSimilarityAnalysis['dimensions']['market']> {
+    // Simplified market analysis - in production, this would use more sophisticated methods
+    const categoryMatch = sourceProduct.category === targetProduct.category ? 1 : 0;
+
+    return {
+      score: categoryMatch,
+      targetAudienceOverlap: categoryMatch, // Simplified
+      marketPositioning: categoryMatch === 1 ? 'Same category' : 'Different categories',
+      competitiveAdvantage: this.identifyCompetitiveAdvantages(sourceProduct, targetProduct)
+    };
+  }
+
+  private async analyzeSemanticSimilarity(
+    sourceProduct: CompetitorProduct,
+    targetProduct: CompetitorProduct
+  ): Promise<ProductSimilarityAnalysis['dimensions']['semantic']> {
+    // Use semantic search service for similarity analysis
+    try {
+      // Find semantically similar products
+      const similarProducts = await semanticSearchService.findCompetingProducts(
+        sourceProduct.id,
+        10,
+        0.1
+      );
+
+      const targetInSimilar = similarProducts.find(p => p.id === targetProduct.id);
+      const semanticScore = targetInSimilar ? targetInSimilar.similarity : 0;
+
+      // Calculate description overlap
+      const sourceWords = new Set(sourceProduct.description.toLowerCase().split(/\s+/));
+      const targetWords = new Set(targetProduct.description.toLowerCase().split(/\s+/));
+      const wordIntersection = new Set([...sourceWords].filter(w => targetWords.has(w)));
+      const wordUnion = new Set([...sourceWords, ...targetWords]);
+      const descriptionOverlap = wordUnion.size === 0 ? 0 : wordIntersection.size / wordUnion.size;
+
+      return {
+        score: semanticScore,
+        conceptualSimilarity: semanticScore,
+        descriptionOverlap,
+        keywordMatches: Array.from(wordIntersection).slice(0, 10)
+      };
+    } catch (error) {
+      logger.error('Failed to analyze semantic similarity:', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      return {
+        score: 0,
+        conceptualSimilarity: 0,
+        descriptionOverlap: 0,
+        keywordMatches: []
+      };
+    }
+  }
+
+  private calculateOverallSimilarity(
+    featureScore: number,
+    pricingScore: number,
+    marketScore: number,
+    semanticScore: number,
+    analysisType: ProductSimilarityAnalysis['similarityType']
+  ): number {
+    // Weighted average based on analysis type
+    const weights = {
+      feature_based: { features: 0.7, pricing: 0.1, market: 0.1, semantic: 0.1 },
+      semantic: { features: 0.1, pricing: 0.1, market: 0.1, semantic: 0.7 },
+      usage_based: { features: 0.3, pricing: 0.3, market: 0.3, semantic: 0.1 },
+      market_based: { features: 0.1, pricing: 0.3, market: 0.5, semantic: 0.1 },
+      comprehensive: { features: 0.3, pricing: 0.2, market: 0.3, semantic: 0.2 }
+    };
+
+    const weight = weights[analysisType];
+    return (
+      featureScore * weight.features +
+      pricingScore * weight.pricing +
+      marketScore * weight.market +
+      semanticScore * weight.semantic
+    );
+  }
+
+  private determineCompetitiveRelationship(
+    similarityScore: number,
+    featureAnalysis: ProductSimilarityAnalysis['dimensions']['features'],
+    pricingAnalysis: ProductSimilarityAnalysis['dimensions']['pricing'],
+    marketAnalysis: ProductSimilarityAnalysis['dimensions']['market']
+  ): ProductSimilarityAnalysis['competitiveRelationship'] {
+    if (similarityScore > 0.8 && marketAnalysis.score > 0.8) {
+      return 'direct_competitor';
+    }
+
+    if (similarityScore > 0.6 && marketAnalysis.score > 0.5) {
+      return 'indirect_competitor';
+    }
+
+    if (featureAnalysis.score < 0.3 && marketAnalysis.score > 0.5) {
+      return 'substitute';
+    }
+
+    if (featureAnalysis.uniqueFeatures.source.length > 0 && featureAnalysis.uniqueFeatures.target.length > 0) {
+      return 'complement';
+    }
+
+    return 'unrelated';
+  }
+
+  private async generateProductInsights(
+    sourceProduct: CompetitorProduct,
+    targetProduct: CompetitorProduct,
+    dimensions: ProductSimilarityAnalysis['dimensions']
+  ): Promise<ProductSimilarityAnalysis['aiInsights']> {
+    try {
+      const aiAnalysis = await deepSeekAIService.analyzeData({
+        type: 'competitor_analysis',
+        data: {
+          competitorName: `${sourceProduct.name} vs ${targetProduct.name}`,
+          industry: sourceProduct.category,
+          searchResults: JSON.stringify({
+            sourceProduct: {
+              name: sourceProduct.name,
+              features: sourceProduct.features,
+              price: sourceProduct.price,
+              description: sourceProduct.description
+            },
+            targetProduct: {
+              name: targetProduct.name,
+              features: targetProduct.features,
+              price: targetProduct.price,
+              description: targetProduct.description
+            },
+            similarity: dimensions
+          })
+        },
+        context: {
+          analysisType: 'product_similarity',
+          focus: 'competitive_intelligence'
+        }
+      });
+
+      return {
+        summary: aiAnalysis.analysis.summary,
+        keyDifferentiators: aiAnalysis.analysis.keyInsights
+          .filter(insight => insight.category === 'opportunity')
+          .map(insight => insight.insight)
+          .slice(0, 5),
+        marketGaps: aiAnalysis.analysis.keyInsights
+          .filter(insight => insight.category === 'trend')
+          .map(insight => insight.insight)
+          .slice(0, 3),
+        innovationOpportunities: aiAnalysis.analysis.recommendations
+          .map(rec => rec.action)
+          .slice(0, 5)
+      };
+    } catch (error) {
+      logger.error('Failed to generate AI product insights:', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      return {
+        summary: 'Product similarity analysis completed',
+        keyDifferentiators: [],
+        marketGaps: [],
+        innovationOpportunities: []
+      };
+    }
+  }
+
+  private async generateStrategicImplications(
+    sourceProduct: CompetitorProduct,
+    targetProduct: CompetitorProduct,
+    relationship: ProductSimilarityAnalysis['competitiveRelationship'],
+    aiInsights: ProductSimilarityAnalysis['aiInsights']
+  ): Promise<ProductSimilarityAnalysis['strategicImplications']> {
+    const implications = {
+      threats: [] as string[],
+      opportunities: [] as string[],
+      recommendations: [] as string[]
+    };
+
+    switch (relationship) {
+      case 'direct_competitor':
+        implications.threats.push('Direct feature competition', 'Price pressure risk');
+        implications.opportunities.push('Market validation', 'Benchmarking opportunities');
+        implications.recommendations.push('Monitor closely', 'Differentiate aggressively');
+        break;
+
+      case 'indirect_competitor':
+        implications.threats.push('Potential market expansion');
+        implications.opportunities.push('Partnership potential', 'Cross-selling opportunities');
+        implications.recommendations.push('Track market moves', 'Explore collaboration');
+        break;
+
+      case 'substitute':
+        implications.threats.push('Alternative solution risk', 'Customer migration');
+        implications.opportunities.push('Integration opportunities', 'Bundle potential');
+        implications.recommendations.push('Address substitute gaps', 'Enhance value proposition');
+        break;
+
+      case 'complement':
+        implications.opportunities.push('Partnership synergies', 'Bundle offerings', 'Cross-promotion');
+        implications.recommendations.push('Explore partnerships', 'Develop integrations');
+        break;
+
+      default:
+        implications.recommendations.push('Continue monitoring', 'Low priority for competitive analysis');
+    }
+
+    // Add AI-generated insights
+    implications.opportunities.push(...aiInsights.innovationOpportunities.slice(0, 3));
+    implications.recommendations.push(...aiInsights.keyDifferentiators.slice(0, 2));
+
+    return implications;
+  }
+
+  private async analyzeCompetitiveLandscape(
+    product: CompetitorProduct,
+    similarProducts: Array<{ id: string; name: string; similarity: number; competitorId: string }>
+  ): Promise<ProductIntelligenceReport['competitiveLandscape']> {
+    // Categorize similar products
+    const directCompetitors = similarProducts
+      .filter(p => p.similarity > 0.7)
+      .map(p => ({
+        productId: p.id,
+        productName: p.name,
+        competitorName: p.competitorId, // Would be resolved to actual name
+        similarityScore: p.similarity,
+        keyDifferences: ['Feature comparison needed'] // Would be calculated
+      }));
+
+    const substitutes = similarProducts
+      .filter(p => p.similarity > 0.4 && p.similarity <= 0.7)
+      .map(p => ({
+        productId: p.id,
+        productName: p.name,
+        substitutionRisk: 'medium' as const,
+        substitutionFactors: ['Alternative approach', 'Different technology']
+      }));
+
+    // TODO: Implement proper complement analysis using AI and market data
+    const complements: Array<{
+      productId: string;
+      productName: string;
+      synergies: string[];
+      partnershipPotential: 'high' | 'medium' | 'low';
+    }> = []; // Would be identified through different analysis
+
+    return {
+      directCompetitors,
+      substitutes,
+      complements
+    };
+  }
+
+  private async analyzeProductFeatures(
+    product: CompetitorProduct,
+    similarProducts: Array<{ id: string; name: string; similarity: number }>
+  ): Promise<ProductIntelligenceReport['featureAnalysis']> {
+    // Get feature data for similar products
+    const competitorFeatures = new Set<string>();
+    for (const similar of similarProducts) {
+      const competitorProduct = await this.getProductData(similar.id);
+      if (competitorProduct) {
+        competitorProduct.features.forEach(f => competitorFeatures.add(f));
+      }
+    }
+
+    const productFeatures = new Set(product.features);
+    const _allFeatures = new Set([...productFeatures, ...competitorFeatures]);
+
+    return {
+      coreFeatures: product.features.filter(f => competitorFeatures.has(f)),
+      uniqueFeatures: product.features.filter(f => !competitorFeatures.has(f)),
+      missingFeatures: [...competitorFeatures].filter(f => !productFeatures.has(f)),
+      featureGaps: [...competitorFeatures]
+        .filter(f => !productFeatures.has(f))
+        .map(feature => ({
+          feature,
+          importance: 'medium' as const,
+          competitorCoverage: 0.5, // Would be calculated
+          implementationEffort: 'medium' as const
+        }))
+    };
+  }
+
+  private async analyzeProductPricing(
+    product: CompetitorProduct,
+    similarProducts: Array<{ id: string; name: string; similarity: number }>
+  ): Promise<ProductIntelligenceReport['pricingAnalysis']> {
+    // Get pricing data for similar products
+    const competitorPrices: number[] = [];
+    for (const similar of similarProducts) {
+      const competitorProduct = await this.getProductData(similar.id);
+      if (competitorProduct && competitorProduct.price > 0) {
+        competitorPrices.push(competitorProduct.price);
+      }
+    }
+
+    if (competitorPrices.length === 0) {
+      return {
+        pricePoint: product.price,
+        currency: product.currency,
+        pricePositioning: 'mid_market',
+        competitivePricing: {
+          aboveMarket: 0,
+          belowMarket: 0,
+          marketMedian: product.price
+        },
+        valuePerception: 'Competitive pricing position',
+        pricingRecommendations: ['Monitor competitive pricing']
+      };
+    }
+
+    const sortedPrices = competitorPrices.sort((a, b) => a - b);
+    const median = sortedPrices[Math.floor(sortedPrices.length / 2)];
+    if (median === undefined) {
+      return {
+        pricePoint: product.price,
+        currency: product.currency,
+        pricePositioning: 'mid_market' as const,
+        competitivePricing: {
+          aboveMarket: 0,
+          belowMarket: 0,
+          marketMedian: 0
+        },
+        valuePerception: 'No competitive pricing data available',
+        pricingRecommendations: []
+      };
+    }
+
+    const aboveMarket = sortedPrices.filter(p => p > product.price).length;
+    const belowMarket = sortedPrices.filter(p => p < product.price).length;
+
+    let positioning: 'premium' | 'mid_market' | 'budget' | 'value';
+    if (product.price > median * 1.2) positioning = 'premium';
+    else if (product.price < median * 0.8) positioning = 'budget';
+    else positioning = 'mid_market';
+
+    return {
+      pricePoint: product.price,
+      currency: product.currency,
+      pricePositioning: positioning,
+      competitivePricing: {
+        aboveMarket,
+        belowMarket,
+        marketMedian: median
+      },
+      valuePerception: `${positioning} positioning in competitive set`,
+      pricingRecommendations: this.generatePricingRecommendations(positioning, median, product.price)
+    };
+  }
+
+  private async identifyInnovationOpportunities(
+    product: CompetitorProduct,
+    similarProducts: Array<{ id: string; name: string; similarity: number }>,
+    featureAnalysis: ProductIntelligenceReport['featureAnalysis']
+  ): Promise<ProductIntelligenceReport['innovationOpportunities']> {
+    const opportunities: ProductIntelligenceReport['innovationOpportunities'] = [];
+
+    // Feature enhancement opportunities
+    featureAnalysis.featureGaps.forEach(gap => {
+      if (gap.importance === 'high' || gap.importance === 'critical') {
+        opportunities.push({
+          category: 'feature_enhancement',
+          opportunity: `Implement ${gap.feature} to close competitive gap`,
+          marketDemand: gap.importance === 'critical' ? 'high' : 'medium',
+          competitiveAdvantage: gap.competitorCoverage > 0.7 ? 'high' : 'medium',
+          implementationComplexity: gap.implementationEffort,
+          timeToMarket: gap.implementationEffort === 'low' ? '1-2 months' : '3-6 months',
+          estimatedImpact: 'Improved competitive positioning'
+        });
+      }
+    });
+
+    // Unique feature opportunities
+    featureAnalysis.uniqueFeatures.forEach(feature => {
+      opportunities.push({
+        category: 'feature_enhancement',
+        opportunity: `Enhance unique feature: ${feature}`,
+        marketDemand: 'medium',
+        competitiveAdvantage: 'high',
+        implementationComplexity: 'low',
+        timeToMarket: '1-3 months',
+        estimatedImpact: 'Strengthen differentiation'
+      });
+    });
+
+    return opportunities.slice(0, 10); // Limit to top 10
+  }
+
+  private async assessProductThreats(
+    product: CompetitorProduct,
+    similarProducts: Array<{ id: string; name: string; similarity: number }>
+  ): Promise<ProductIntelligenceReport['threatAssessment']> {
+    const threats: ProductIntelligenceReport['threatAssessment']['threats'] = [];
+
+    // High similarity products pose direct competition threat
+    const directThreats = similarProducts.filter(p => p.similarity > 0.8);
+    if (directThreats.length > 0) {
+      threats.push({
+        type: 'feature_parity',
+        severity: directThreats.length > 3 ? 'high' : 'medium',
+        timeline: 'immediate',
+        mitigation: ['Accelerate differentiation', 'Strengthen unique value proposition']
+      });
+    }
+
+    // Price competition threat
+    threats.push({
+      type: 'price_competition',
+      severity: 'medium',
+      timeline: 'short_term',
+      mitigation: ['Value-based positioning', 'Cost optimization', 'Premium feature development']
+    });
+
+    const overallRisk = threats.some(t => t.severity === 'critical') ? 'critical' :
+      threats.some(t => t.severity === 'high') ? 'high' :
+      threats.some(t => t.severity === 'medium') ? 'medium' : 'low';
+
+    return {
+      overallRisk,
+      threats
+    };
+  }
+
+  private async generateStrategicRecommendations(
+    product: CompetitorProduct,
+    competitiveLandscape: ProductIntelligenceReport['competitiveLandscape'],
+    featureAnalysis: ProductIntelligenceReport['featureAnalysis'],
+    pricingAnalysis: ProductIntelligenceReport['pricingAnalysis'],
+    innovationOpportunities: ProductIntelligenceReport['innovationOpportunities'],
+    threatAssessment: ProductIntelligenceReport['threatAssessment']
+  ): Promise<ProductIntelligenceReport['strategicRecommendations']> {
+    try {
+      const aiAnalysis = await deepSeekAIService.analyzeData({
+        type: 'strategic_insights',
+        data: {
+          companyContext: { productName: product.name, category: product.category },
+          competitorData: JSON.stringify(competitiveLandscape),
+          marketData: JSON.stringify({ featureAnalysis, pricingAnalysis })
+        },
+        context: {
+          analysisType: 'product_strategy',
+          threats: threatAssessment,
+          opportunities: innovationOpportunities
+        }
+      });
+
+      return aiAnalysis.analysis.recommendations.map(rec => ({
+        category: this.mapRecommendationCategory(rec.action),
+        recommendation: rec.action,
+        priority: rec.priority,
+        timeline: rec.timeline,
+        expectedImpact: rec.impact,
+        effort: rec.effort,
+        success_metrics: ['Market share growth', 'Feature adoption rate', 'Customer satisfaction']
+      }));
+    } catch (error) {
+      logger.error('Failed to generate strategic recommendations:', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      return [{
+        category: 'product_development',
+        recommendation: 'Continue monitoring competitive landscape',
+        priority: 'medium',
+        timeline: 'medium_term',
+        expectedImpact: 'medium',
+        effort: 'low',
+        success_metrics: ['Competitive intelligence quality']
+      }];
+    }
+  }
+
+  private async analyzeMarketPosition(
+    product: CompetitorProduct,
+    similarProducts: Array<{ id: string; name: string; similarity: number }>
+  ): Promise<ProductIntelligenceReport['marketPosition']> {
+    // Simplified market position analysis
+    const competitorCount = similarProducts.length;
+    let positioning: 'leader' | 'challenger' | 'follower' | 'niche';
+
+    if (competitorCount < 3) positioning = 'leader';
+    else if (competitorCount < 8) positioning = 'challenger';
+    else if (competitorCount < 15) positioning = 'follower';
+    else positioning = 'niche';
+
+    return {
+      category: product.category,
+      subcategory: product.category, // Would be more specific
+      positioning,
+      marketShare: {
+        estimated: positioning === 'leader' ? 0.3 : positioning === 'challenger' ? 0.15 : 0.05,
+        confidence: 0.6,
+        basis: ['Competitive analysis', 'Product similarity assessment']
+      }
+    };
+  }
+
+  private async clusterProducts(
+    products: CompetitorProduct[],
+    method: 'feature_based' | 'market_based' | 'semantic'
+  ): Promise<Array<{ id: string; name: string; products: CompetitorProduct[] }>> {
+    // Simplified clustering - in production would use proper clustering algorithms
+    const clusters = new Map<string, CompetitorProduct[]>();
+
+    products.forEach(product => {
+      const clusterKey = method === 'feature_based' ? product.category :
+        method === 'market_based' ? product.category :
+        product.category; // Semantic would use vector clustering
+
+      if (!clusters.has(clusterKey)) {
+        clusters.set(clusterKey, []);
+      }
+      const cluster = clusters.get(clusterKey);
+      if (cluster) {
+        cluster.push(product);
+      }
+    });
+
+    return Array.from(clusters.entries()).map(([key, products], index) => ({
+      id: `cluster_${index}`,
+      name: key,
+      products
+    }));
+  }
+
+  private async analyzeProductCluster(
+    cluster: { id: string; name: string; products: CompetitorProduct[] }
+  ): Promise<ProductClusterAnalysis> {
+    const products = cluster.products;
+    const prices = products.map(p => p.price).filter(p => p > 0);
+    const allFeatures = new Set<string>();
+
+    products.forEach(p => p.features.forEach(f => allFeatures.add(f)));
+
+    const commonFeatures = Array.from(allFeatures).filter(feature =>
+      products.filter(p => p.features.includes(feature)).length >= products.length * 0.5
+    );
+
+    return {
+      clusterId: cluster.id,
+      clusterName: cluster.name,
+      products: products.map(p => ({
+        productId: p.id,
+        productName: p.name,
+        competitorName: p.competitorId,
+        clusterRelevance: 1 // Would be calculated
+      })),
+      characteristics: {
+        commonFeatures,
+        priceRange: {
+          min: Math.min(...prices),
+          max: Math.max(...prices),
+          median: prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)] || 0
+        },
+        targetMarket: [cluster.name],
+        keyTrends: ['Market consolidation', 'Feature convergence']
+      },
+      marketDynamics: {
+        competitiveIntensity: products.length > 10 ? 'high' : products.length > 5 ? 'medium' : 'low',
+        innovationRate: 'moderate',
+        customerSatisfaction: 0.7,
+        marketGrowth: 'growing'
+      },
+      opportunities: ['Market expansion', 'Feature differentiation'],
+      threats: ['New entrants', 'Price competition'],
+      strategicInsights: ['Focus on differentiation', 'Monitor competitive moves']
+    };
+  }
+
+  // Utility methods
+  private generateValueProposition(
+    sourceProduct: CompetitorProduct,
+    targetProduct: CompetitorProduct,
+    priceComparison: 'higher' | 'lower' | 'similar'
+  ): string {
+    switch (priceComparison) {
+      case 'higher':
+        return 'Premium positioning with potentially enhanced features';
+      case 'lower':
+        return 'Value positioning with competitive feature set';
+      default:
+        return 'Competitive positioning with similar value proposition';
+    }
+  }
+
+  private identifyCompetitiveAdvantages(
+    sourceProduct: CompetitorProduct,
+    targetProduct: CompetitorProduct
+  ): string[] {
+    const advantages = [];
+
+    if (sourceProduct.features.length > targetProduct.features.length) {
+      advantages.push('More comprehensive feature set');
+    }
+
+    if (sourceProduct.price < targetProduct.price) {
+      advantages.push('Better price point');
+    }
+
+    if (sourceProduct.features.some(f => !targetProduct.features.includes(f))) {
+      advantages.push('Unique features');
+    }
+
+    return advantages.length > 0 ? advantages : ['Competitive parity'];
+  }
+
+  private calculateAnalysisConfidence(scores: number[]): number {
+    const validScores = scores.filter(s => s >= 0);
+    if (validScores.length === 0) return 0;
+
+    const avgScore = validScores.reduce((sum, score) => sum + score, 0) / validScores.length;
+    const variance = validScores.reduce((sum, score) => sum + Math.pow(score - avgScore, 2), 0) / validScores.length;
+
+    // Higher confidence when scores are consistent and reasonable
+    return Math.max(0.3, Math.min(0.95, avgScore * (1 - Math.sqrt(variance))));
+  }
+
+  private calculateReportConfidence(_analysisComponents: unknown[]): number {
+    // Simplified confidence calculation
+    return 0.8;
+  }
+
+  private generatePricingRecommendations(
+    positioning: string,
+    _marketMedian: number,
+    _currentPrice: number
+  ): string[] {
+    const recommendations = [];
+
+    if (positioning === 'premium') {
+      recommendations.push('Ensure premium features justify price point');
+      recommendations.push('Monitor for premium erosion');
+    } else if (positioning === 'budget') {
+      recommendations.push('Consider value-added services');
+      recommendations.push('Monitor for margin pressure');
+    } else {
+      recommendations.push('Maintain competitive pricing');
+      recommendations.push('Look for differentiation opportunities');
+    }
+
+    return recommendations;
+  }
+
+  private mapRecommendationCategory(action: string): ProductIntelligenceReport['strategicRecommendations'][0]['category'] {
+    const actionLower = action.toLowerCase();
+
+    if (actionLower.includes('develop') || actionLower.includes('feature')) {
+      return 'product_development';
+    }
+    if (actionLower.includes('price') || actionLower.includes('cost')) {
+      return 'pricing';
+    }
+    if (actionLower.includes('market') || actionLower.includes('brand')) {
+      return 'marketing';
+    }
+    if (actionLower.includes('partner')) {
+      return 'partnerships';
+    }
+
+    return 'competitive_response';
+  }
+
+  private async storeSimilarityAnalysis(analysis: ProductSimilarityAnalysis): Promise<void> {
+    try {
+      await memgraphBI.executeQuery(`
+        CREATE (a:ProductSimilarityAnalysis {
+          id: $id,
+          sourceProductId: $sourceProductId,
+          targetProductId: $targetProductId,
+          similarityScore: $similarityScore,
+          similarityType: $similarityType,
+          dimensions: $dimensions,
+          competitiveRelationship: $competitiveRelationship,
+          strategicImplications: $strategicImplications,
+          confidence: $confidence,
+          analysisDate: $analysisDate,
+          aiInsights: $aiInsights,
+          createdAt: $createdAt
+        })
+        RETURN a
+      `, {
+        id: analysis.id,
+        sourceProductId: analysis.sourceProductId,
+        targetProductId: analysis.targetProductId,
+        similarityScore: analysis.similarityScore,
+        similarityType: analysis.similarityType,
+        dimensions: JSON.stringify(analysis.dimensions),
+        competitiveRelationship: analysis.competitiveRelationship,
+        strategicImplications: JSON.stringify(analysis.strategicImplications),
+        confidence: analysis.confidence,
+        analysisDate: analysis.analysisDate.toISOString(),
+        aiInsights: JSON.stringify(analysis.aiInsights),
+        createdAt: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error('Failed to store similarity analysis:', {
+        analysisId: analysis.id,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  private async storeIntelligenceReport(report: ProductIntelligenceReport): Promise<void> {
+    try {
+      await memgraphBI.executeQuery(`
+        CREATE (r:ProductIntelligenceReport {
+          productId: $productId,
+          productName: $productName,
+          competitorId: $competitorId,
+          analysisDate: $analysisDate,
+          marketPosition: $marketPosition,
+          competitiveLandscape: $competitiveLandscape,
+          featureAnalysis: $featureAnalysis,
+          pricingAnalysis: $pricingAnalysis,
+          innovationOpportunities: $innovationOpportunities,
+          threatAssessment: $threatAssessment,
+          strategicRecommendations: $strategicRecommendations,
+          confidence: $confidence,
+          createdAt: $createdAt
+        })
+        RETURN r
+      `, {
+        productId: report.productId,
+        productName: report.productName,
+        competitorId: report.competitorId,
+        analysisDate: report.analysisDate.toISOString(),
+        marketPosition: JSON.stringify(report.marketPosition),
+        competitiveLandscape: JSON.stringify(report.competitiveLandscape),
+        featureAnalysis: JSON.stringify(report.featureAnalysis),
+        pricingAnalysis: JSON.stringify(report.pricingAnalysis),
+        innovationOpportunities: JSON.stringify(report.innovationOpportunities),
+        threatAssessment: JSON.stringify(report.threatAssessment),
+        strategicRecommendations: JSON.stringify(report.strategicRecommendations),
+        confidence: report.confidence,
+        createdAt: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error('Failed to store intelligence report:', {
+        productId: report.productId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Health check
+  async healthCheck(): Promise<{
+    status: 'healthy' | 'unhealthy';
+    details: {
+      productCount: number;
+      recentAnalyses: number;
+      semanticServiceStatus: string;
+      lastError?: string;
+    };
+  }> {
+    try {
+      // Count products
+      const productResult = await memgraphBI.executeQuery(`
+        MATCH (p:Product)
+        RETURN count(p) as count
+      `);
+      const productCount = productResult.records[0]?.get('count')?.toNumber?.() || 0;
+
+      // Count recent analyses
+      const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const analysisResult = await memgraphBI.executeQuery(`
+        MATCH (a:ProductSimilarityAnalysis)
+        WHERE datetime(a.analysisDate) > datetime($dayAgo)
+        RETURN count(a) as count
+      `, { dayAgo: dayAgo.toISOString() });
+      const recentAnalyses = analysisResult.records[0]?.get('count')?.toNumber?.() || 0;
+
+      // Check semantic service health
+      const semanticHealth = await semanticSearchService.healthCheck();
+
+      return {
+        status: 'healthy',
+        details: {
+          productCount,
+          recentAnalyses,
+          semanticServiceStatus: semanticHealth.status
+        }
+      };
+    } catch (error) {
+      return {
+        status: 'unhealthy',
+        details: {
+          productCount: 0,
+          recentAnalyses: 0,
+          semanticServiceStatus: 'unhealthy',
+          lastError: error instanceof Error ? error.message : 'Unknown error'
+        }
+      };
+    }
+  }
+}
+
+// Export singleton instance
+export const productIntelligenceEngine = ProductIntelligenceEngine.getInstance();

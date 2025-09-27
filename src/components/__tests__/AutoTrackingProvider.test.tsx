@@ -1,5 +1,6 @@
 // AutoTrackingProvider Tests
 import React from 'react';
+import { Core } from '@/types/TYPE_REGISTRY';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { AutoTrackingProvider, useTracking, useTrackingReady, useTrackingMonitoring } from '../AutoTrackingProviderEnhanced';
 
@@ -54,7 +55,7 @@ const TestConsumer: React.FC = () => {
         onClick={() => tracking.trackProduct('view', {
           id: 1,
           name: 'Test Product',
-          price: 10,
+          price: 10 as Core.Money,
           category: 'test'
         })}
         data-testid="track-product"
@@ -319,7 +320,7 @@ describe('AutoTrackingProvider', () => {
       expect(mockTrackProduct).toHaveBeenCalledWith('view', {
         id: 1,
         name: 'Test Product',
-        price: 10,
+        price: 10 as Core.Money,
         category: 'test'
       });
     });

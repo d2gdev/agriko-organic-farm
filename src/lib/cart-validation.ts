@@ -1,28 +1,39 @@
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
+import { Money } from '@/lib/money';
 
 import { CartItem } from '@/context/CartContext';
 import { WCProduct } from '@/types/woocommerce';
+
+// Custom Zod schema for price fields - WooCommerce sends prices as strings
+const priceSchema = z.union([
+  z.string(), // WooCommerce sends prices as strings like "299.00"
+  z.undefined(),
+  z.null()
+]).optional();
+
+// Keep the old name for compatibility
+const moneySchema = priceSchema;
 
 // Cart item validation schema
 const cartItemValidationSchema = z.object({
   product: z.object({
     id: z.number().int().positive(),
     name: z.string().min(1).max(200),
-    price: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Invalid price format'),
+    price: priceSchema, // WooCommerce sends as string
     slug: z.string().min(1).max(100),
     permalink: z.string().optional(),
     description: z.string().optional(),
     short_description: z.string().optional(),
-    regular_price: z.string().optional(),
-    sale_price: z.string().optional(),
+    regular_price: priceSchema, // WooCommerce sends as string
+    sale_price: priceSchema, // WooCommerce sends as string
     on_sale: z.boolean().optional(),
     status: z.enum(['draft', 'pending', 'private', 'publish']).optional(),
     featured: z.boolean().optional(),
     catalog_visibility: z.enum(['visible', 'catalog', 'search', 'hidden']).optional(),
     sku: z.string().optional(),
     stock_status: z.enum(['instock', 'outofstock', 'onbackorder']).optional(),
-    stock_quantity: z.number().nullable().optional(),
+    stock_quantity: z.union([z.number(), z.null()]).optional(), // WooCommerce sends as number or null
     manage_stock: z.boolean().optional(),
     categories: z.array(z.unknown()).optional(),
     tags: z.array(z.unknown()).optional(),
@@ -32,8 +43,8 @@ const cartItemValidationSchema = z.object({
     weight: z.string().optional(),
     dimensions: z.unknown().optional(),
     meta_data: z.array(z.unknown()).optional(),
-    average_rating: z.string().optional(),
-    rating_count: z.number().optional(),
+    average_rating: z.string().optional(), // WooCommerce sends as string
+    rating_count: z.number().optional(), // WooCommerce sends as number
     date_created: z.string().optional(),
     date_modified: z.string().optional(),
     // Allow additional product fields but validate core ones
@@ -78,8 +89,8 @@ export function validateCartData(cartData: unknown): CartItem[] | null {
         permalink: item.product.permalink ?? '',
         description: item.product.description ?? '',
         short_description: item.product.short_description ?? '',
-        regular_price: item.product.regular_price ?? item.product.price ?? '0',
-        sale_price: item.product.sale_price ?? '0',
+        regular_price: item.product.regular_price ?? item.product.price ?? 0,
+        sale_price: item.product.sale_price ?? 0,
         on_sale: item.product.on_sale ?? false,
         status: item.product.status ?? 'publish',
         featured: item.product.featured ?? false,
@@ -166,14 +177,39 @@ export function validateCartItem(
   variation?: CartItem['variation']
 ): boolean {
   try {
+    // Early check for undefined/null product
+    if (!product) {
+      logger.error('Cart item validation failed: Product is undefined or null');
+      return false;
+    }
+
     const validation = cartItemValidationSchema.safeParse({
       product,
       quantity,
       variation
     });
-    
+
     if (!validation.success) {
-      logger.warn('Cart item validation failed:', validation.error.errors as unknown as Record<string, unknown>);
+      logger.warn('Cart item validation failed:', {
+        errors: validation.error.errors.map(e => ({
+          path: e.path.join('.'),
+          message: e.message,
+          code: e.code,
+          expected: e.expected,
+          received: e.received,
+          input: e.input
+        })),
+        product: {
+          id: product?.id,
+          name: product?.name,
+          price: product?.price,
+          priceType: typeof product?.price,
+          priceValue: product?.price,
+          slug: product?.slug,
+          hasAllFields: Boolean(product?.id && product?.name && product?.slug)
+        },
+        quantity
+      });
       return false;
     }
     

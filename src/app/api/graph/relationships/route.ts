@@ -83,32 +83,33 @@ export async function POST(request: NextRequest) {
         result = await discoverAllRelationships(limit);
         break;
         
-      case 'discover-entities':
-        // Discover entities from all sources
-        const [productEntities, graphEntities] = await Promise.all([
-          getAllProducts().then(discoverEntitiesFromProducts),
-          discoverEntitiesFromGraph()
-        ]);
-        
-        // Combine and deduplicate entities
-        const entityMap = new Map<string, DiscoveredEntity>();
-        [...productEntities, ...graphEntities].forEach(entity => {
-          entityMap.set(entity.id, entity);
-        });
-        const discoveredEntities = Array.from(entityMap.values());
-        
-        // Auto-create entities if requested
-        let creationResult = null;
-        if (autoCreate && discoveredEntities.length > 0) {
-          creationResult = await autoCreateDiscoveredEntities(discoveredEntities);
+      case 'discover-entities': {
+          // Discover entities from all sources
+          const [productEntities, graphEntities] = await Promise.all([
+            getAllProducts().then(discoverEntitiesFromProducts),
+            discoverEntitiesFromGraph()
+          ]);
+
+          // Combine and deduplicate entities
+          const entityMap = new Map<string, DiscoveredEntity>();
+          [...productEntities, ...graphEntities].forEach(entity => {
+            entityMap.set(entity.id, entity);
+          });
+          const discoveredEntities = Array.from(entityMap.values());
+
+          // Auto-create entities if requested
+          let creationResult = null;
+          if (autoCreate && discoveredEntities.length > 0) {
+            creationResult = await autoCreateDiscoveredEntities(discoveredEntities);
+          }
+
+          result = {
+            entities: discoveredEntities,
+            count: discoveredEntities.length,
+            created: creationResult
+          };
+          break;
         }
-        
-        result = {
-          entities: discoveredEntities,
-          count: discoveredEntities.length,
-          created: creationResult
-        };
-        break;
         
       default:
         return NextResponse.json({

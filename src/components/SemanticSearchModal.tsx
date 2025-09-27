@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { logger } from '@/lib/logger';
-
+import { Core } from '@/types/TYPE_REGISTRY';
 import { useRouter } from 'next/navigation';
 import { formatPrice } from '@/lib/utils';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -13,7 +13,7 @@ interface SemanticResult {
   productId: number;
   slug: string;
   title: string;
-  price: string;
+  price: Core.Money;
   categories: string[];
   inStock: boolean;
   featured: boolean;

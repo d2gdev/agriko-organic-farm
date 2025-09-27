@@ -124,7 +124,7 @@ export async function autoSyncOrderToMemgraph(orderData: {
     quantity: number;
     price: number;
   }>;
-  orderValue: number;
+  orderTotal: number;
   timestamp: number;
 }): Promise<void> {
   return withDatabaseRetry(async () => {
@@ -134,13 +134,13 @@ export async function autoSyncOrderToMemgraph(orderData: {
       await session.run(`
         CREATE (o:Order {
           id: $orderId,
-          total_value: $orderValue,
+          total_value: $orderTotal,
           item_count: $itemCount,
           created_at: $timestamp
         })
       `, {
         orderId: orderData.orderId,
-        orderValue: orderData.orderValue,
+        orderTotal: orderData.orderTotal,
         itemCount: orderData.items.length,
         timestamp: orderData.timestamp
       });

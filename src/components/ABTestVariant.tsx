@@ -1,12 +1,14 @@
 'use client';
 
+import { Core } from '@/types/TYPE_REGISTRY';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { logger } from '@/lib/logger';
 
 import { useABTest, shouldShowVariant, getVariantConfig } from '@/lib/ab-testing';
-import type { 
+import type {
   ProductCardABTestProps
 } from '@/types/ab-testing';
+import { ComponentConfig } from '@/types/common';
 import Image from 'next/image';
 
 interface ABTestVariantProps {
@@ -32,7 +34,7 @@ interface ABTestConfigProps {
   testId: string;
   userId?: string;
   sessionId?: string;
-  children: (config: Record<string, unknown>, variant: string) => ReactNode;
+  children: (config: ComponentConfig, variant: string) => ReactNode;
 }
 
 // Component to conditionally render based on A/B test variant
@@ -263,7 +265,7 @@ export function SearchInterfaceABTest({ onSearch, userId, sessionId }: LocalSear
 interface RecommendationItem {
   id: number;
   name: string;
-  price: string;
+  price: Core.Money;
   images?: Array<{ src: string }>;
 }
 
@@ -302,7 +304,7 @@ export function RecommendationABTest({
           count: data.recommendations?.length ?? 0
         });
       } catch (error) {
-        logger.error('Failed to fetch recommendations:', error as Record<string, unknown>);
+        logger.error('Failed to fetch recommendations', { error: error instanceof Error ? error.message : String(error) });
       }
     };
 

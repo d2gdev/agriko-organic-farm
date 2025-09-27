@@ -1,9 +1,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateApiAuthSecure, hasPermission } from '@/lib/secure-auth';
+import { Permission } from '@/types/auth';
 import { generateTokenPair, generateServiceToken } from '@/lib/token-management';
 import { logger } from '@/lib/logger';
 import { urlHelpers } from '@/lib/url-constants';
+
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Check if user has admin permissions
-    if (!hasPermission(authResult.user, 'admin')) {
+    if (!hasPermission({ permissions: authResult.user.permissions || [] }, Permission.ADMIN_FULL)) {
       return NextResponse.json(
         { error: 'Admin permissions required to generate API keys' },
         { status: 403 }
@@ -133,7 +136,7 @@ export async function GET(request: NextRequest) {
     );
   }
   
-  if (!hasPermission(authResult.user, 'admin')) {
+  if (!hasPermission({ permissions: authResult.user.permissions || [] }, Permission.ADMIN_FULL)) {
     return NextResponse.json(
       { error: 'Admin permissions required' },
       { status: 403 }

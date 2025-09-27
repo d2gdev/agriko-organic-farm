@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateJwtToken } from '@/lib/secure-auth';
 import { logger } from '@/lib/logger';
+import { getErrorMessage } from '@/lib/error-utils';
+
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,7 +49,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    logger.error('Auth verification error', error as Record<string, unknown>, 'auth');
+    logger.error('Auth verification error', { error: getErrorMessage(error) }, 'auth');
 
     return NextResponse.json(
       { success: false, message: 'Authentication verification failed' },

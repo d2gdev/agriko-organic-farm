@@ -1,11 +1,14 @@
 // Client-safe search wrapper that prevents worker spawning
 // This module can be safely imported on the client side
 
+import { Core } from '@/types/TYPE_REGISTRY';
+import { logger } from '@/lib/logger';
+
 export interface SearchResult {
   productId: number;
   slug: string;
   title: string;
-  price: string;
+  price: Core.Money;
   categories: string[];
   inStock: boolean;
   featured: boolean;
@@ -31,8 +34,8 @@ export interface SearchResponse {
   results: SearchResult[];
   count: number;
   searchType: string;
-  qualityMetrics?: any;
-  contextualInsights?: any;
+  qualityMetrics?: Record<string, unknown>;
+  contextualInsights?: Record<string, unknown>;
 }
 
 /**
@@ -67,7 +70,7 @@ export async function performClientSearch(
 
     return await response.json();
   } catch (error) {
-    console.error('Client search error:', error);
+    logger.error('Client search error:', error as Record<string, unknown>);
     return {
       success: false,
       query,
@@ -106,7 +109,7 @@ export async function performSemanticSearch(
 
     return await response.json();
   } catch (error) {
-    console.error('Client semantic search error:', error);
+    logger.error('Client semantic search error:', error as Record<string, unknown>);
     return {
       success: false,
       query,
@@ -156,7 +159,7 @@ export async function performHybridClientSearch(
       contextualInsights: data.data.insights,
     };
   } catch (error) {
-    console.error('Client hybrid search error:', error);
+    logger.error('Client hybrid search error:', error as Record<string, unknown>);
     return {
       success: false,
       query,
@@ -191,7 +194,7 @@ export async function safeServerImport<T>(
     try {
       return await importFn();
     } catch (error) {
-      console.error('Server import failed:', error);
+      logger.error('Server import failed:', error as Record<string, unknown>);
       return null;
     }
   }

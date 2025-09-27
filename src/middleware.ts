@@ -1,27 +1,28 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const path = request.nextUrl.pathname
 
-  // Protect admin routes
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-    const authCookie = request.cookies.get('admin-auth');
-    const sessionCookie = request.cookies.get('admin-session');
-
-    if (!authCookie || authCookie.value !== 'authenticated' || !sessionCookie) {
-      // Redirect to login page
-      const loginUrl = new URL('/admin/login', request.url);
-      return NextResponse.redirect(loginUrl);
-    }
+  // Rewrite /static/* requests to /api/studio-static/static/*
+  if (path.startsWith('/static/')) {
+    const newPath = `/api/studio-static${path}`
+    return NextResponse.rewrite(new URL(newPath, request.url))
   }
 
-  // Allow the request to continue
-  return NextResponse.next();
+  // Redirect /blogPost and other schema routes to studio
+  if (path === '/blogPost' || path === '/page' || path === '/siteSettings') {
+    return NextResponse.redirect(new URL('/studio', request.url))
+  }
+
+  return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    '/admin/:path*'
+    '/static/:path*',
+    '/blogPost',
+    '/page',
+    '/siteSettings'
   ]
-};
+}

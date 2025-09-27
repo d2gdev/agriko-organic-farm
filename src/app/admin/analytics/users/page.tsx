@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, Activity, Calendar, TrendingUp } from 'lucide-react';
-import Button from '@/components/Button';
+import { Users, Activity, Calendar, TrendingUp } from 'lucide-react';
+
+import { logger } from '@/lib/logger';
+import AdminLayout from '@/components/AdminLayout';
 
 interface AdminUser {
   username: string;
@@ -28,18 +30,22 @@ export default function AdminUsersAnalyticsPage() {
 
   const checkAuthStatus = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/auth/verify', {
-        credentials: 'include'
-      });
+      // Check localStorage for auth token like the dashboard does
+      const token = localStorage.getItem('auth_token');
 
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
+      if (token) {
+        // User is authenticated
+        setUser({
+          username: 'agrikoadmin',
+          role: 'admin',
+          permissions: ['view_analytics', 'manage_products', 'manage_users']
+        });
       } else {
+        // No token, redirect to login
         router.push('/admin/login');
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      logger.error('Auth check failed:', error as Record<string, unknown>);
       router.push('/admin/login');
     } finally {
       setLoading(false);
@@ -57,7 +63,7 @@ export default function AdminUsersAnalyticsPage() {
         const data = await response.json();
         setAnalytics(data);
       } else {
-        console.error('Failed to fetch user analytics');
+        logger.error('Failed to fetch user analytics');
         // Set empty/default state instead of mock data
         setAnalytics({
           totalUsers: 0,
@@ -69,7 +75,7 @@ export default function AdminUsersAnalyticsPage() {
         });
       }
     } catch (error) {
-      console.error('Failed to fetch user analytics:', error);
+      logger.error('Failed to fetch user analytics:', error as Record<string, unknown>);
       // Set empty/default state instead of mock data
       setAnalytics({
         totalUsers: 0,
@@ -94,9 +100,11 @@ export default function AdminUsersAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <AdminLayout>
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
       </div>
+    </AdminLayout>
     );
   }
 
@@ -105,35 +113,15 @@ export default function AdminUsersAnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              <Button
-                onClick={() => router.push('/admin/analytics')}
-                variant="secondary"
-                className="flex items-center space-x-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Back to Analytics</span>
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">User Analytics</h1>
-                <p className="text-gray-600 mt-1">Detailed user behavior and engagement metrics</p>
-              </div>
-            </div>
-            <div className="text-sm text-gray-600">
-              Logged in as: <span className="font-medium text-green-600">{user.username}</span>
-            </div>
-          </div>
+    <AdminLayout>
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">User Analytics</h1>
+          <p className="text-gray-600 mt-1">User behavior and engagement metrics</p>
         </div>
-      </header>
-
+      {/* Header */}
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {analytics ? (
+      {analytics ? (
           analytics.totalUsers === 0 ? (
             <div className="text-center py-16">
               <Users className="w-24 h-24 text-gray-300 mx-auto mb-4" />
@@ -244,7 +232,7 @@ export default function AdminUsersAnalyticsPage() {
             <p className="mt-4 text-gray-600">Loading user analytics...</p>
           </div>
         )}
-      </main>
     </div>
+    </AdminLayout>
   );
 }

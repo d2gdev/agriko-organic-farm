@@ -144,6 +144,10 @@ export const LongTaskBreaker = {
 export class ThirdPartyOptimizer {
   private static loadedScripts = new Set<string>();
   private static observers = new Map<string, IntersectionObserver>();
+  private static eventHandlers = new Map<string, EventListener[]>();
+
+  // Maximum number of observers to prevent memory leaks
+  private static readonly MAX_OBSERVERS = 10;
 
   // Load script only when needed
   static async loadOnDemand(
@@ -174,11 +178,25 @@ export class ThirdPartyOptimizer {
   static loadOnVisible(scriptUrl: string, targetSelector: string): void {
     if (this.loadedScripts.has(scriptUrl)) return;
 
+    // Enforce size limit to prevent memory leaks
+    if (this.observers.size >= this.MAX_OBSERVERS) {
+      logger.warn('Max observers limit reached, cleaning up oldest observers');
+      const oldestKey = this.observers.keys().next().value;
+      if (oldestKey) {
+        const oldObserver = this.observers.get(oldestKey);
+        if (oldObserver) {
+          oldObserver.disconnect();
+        }
+        this.observers.delete(oldestKey);
+      }
+    }
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           this.loadOnDemand(scriptUrl);
           observer.unobserve(entry.target);
+          observer.disconnect();
           this.observers.delete(scriptUrl);
         }
       });
@@ -200,20 +218,42 @@ export class ThirdPartyOptimizer {
 
     const loadScript = () => {
       this.loadOnDemand(scriptUrl);
-      events.forEach(event => {
-        document.removeEventListener(event, loadScript);
+      // Clean up event listeners
+      const handlers = this.eventHandlers.get(scriptUrl) || [];
+      handlers.forEach((handler, index) => {
+        const event = events[index];
+        if (event) {
+          document.removeEventListener(event, handler);
+        }
       });
+      this.eventHandlers.delete(scriptUrl);
     };
 
+    // Store event handlers for cleanup
+    const handlers: EventListener[] = [];
     events.forEach(event => {
-      document.addEventListener(event, loadScript);
+      const handler = loadScript;
+      handlers.push(handler);
+      document.addEventListener(event, handler);
     });
+    this.eventHandlers.set(scriptUrl, handlers);
   }
 
-  // Cleanup observers
+  // Cleanup observers and event handlers
   static cleanup(): void {
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer, scriptUrl) => {
+      observer.disconnect();
+      this.loadedScripts.delete(scriptUrl);
+    });
     this.observers.clear();
+
+    // Clean up event handlers
+    this.eventHandlers.forEach((handlers, scriptUrl) => {
+      // Note: We can't remove event listeners here without the event names
+      // Event listeners should be cleaned up when the script loads or via the loadScript callback
+      this.loadedScripts.delete(scriptUrl);
+    });
+    this.eventHandlers.clear();
   }
 }
 

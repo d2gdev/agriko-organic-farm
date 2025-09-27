@@ -385,7 +385,7 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
                         className="w-full text-left p-4 hover:bg-gray-50 rounded-xl transition-colors group relative"
                         role="option"
                         aria-selected="false"
-                        aria-label={`${product.name}, ${formatPrice(product.price as string | number)}`}
+                        aria-label={`${product.name}, ${formatPrice((product.price || 0) as number)}`}
                       >
                         {/* Search result indicator for semantic search */}
                         {useSemanticSearch && semanticResults.length > 0 && (
@@ -414,7 +414,7 @@ export default function SearchModal({ isOpen, onClose, products }: SearchModalPr
                             </p>
                             <div className="flex items-center justify-between mt-2">
                               <span className="font-semibold text-primary-700">
-                                {formatPrice(product.price as string | number)}
+                                {formatPrice((product.price || 0) as number)}
                               </span>
                               <div className="flex items-center gap-2">
                                 {product.stock_status === 'instock' ? (

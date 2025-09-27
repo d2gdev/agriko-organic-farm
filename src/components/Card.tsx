@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, HTMLAttributes, ReactNode, ButtonHTMLAttributes } from 'react';
+import { forwardRef, HTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
@@ -9,17 +9,12 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   hover?: boolean;
   clickable?: boolean;
+  onClick?: () => void;
+  role?: string;
+  tabIndex?: number;
 }
 
-interface ButtonCardProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'elevated' | 'outlined' | 'interactive';
-  size?: 'sm' | 'md' | 'lg';
-  children: ReactNode;
-  hover?: boolean;
-  clickable?: boolean;
-}
-
-const Card = forwardRef<HTMLDivElement | HTMLButtonElement, CardProps | ButtonCardProps>(({
+const Card = forwardRef<HTMLDivElement, CardProps>(({
   variant = 'default',
   size = 'md',
   children,
@@ -83,22 +78,23 @@ const Card = forwardRef<HTMLDivElement | HTMLButtonElement, CardProps | ButtonCa
 
   if (clickable) {
     return (
-      <button
-        ref={ref as React.RefObject<HTMLButtonElement>}
+      <div
+        ref={ref}
         className={cardClasses}
-        type="button"
-        {...(props as ButtonHTMLAttributes<HTMLButtonElement>)}
+        role="button"
+        tabIndex={0}
+        {...props}
       >
         {children}
-      </button>
+      </div>
     );
   }
 
   return (
     <div
-      ref={ref as React.RefObject<HTMLDivElement>}
+      ref={ref}
       className={cardClasses}
-      {...(props as HTMLAttributes<HTMLDivElement>)}
+      {...props}
     >
       {children}
     </div>

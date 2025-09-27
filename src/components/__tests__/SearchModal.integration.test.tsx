@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { Core } from '@/types/TYPE_REGISTRY';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 import SearchModal from '@/components/SearchModal';
@@ -30,7 +31,6 @@ jest.mock('next/image', () => ({
     if (fill) imgProps['data-fill'] = fill.toString();
     if (priority) imgProps['data-priority'] = priority.toString();
 
-    // eslint-disable-next-line @next/next/no-img-element
     return <img alt={alt} {...imgProps} />;
   },
 }));
@@ -61,7 +61,7 @@ jest.mock('@/components/SearchAutocomplete', () => {
 
 // Mock SearchFilters component
 jest.mock('@/components/SearchFilters', () => {
-  return function MockSearchFilters({ filters, onFiltersChange }: { filters?: Record<string, unknown>; onFiltersChange?: (filters: Record<string, unknown>) => void }) {
+  return function MockSearchFilters({ filters: _filters, onFiltersChange }: { filters?: Record<string, unknown>; onFiltersChange?: (filters: Record<string, unknown>) => void }) {
     return (
       <div>
         <button onClick={() => onFiltersChange?.({ category: '' })}>Clear filters</button>
@@ -72,7 +72,7 @@ jest.mock('@/components/SearchFilters', () => {
 
 // Mock Button component
 jest.mock('@/components/Button', () => {
-  return function MockButton({ children, onClick, variant, size, className }: { children?: React.ReactNode; onClick?: () => void; variant?: string; size?: string; className?: string }) {
+  return function MockButton({ children, onClick, variant: _variant, size: _size, className }: { children?: React.ReactNode; onClick?: () => void; variant?: string; size?: string; className?: string }) {
     return (
       <button onClick={onClick} className={className}>
         {children}
@@ -154,9 +154,9 @@ const mockProducts: WCProduct[] = [
     id: 1,
     name: 'Organic Brown Rice',
     slug: 'organic-brown-rice',
-    price: '15.99',
-    regular_price: '15.99',
-    sale_price: '',
+    price: 1599 as Core.Money,
+    regular_price: 1599 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic brown rice from our farm with nutrients',
@@ -195,9 +195,9 @@ const mockProducts: WCProduct[] = [
     id: 2,
     name: 'Red Rice Premium',
     slug: 'red-rice-premium',
-    price: "18.50",
-    regular_price: '20.00',
-    sale_price: '18.50',
+    price: 1850 as Core.Money,
+    regular_price: 2000 as Core.Money,
+    sale_price: 1850 as Core.Money,
     on_sale: true,
     stock_status: 'instock',
     description: 'Premium red rice with antioxidants and minerals',
@@ -236,9 +236,9 @@ const mockProducts: WCProduct[] = [
     id: 3,
     name: 'Turmeric Powder',
     slug: 'turmeric-powder',
-    price: "12.99",
-    regular_price: '12.99',
-    sale_price: '',
+    price: 1299 as Core.Money,
+    regular_price: 1299 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'outofstock',
     description: 'Pure organic turmeric powder with anti-inflammatory properties',
@@ -277,9 +277,9 @@ const mockProducts: WCProduct[] = [
     id: 4,
     name: 'Organic Honey',
     slug: 'organic-honey',
-    price: "25.50",
-    regular_price: '25.50',
-    sale_price: '',
+    price: 2550 as Core.Money,
+    regular_price: 2550 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Pure organic honey from local hives, raw and unprocessed',
@@ -319,9 +319,9 @@ const mockProducts: WCProduct[] = [
     id: 5,
     name: 'Organic Quinoa',
     slug: 'organic-quinoa',
-    price: "22.99",
-    regular_price: '22.99',
-    sale_price: '',
+    price: 2299 as Core.Money,
+    regular_price: 2299 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic quinoa superfood',
@@ -342,9 +342,9 @@ const mockProducts: WCProduct[] = [
     id: 6,
     name: 'Organic Chia Seeds',
     slug: 'organic-chia-seeds',
-    price: "18.99",
-    regular_price: '18.99',
-    sale_price: '',
+    price: 1899 as Core.Money,
+    regular_price: 1899 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic chia seeds for smoothies',
@@ -365,9 +365,9 @@ const mockProducts: WCProduct[] = [
     id: 7,
     name: 'Organic Coconut Oil',
     slug: 'organic-coconut-oil',
-    price: "16.99",
-    regular_price: '16.99',
-    sale_price: '',
+    price: 1699 as Core.Money,
+    regular_price: 1699 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Pure organic coconut oil for cooking',
@@ -388,9 +388,9 @@ const mockProducts: WCProduct[] = [
     id: 8,
     name: 'Organic Almonds',
     slug: 'organic-almonds',
-    price: "28.99",
-    regular_price: '28.99',
-    sale_price: '',
+    price: 2899 as Core.Money,
+    regular_price: 2899 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Raw organic almonds for snacking',
@@ -411,9 +411,9 @@ const mockProducts: WCProduct[] = [
     id: 9,
     name: 'Organic Cashews',
     slug: 'organic-cashews',
-    price: "32.99",
-    regular_price: '32.99',
-    sale_price: '',
+    price: 3299 as Core.Money,
+    regular_price: 3299 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic cashews for snacking',
@@ -434,9 +434,9 @@ const mockProducts: WCProduct[] = [
     id: 10,
     name: 'Organic Flaxseeds',
     slug: 'organic-flaxseeds',
-    price: "14.99",
-    regular_price: '14.99',
-    sale_price: '',
+    price: 1499 as Core.Money,
+    regular_price: 1499 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic flaxseeds rich in omega-3',
@@ -457,9 +457,9 @@ const mockProducts: WCProduct[] = [
     id: 11,
     name: 'Organic Jasmine Rice',
     slug: 'organic-jasmine-rice',
-    price: "19.99",
-    regular_price: '19.99',
-    sale_price: '',
+    price: 1999 as Core.Money,
+    regular_price: 1999 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic jasmine rice with aromatic fragrance',
@@ -480,9 +480,9 @@ const mockProducts: WCProduct[] = [
     id: 12,
     name: 'Organic Basmati Rice',
     slug: 'organic-basmati-rice',
-    price: "24.99",
-    regular_price: '24.99',
-    sale_price: '',
+    price: 2499 as Core.Money,
+    regular_price: 2499 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic basmati rice for special occasions',
@@ -503,9 +503,9 @@ const mockProducts: WCProduct[] = [
     id: 13,
     name: 'Organic Wild Rice',
     slug: 'organic-wild-rice',
-    price: "29.99",
-    regular_price: '29.99',
-    sale_price: '',
+    price: 2999 as Core.Money,
+    regular_price: 2999 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic wild rice with nutty flavor',
@@ -526,9 +526,9 @@ const mockProducts: WCProduct[] = [
     id: 14,
     name: 'Organic Black Rice',
     slug: 'organic-black-rice',
-    price: "21.99",
-    regular_price: '21.99',
-    sale_price: '',
+    price: 2199 as Core.Money,
+    regular_price: 2199 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic black rice rich in antioxidants',
@@ -549,9 +549,9 @@ const mockProducts: WCProduct[] = [
     id: 15,
     name: 'Organic Sticky Rice',
     slug: 'organic-sticky-rice',
-    price: "17.99",
-    regular_price: '17.99',
-    sale_price: '',
+    price: 1799 as Core.Money,
+    regular_price: 1799 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic glutinous sticky rice',
@@ -572,9 +572,9 @@ const mockProducts: WCProduct[] = [
     id: 16,
     name: 'Organic Long Grain Rice',
     slug: 'organic-long-grain-rice',
-    price: "16.99",
-    regular_price: '16.99',
-    sale_price: '',
+    price: 1699 as Core.Money,
+    regular_price: 1699 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic long grain white rice',
@@ -595,9 +595,9 @@ const mockProducts: WCProduct[] = [
     id: 17,
     name: 'Organic Short Grain Rice',
     slug: 'organic-short-grain-rice',
-    price: "18.99",
-    regular_price: '18.99',
-    sale_price: '',
+    price: 1899 as Core.Money,
+    regular_price: 1899 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic short grain rice for sushi',
@@ -618,9 +618,9 @@ const mockProducts: WCProduct[] = [
     id: 18,
     name: 'Organic Arborio Rice',
     slug: 'organic-arborio-rice',
-    price: "23.99",
-    regular_price: '23.99',
-    sale_price: '',
+    price: 2399 as Core.Money,
+    regular_price: 2399 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic arborio rice for risotto',
@@ -1020,7 +1020,7 @@ describe('Search Modal Integration', () => {
         riceFilterButton = riceFilterButtons[0];
       }, { timeout: 1000 });
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+       
       await user.click(riceFilterButton!);
 
       await waitFor(() => {
@@ -1082,7 +1082,7 @@ describe('Search Modal Integration', () => {
 
     it('should include filter parameters in view all URL', async () => {
       const user = userEvent.setup();
-      const mockOnClose = jest.fn();
+      const _mockOnClose = jest.fn(); // Not used in this test
 
       render(
         <SearchModal
@@ -1099,7 +1099,7 @@ describe('Search Modal Integration', () => {
         expect(riceFilterButton).toBeInTheDocument();
       }, { timeout: 1000 });
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+       
       await user.click(riceFilterButton!);
 
       // Then search

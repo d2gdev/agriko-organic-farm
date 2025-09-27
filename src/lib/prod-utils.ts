@@ -1,12 +1,13 @@
 // Production Environment Utilities
+import { logger } from '@/lib/logger';
+
 export const isProd = process.env.NODE_ENV === 'production';
 export const isDev = process.env.NODE_ENV === 'development';
 
 // Production-safe logging
-export const prodLog = (message: string, data?: any) => {
+export const prodLog = (message: string, data?: unknown) => {
   if (!isProd) {
-    // eslint-disable-next-line no-console
-    console.log(message, data);
+    logger.debug(message, data as Record<string, unknown>);
   }
 };
 
@@ -33,9 +34,9 @@ export const prodError = (error: unknown, context?: string) => {
 
   if (isProd) {
     // In production, log sanitized errors only
-    console.error(`Error${context ? ` in ${context}` : ''}: ${errorMessage}`);
+    logger.error(`Error${context ? ` in ${context}` : ''}: ${errorMessage}`);
   } else {
     // In development, show full error details
-    console.error(`Error${context ? ` in ${context}` : ''}:`, error);
+    logger.error(`Error${context ? ` in ${context}` : ''}:`, error as Record<string, unknown>);
   }
 };

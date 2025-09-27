@@ -133,7 +133,7 @@ export interface MemGraphQueryResult {
 // Google Analytics Types
 export interface GAEvent {
   event_name: string;
-  event_parameters: Record<string, string | number | boolean>;
+  event_parameters: Record<string, number | boolean>;
 }
 
 export interface GAPageView {

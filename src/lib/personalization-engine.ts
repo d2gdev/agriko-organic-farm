@@ -319,7 +319,7 @@ export async function calculatePersonalizationWeights(
   const _profile = await getEnhancedUserProfile(sessionId);
 
   // Base weights
-  let weights: PersonalizationWeights = {
+  const weights: PersonalizationWeights = {
     categoryPreference: 0.2,
     healthBenefitAlignment: 0.2,
     pricePreference: 0.15,

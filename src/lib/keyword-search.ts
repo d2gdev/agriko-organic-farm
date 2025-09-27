@@ -1,4 +1,5 @@
 // Keyword Search Engine for Hybrid Search Implementation
+import { Core } from '@/types/TYPE_REGISTRY';
 import { WCProduct } from '../types/woocommerce';
 
 export interface KeywordSearchOptions {
@@ -18,7 +19,7 @@ export interface KeywordSearchResult {
   productId: number;
   slug: string;
   title: string;
-  price: string;
+  price: Core.Money;
   categories: string[];
   inStock: boolean;
   featured: boolean;
@@ -37,7 +38,7 @@ export interface SearchIndex {
   tokens: string[];
   metadata: {
     slug: string;
-    price: string;
+    price: Core.Money;
     inStock: boolean;
     featured: boolean;
   };
@@ -59,7 +60,7 @@ function stem(word: string): string {
     [/est$/, ''],
   ] as [RegExp, string][];
 
-  let stemmed = word.toLowerCase();
+  const stemmed = word.toLowerCase();
   
   // Don't stem very short words
   if (stemmed.length <= 3) return stemmed;
@@ -160,7 +161,7 @@ export function buildSearchIndex(products: WCProduct[]): SearchIndex[] {
       tokens,
       metadata: {
         slug: product.slug ?? '',
-        price: product.price ?? '0',
+        price: product.price ?? (0 as Core.Money),
         inStock: product.stock_status === 'instock',
         featured: product.featured ?? false
       }
@@ -244,7 +245,7 @@ export function keywordSearch(
         productId: item.productId,
         slug: item.metadata.slug || '',
         title: item.title,
-        price: item.metadata.price || '0',
+        price: item.metadata.price || (0 as Core.Money),
         categories: item.categories || [],
         inStock: item.metadata.inStock || false,
         featured: item.metadata.featured || false,

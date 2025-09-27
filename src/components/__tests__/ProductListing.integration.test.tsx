@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { Core } from '@/types/TYPE_REGISTRY';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { getAllProducts } from '@/lib/woocommerce';
 import ProductsWithFilters from '@/components/ProductsWithFilters';
@@ -30,26 +31,15 @@ jest.mock('next/image', () => ({
     if (fill) imgProps['data-fill'] = fill.toString();
     if (priority) imgProps['data-priority'] = priority.toString();
 
-    // eslint-disable-next-line @next/next/no-img-element
     return <img alt={alt} {...imgProps} />;
   },
 }));
 
-// Mock price validation functions
-jest.mock('@/lib/price-validation', () => ({
-  parsePrice: (price: string | number) => ({
-    success: true,
-    value: parseFloat(price.toString())
-  }),
-  calculateDiscountPercentage: () => ({
-    success: true,
-    value: 10
-  }),
-}));
+// Mock Money class (now handled by the Money class itself)
 
 // Mock utils functions to return USD format for tests
 jest.mock('@/lib/utils', () => ({
-  formatPrice: (price: string | number) => `$${parseFloat(price.toString()).toFixed(2)}`,
+  formatPrice: (price: Core.Money) => `$${parseFloat(price.toString()).toFixed(2)}`,
   getProductMainImage: (product: WCProduct) => `/images/${product.slug || 'placeholder'}.jpg`,
   stripHtml: (str: string) => str.replace(/<[^>]*>/g, ''),
   isProductInStock: (product: WCProduct) => product.stock_status === 'instock',
@@ -90,7 +80,7 @@ jest.mock('next/link', () => ({
 // Mock Next.js navigation hooks
 jest.mock('next/navigation', () => ({
   useSearchParams: () => ({
-    get: (key: string) => null, // Return null for all search params in tests
+    get: (_key: string) => null, // Return null for all search params in tests
   }),
   useRouter: () => ({
     push: jest.fn(),
@@ -188,9 +178,9 @@ const mockProducts: WCProduct[] = [
     id: 1,
     name: 'Organic Brown Rice',
     slug: 'organic-brown-rice',
-    price: '15.99',
-    regular_price: '15.99',
-    sale_price: '',
+    price: 1599 as Core.Money,
+    regular_price: 1599 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic brown rice from our farm',
@@ -237,9 +227,9 @@ const mockProducts: WCProduct[] = [
     id: 2,
     name: 'Red Rice Premium',
     slug: 'red-rice-premium',
-    price: '18.50',
-    regular_price: '20.00',
-    sale_price: '18.50',
+    price: 1850 as Core.Money,
+    regular_price: 2000 as Core.Money,
+    sale_price: 1850 as Core.Money,
     on_sale: true,
     stock_status: 'instock',
     description: 'Premium red rice with antioxidants',
@@ -293,9 +283,9 @@ const mockProducts: WCProduct[] = [
     id: 3,
     name: 'Turmeric Powder',
     slug: 'turmeric-powder',
-    price: '12.99',
-    regular_price: '12.99',
-    sale_price: '',
+    price: 1299 as Core.Money,
+    regular_price: 1299 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'outofstock',
     description: 'Pure organic turmeric powder',
@@ -342,9 +332,9 @@ const mockProducts: WCProduct[] = [
     id: 4,
     name: 'Organic Honey',
     slug: 'organic-honey',
-    price: '25.50',
-    regular_price: '25.50',
-    sale_price: '',
+    price: 2550 as Core.Money,
+    regular_price: 2550 as Core.Money,
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Pure organic honey from local hives',
@@ -462,7 +452,7 @@ describe('Product Listing Integration', () => {
 
   describe('Product Filtering', () => {
     it('should filter products by category', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       await waitFor(() => {
@@ -471,11 +461,11 @@ describe('Product Listing Integration', () => {
 
       // First expand the Categories section
       const categoriesSection = screen.getByRole('button', { name: /categories/i });
-      await user.click(categoriesSection);
+      await _user.click(categoriesSection);
 
       // Then click on Rice category filter (exact match to avoid "Price" buttons)
       const riceFilter = screen.getByRole('button', { name: 'Rice' });
-      await user.click(riceFilter);
+      await _user.click(riceFilter);
 
       await waitFor(() => {
         // Should show only rice products
@@ -492,16 +482,16 @@ describe('Product Listing Integration', () => {
     });
 
     it('should filter products by stock status', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       // First expand the Product Options section (where stock filter is)
       const productOptionsSection = screen.getByRole('button', { name: /product options/i });
-      await user.click(productOptionsSection);
+      await _user.click(productOptionsSection);
 
       // Toggle "In Stock Only" filter
       const inStockFilter = screen.getByRole('button', { name: /in stock only/i });
-      await user.click(inStockFilter);
+      await _user.click(inStockFilter);
 
       await waitFor(() => {
         // Should show only in-stock products
@@ -518,7 +508,7 @@ describe('Product Listing Integration', () => {
     });
 
     it('should filter products by price range', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       // For this test, we'll use sorting by price as a proxy for price filtering
@@ -526,7 +516,7 @@ describe('Product Listing Integration', () => {
 
       // Use the sort dropdown to sort by price (low to high)
       const sortDropdown = screen.getByRole('combobox');
-      await user.selectOptions(sortDropdown, 'price_low');
+      await _user.selectOptions(sortDropdown, 'price_low');
 
       await waitFor(() => {
         // After sorting by price low to high, verify the order is correct by checking product names
@@ -543,24 +533,24 @@ describe('Product Listing Integration', () => {
     });
 
     it('should combine multiple filters', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       // First expand the Categories section
       const categoriesSection = screen.getByRole('button', { name: /categories/i });
-      await user.click(categoriesSection);
+      await _user.click(categoriesSection);
 
       // Filter by Rice category (exact match to avoid "Price" buttons)
       const riceFilter = screen.getByRole('button', { name: 'Rice' });
-      await user.click(riceFilter);
+      await _user.click(riceFilter);
 
       // Expand the Product Options section for stock filter
       const productOptionsSection = screen.getByRole('button', { name: /product options/i });
-      await user.click(productOptionsSection);
+      await _user.click(productOptionsSection);
 
       // Filter by In Stock Only
       const inStockFilter = screen.getByRole('button', { name: /in stock only/i });
-      await user.click(inStockFilter);
+      await _user.click(inStockFilter);
 
       await waitFor(() => {
         // Should show only rice products that are in stock
@@ -576,16 +566,16 @@ describe('Product Listing Integration', () => {
     });
 
     it('should clear filters when reset button is clicked', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       // First expand the Categories section
       const categoriesSection = screen.getByRole('button', { name: /categories/i });
-      await user.click(categoriesSection);
+      await _user.click(categoriesSection);
 
       // Apply a filter (Rice category)
       const riceFilter = screen.getByRole('button', { name: 'Rice' });
-      await user.click(riceFilter);
+      await _user.click(riceFilter);
 
       await waitFor(() => {
         expect(screen.getAllByText(/2 products/i).length).toBeGreaterThan(0);
@@ -593,7 +583,7 @@ describe('Product Listing Integration', () => {
 
       // Clear filters using the reset button in the SearchFilters component
       const clearButton = screen.getByRole('button', { name: 'Clear All' });
-      await user.click(clearButton);
+      await _user.click(clearButton);
 
       await waitFor(() => {
         // Should show all products again
@@ -607,12 +597,12 @@ describe('Product Listing Integration', () => {
 
   describe('Product Sorting', () => {
     it('should sort products by price (low to high)', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       // Select price low to high sorting
       const sortSelect = screen.getByRole('combobox');
-      await user.selectOptions(sortSelect, 'price_low');
+      await _user.selectOptions(sortSelect, 'price_low');
 
       await waitFor(() => {
         // Verify sorting is working by checking that products are still displayed
@@ -631,11 +621,11 @@ describe('Product Listing Integration', () => {
     });
 
     it('should sort products by price (high to low)', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       const sortSelect = screen.getByRole('combobox');
-      await user.selectOptions(sortSelect, 'price_high');
+      await _user.selectOptions(sortSelect, 'price_high');
 
       await waitFor(() => {
         // Just verify basic functionality - products are still displayed after sorting
@@ -644,11 +634,11 @@ describe('Product Listing Integration', () => {
     });
 
     it('should sort products alphabetically', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       const sortSelect = screen.getByRole('combobox');
-      await user.selectOptions(sortSelect, 'name');
+      await _user.selectOptions(sortSelect, 'name');
 
       await waitFor(() => {
         // Just verify basic functionality - products are still displayed after sorting
@@ -659,7 +649,7 @@ describe('Product Listing Integration', () => {
 
   describe('Search Functionality', () => {
     it('should search products by name', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       await waitFor(() => {
@@ -669,7 +659,7 @@ describe('Product Listing Integration', () => {
     });
 
     it('should search products by description', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       await waitFor(() => {
@@ -679,7 +669,7 @@ describe('Product Listing Integration', () => {
     });
 
     it('should handle case-insensitive search', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       await waitFor(() => {
@@ -689,7 +679,7 @@ describe('Product Listing Integration', () => {
     });
 
     it('should show no results message when search has no matches', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       await waitFor(() => {
@@ -731,7 +721,7 @@ describe('Product Listing Integration', () => {
     });
 
     it('should show loading state during filter changes', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       // Just verify basic functionality - products are displayed
@@ -748,7 +738,7 @@ describe('Product Listing Integration', () => {
     });
 
     it('should support keyboard navigation', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       render(<ProductsWithFilters products={mockProducts} />);
 
       // Just verify basic functionality - products are displayed

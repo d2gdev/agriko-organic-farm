@@ -20,7 +20,7 @@ export async function GET() {
     });
   } catch (error) {
     const { handleApiError } = await import('@/lib/error-sanitizer');
-    return handleApiError(error, 'Failed to get entity discovery statistics');
+    return handleApiError(error as Error, 'Failed to get entity discovery statistics');
   }
 }
 
@@ -45,17 +45,18 @@ export async function POST(request: NextRequest) {
     let discoveredEntities = [];
     
     switch (action) {
-      case 'discover-from-products':
+      case 'discover-from-products': {
         // Get all products from WooCommerce
         const products = await getAllProducts();
         discoveredEntities = await discoverEntitiesFromProducts(products);
         break;
+      }
         
       case 'discover-from-graph':
         discoveredEntities = await discoverEntitiesFromGraph();
         break;
         
-      case 'discover-from-text':
+      case 'discover-from-text': {
         if (!content) {
           return NextResponse.json({
             success: false,
@@ -65,14 +66,15 @@ export async function POST(request: NextRequest) {
         const textResult = await discoverEntitiesFromText(content);
         discoveredEntities = textResult.entities;
         break;
+      }
         
-      case 'discover-all':
+      case 'discover-all': {
         // Run all discovery methods
         const [productEntities, graphEntities] = await Promise.all([
           getAllProducts().then(discoverEntitiesFromProducts),
           discoverEntitiesFromGraph()
         ]);
-        
+
         // Combine and deduplicate entities
         const entityMap = new Map<string, DiscoveredEntity>();
         [...productEntities, ...graphEntities].forEach(entity => {
@@ -80,6 +82,7 @@ export async function POST(request: NextRequest) {
         });
         discoveredEntities = Array.from(entityMap.values());
         break;
+      }
         
       default:
         return NextResponse.json({
@@ -104,6 +107,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const { handleApiError } = await import('@/lib/error-sanitizer');
-    return handleApiError(error, 'Failed to discover entities');
+    return handleApiError(error as Error, 'Failed to discover entities');
   }
 }

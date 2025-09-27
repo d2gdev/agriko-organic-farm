@@ -44,7 +44,7 @@ class GraphCache {
     }
 
     logger.info(`✅ Cache HIT: ${key}`);
-    return (entry as any).value as T;
+    return entry.data;
   }
 
   async set<T>(type: string, id: number, data: T, limit?: number, _ttl?: number): Promise<void> {

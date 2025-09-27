@@ -32,11 +32,11 @@ export async function GET(request: NextRequest) {
           'Service is running'
         );
 
-      case 'ready':
+      case 'ready': {
         // Readiness check - includes service dependencies
         const healthStatus = await monitoring.getHealthStatus();
         const isReady = healthStatus.status === 'healthy' || healthStatus.status === 'degraded';
-        
+
         const statusCode = isReady ? 200 : 503;
         const response = {
           status: isReady ? 'ready' : 'not_ready',
@@ -46,19 +46,20 @@ export async function GET(request: NextRequest) {
         };
 
         return NextResponse.json(response, { status: statusCode });
+      }
 
-      case 'detailed':
+      case 'detailed': {
         // Detailed health information (limited data for public)
         const detailedStatus = await monitoring.getHealthStatus();
         const currentMetrics = monitoring.getCurrentMetrics();
         const activeAlerts = monitoring.getActiveAlerts();
-        
+
         // Get remote logging status
         const loggingStatus = getRemoteLoggingStatus();
-        
+
         // Get global cache status
         const cacheStatus = getGlobalCacheStatus();
-        
+
         const detailedResponse = {
           status: detailedStatus.status,
           timestamp: new Date().toISOString(),
@@ -97,10 +98,11 @@ export async function GET(request: NextRequest) {
           },
         };
 
-        const detailedStatusCode = detailedStatus.status === 'healthy' ? 200 : 
+        const detailedStatusCode = detailedStatus.status === 'healthy' ? 200 :
                                  detailedStatus.status === 'degraded' ? 200 : 503;
 
         return NextResponse.json(detailedResponse, { status: detailedStatusCode });
+      }
 
       default:
         return createErrorResponse(

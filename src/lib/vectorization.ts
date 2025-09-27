@@ -1,3 +1,4 @@
+import { Core } from '@/types/TYPE_REGISTRY';
 import { WCProduct } from '@/types/woocommerce';
 import { logger } from '@/lib/logger';
 
@@ -16,7 +17,7 @@ export interface ProductVector {
     source: string;
     productId: number;
     slug: string;
-    price: string;
+    price: Core.Money;
     categories: string[];
     inStock: boolean;
     featured: boolean;
@@ -54,7 +55,7 @@ export async function vectorizeProducts(products: WCProduct[]): Promise<ProductV
       source: 'agriko',
       productId: product.id,
       slug: product.slug,
-      price: product.price || '0',
+      price: product.price || (0 as Core.Money),
       categories: product.categories?.map(cat => cat.name) || [],
       inStock: product.stock_status === 'instock',
       featured: product.featured || false,
@@ -114,10 +115,8 @@ export async function syncProductsToQdrant(
           logger.info(`✅ Batch ${Math.floor(i / batchSize) + 1} completed successfully`);
         } else {
           // Properly handle the unknown error type
-          let errorData: Record<string, unknown> | undefined;
-          
           // result.error is a string from safeUpsertVectors
-          errorData = {
+          const errorData = {
             message: result.error,
             batchNumber: Math.floor(i / batchSize) + 1,
             batchSize: batch.length,
@@ -218,10 +217,8 @@ export async function vectorizeSingleProduct(productId: number): Promise<boolean
       return true;
     } else {
       // Properly handle the unknown error type
-      let errorData: Record<string, unknown> | undefined;
-      
       // result.error is a string from safeUpsertVectors
-      errorData = {
+      const errorData = {
         message: result.error,
         productId,
       };

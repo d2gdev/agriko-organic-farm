@@ -59,7 +59,7 @@ export function calculateDynamicWeights(
   }
 ): MultiVectorSearchOptions['weights'] {
   // Start with intent-based weights
-  let weights = { ...INTENT_WEIGHTS[intent] };
+  const weights = { ...INTENT_WEIGHTS[intent] };
 
   // Adjust based on query characteristics
   const lowerQuery = query.toLowerCase();

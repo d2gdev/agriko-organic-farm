@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getAllProductsWithPagination } from '@/lib/woocommerce';
 import ProductsWithFilters from '@/components/ProductsWithFilters';
 import HeroSection from '@/components/HeroSection';
+import CategoryCards from '@/components/CategoryCards';
 import { logger } from '@/lib/logger';
 import { urlHelpers } from '@/lib/url-constants';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -67,94 +68,6 @@ export const metadata: Metadata = {
   }
 };
 
-// Enhanced Product categories with stronger contrast and icons
-function CategoryCards() {
-  const categories = [
-    {
-      name: 'Rice Varieties',
-      description: 'Premium organic black, brown, red, and white rice varieties',
-      icon: '🌾',
-      href: '/products?category=rice',
-      // Stronger contrast with deeper colors
-      gradient: 'from-amber-100 to-orange-100',
-      borderColor: 'border-amber-300',
-      iconBg: 'bg-gradient-to-br from-amber-50 to-orange-50',
-      hoverGradient: 'hover:from-amber-200 hover:to-orange-200',
-      shadowColor: 'hover:shadow-amber-200/50',
-    },
-    {
-      name: 'Herbal Powders',
-      description: 'Pure, nutrient-dense superfoods with powerful health benefits',
-      icon: '🌿',
-      href: '/products?category=herbs',
-      // Enhanced green tones
-      gradient: 'from-green-100 to-emerald-100',
-      borderColor: 'border-green-300',
-      iconBg: 'bg-gradient-to-br from-green-50 to-emerald-50',
-      hoverGradient: 'hover:from-green-200 hover:to-emerald-200',
-      shadowColor: 'hover:shadow-green-200/50',
-    },
-    {
-      name: 'Health Blends',
-      description: 'Specially crafted blends and organic honey for complete wellness',
-      icon: '🍶',
-      href: '/products?category=blends',
-      // Rich honey/golden tones
-      gradient: 'from-yellow-100 to-amber-100',
-      borderColor: 'border-yellow-300',
-      iconBg: 'bg-gradient-to-br from-yellow-50 to-amber-50',
-      hoverGradient: 'hover:from-yellow-200 hover:to-amber-200',
-      shadowColor: 'hover:shadow-yellow-200/50',
-    }
-  ];
-
-  return (
-    <section className="py-20 bg-gradient-to-br from-white via-orange-50/20 to-yellow-50/20 border-t border-neutral-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-6">
-            Shop by Category
-          </h2>
-          <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
-            Explore our three main product categories, each carefully cultivated and processed to deliver maximum nutrition and authentic flavors.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {categories.map((category) => (
-            <Link
-              key={category.name}
-              href={category.href}
-              className={`group relative bg-gradient-to-br ${category.gradient} ${category.hoverGradient} rounded-xl p-8 border-2 ${category.borderColor} shadow-lg hover:shadow-2xl ${category.shadowColor} transform hover:-translate-y-2 transition-all duration-300 overflow-hidden`}
-            >
-              {/* Enhanced accent circles */}
-              <div className="absolute -right-8 -top-8 w-32 h-32 bg-white opacity-30 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-              <div className="absolute -left-8 -bottom-8 w-24 h-24 bg-white opacity-20 rounded-full blur-xl group-hover:scale-125 transition-transform duration-700" />
-
-              <div className="relative text-center">
-                <div className={`inline-flex items-center justify-center w-24 h-24 ${category.iconBg} rounded-full mb-6 mx-auto group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg`}>
-                  <span className="text-5xl">{category.icon}</span>
-                </div>
-                <h3 className="text-2xl font-bold text-neutral-900 mb-3 group-hover:text-green-700 transition-colors">
-                  {category.name}
-                </h3>
-                <p className="text-neutral-600 mb-6 leading-relaxed">
-                  {category.description}
-                </p>
-                <div className="inline-flex items-center text-green-700 font-semibold group-hover:gap-3 transition-all">
-                  <span>Browse {category.name}</span>
-                  <svg className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
 
 // Trust badges section
 function TrustBadges() {
@@ -279,20 +192,13 @@ export default async function ProductsPage({
       {/* Breadcrumb Navigation */}
       <Breadcrumb items={[{ name: 'Products' }]} />
 
-      {/* Hero Section with Product-Centric Design */}
-      <div className="relative bg-gradient-to-br from-[#f5f2ed] via-[#faf8f3] to-[#f0e9df] overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 right-20 text-8xl transform rotate-12">🌾</div>
-          <div className="absolute bottom-20 left-20 text-8xl transform -rotate-12">🌿</div>
-          <div className="absolute top-1/2 right-1/3 text-6xl">🍯</div>
-        </div>
-        <HeroSection
-          title="Our Products"
-          subtitle="From Our Family Farm to Your Table"
-          description="Pure Organic Rice & Herbal Blends — Sustainably grown, carefully harvested, and lovingly packaged for your family's wellness."
-          showButtons={false}
-        />
-      </div>
+      <HeroSection
+        title="Our Products"
+        subtitle="From Our Family Farm to Your Table"
+        description="Pure Organic Rice & Herbal Blends — Sustainably grown, carefully harvested, and lovingly packaged for your family's wellness."
+        secondaryButtonText="Our Story"
+        secondaryButtonHref="/about"
+      />
 
       {/* Category Cards */}
       <CategoryCards />
@@ -301,10 +207,10 @@ export default async function ProductsPage({
       <TrustBadges />
 
       {/* Products with Filters */}
-      <section className="py-16 bg-gray-50">
+      <section id="all-products" className="py-40 lg:py-48 bg-gradient-to-br from-neutral-50 via-white to-neutral-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-24">
+            <h2 className="text-5xl lg:text-6xl font-bold text-neutral-900 mb-8 font-[family-name:var(--font-crimson)]">
               All Products
             </h2>
             <p className="text-lg text-gray-600">
@@ -330,42 +236,45 @@ export default async function ProductsPage({
         </div>
       </section>
 
-      {/* Softer Call to Action with Organic Feel */}
-      <section className="py-20 bg-gradient-to-br from-[#f5e8dc] via-[#faf4ed] to-[#f0e9df] relative overflow-hidden">
-        {/* Decorative Elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 text-8xl transform rotate-12">🌱</div>
-          <div className="absolute bottom-10 right-10 text-8xl transform -rotate-12">👨‍🌾</div>
-          <div className="absolute top-1/2 left-1/4 text-6xl">🌾</div>
+      {/* Enhanced Need Help Section Matching Homepage CTA Style */}
+      <section className="py-24 lg:py-32 relative overflow-hidden">
+        {/* Gradient background matching homepage CTA */}
+        <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-yellow-50/30 to-green-50/20"></div>
+
+        {/* Decorative Elements with animation */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-10 left-10 text-8xl transform rotate-12 animate-pulse">📞</div>
+          <div className="absolute bottom-10 right-10 text-8xl transform -rotate-12 animate-pulse" style={{ animationDelay: '1s' }}>💬</div>
+          <div className="absolute top-1/2 left-1/4 text-6xl animate-pulse" style={{ animationDelay: '2s' }}>✉️</div>
         </div>
 
-        <div className="max-w-4xl mx-auto text-center px-4 relative">
-          {/* Warm illustration-like header */}
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/80 rounded-full mb-6 shadow-lg">
-            <span className="text-4xl">💬</span>
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
+          {/* Badge */}
+          <div className="inline-flex items-center bg-green-100 rounded-full px-4 py-2 mb-8">
+            <span className="text-green-600 font-semibold">🌟 Personal Support</span>
           </div>
 
-          <h2 className="text-3xl font-bold text-[#6b4423] mb-4">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-900 mb-6">
             Need Help Choosing?
           </h2>
-          <p className="text-xl text-[#8b6f47] mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-neutral-600 mb-10 max-w-3xl mx-auto leading-relaxed">
             Our family is here to help you find the perfect organic products for your wellness journey
           </p>
 
-          {/* Softer button styling with warm colors */}
+          {/* Enhanced Buttons Matching Homepage Style */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/contact"
-              className="group inline-flex items-center justify-center px-8 py-4 bg-white text-[#8b6f47] rounded-full font-semibold hover:bg-[#faf8f5] transition-all duration-300 shadow-lg border-2 border-[#e8d5c4] hover:border-[#d4b896]"
+              className="group inline-flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 px-10 rounded-full transition-all duration-300 transform hover:scale-105 shadow-xl text-lg"
             >
               <svg className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
               Contact Our Team
             </Link>
             <Link
               href="/faq"
-              className="group inline-flex items-center justify-center px-8 py-4 bg-[#a3b88c] text-white rounded-full font-semibold hover:bg-[#8fa775] transition-all duration-300 shadow-lg"
+              className="group inline-flex items-center justify-center bg-transparent hover:bg-green-50 text-green-700 font-bold py-4 px-10 rounded-full transition-all duration-300 border-2 border-green-600 hover:shadow-xl text-lg"
             >
               <svg className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -375,8 +284,8 @@ export default async function ProductsPage({
           </div>
 
           {/* Trust message */}
-          <p className="mt-8 text-sm text-[#a08968]">
-            ✨ Personal service from our family farm since 2015
+          <p className="mt-8 text-sm text-neutral-600">
+            ✨ Personal service from our family farm since 2016
           </p>
         </div>
       </section>

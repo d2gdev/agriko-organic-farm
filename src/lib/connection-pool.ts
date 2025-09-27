@@ -202,10 +202,16 @@ export class ConnectionPool<T> {
   }
 
   async acquire(): Promise<T> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+      this.acquireInternal(resolve, reject);
+    });
+  }
+
+  private async acquireInternal(resolve: (connection: T) => void, reject: (error: Error) => void): Promise<void> {
+    try {
       // Try to find an available connection immediately
       const availableConnection = this.connections.find(conn => !conn.inUse);
-      
+
       if (availableConnection) {
         // Validate connection
         if (await this.validateConnection(availableConnection)) {
@@ -255,7 +261,9 @@ export class ConnectionPool<T> {
 
       // Queue the request
       this.pendingRequests.push(request);
-    });
+    } catch (error) {
+      reject(error instanceof Error ? error : new Error('Unknown error'));
+    }
   }
 
   async release(connection: T): Promise<void> {
@@ -397,7 +405,7 @@ export class HTTPConnectionPool {
 
     const isHttps = url.startsWith('https:');
     return {
-      // @ts-ignore - Node.js specific property
+      // @ts-expect-error - Node.js specific property
       agent: isHttps ? agents.https : agents.http
     };
   }

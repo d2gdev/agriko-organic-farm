@@ -2,6 +2,7 @@
 // Tests the system's defenses against real-world attack scenarios
 
 import { NextRequest } from 'next/server';
+import { Core } from '@/types/TYPE_REGISTRY';
 import { POST } from '@/app/api/auto-sync/route';
 import crypto from 'crypto';
 
@@ -356,7 +357,7 @@ describe('Security Penetration Testing', () => {
         { productData: { description: 'x'.repeat(10 * 1024 * 1024) } },
         // Deeply nested object
         (() => {
-          let nested: any = { value: 'deep' };
+          let nested: Record<string, unknown> = { value: 'deep' };
           for (let i = 0; i < 1000; i++) {
             nested = { level: i, nested };
           }
@@ -493,9 +494,9 @@ describe('Security Penetration Testing', () => {
         // Negative prices
         { productData: { id: 123, price: '-99.99', name: 'Negative Price Product' } },
         // Zero prices (might be valid for free products)
-        { productData: { id: 123, price: '0.00', name: 'Free Product' } },
+        { productData: { id: 123, price: 0 as Core.Money, name: 'Free Product' } },
         // Extremely high prices
-        { productData: { id: 123, price: '999999999.99', name: 'Overpriced Product' } },
+        { productData: { id: 123, price: 99999999999 as Core.Money, name: 'Overpriced Product' } },
         // Invalid product IDs
         { productData: { id: -1, name: 'Invalid ID Product' } },
         { productData: { id: 0, name: 'Zero ID Product' } },
@@ -628,7 +629,7 @@ describe('Security Penetration Testing', () => {
       let suspiciousActivityDetected = false;
 
       // Execute APT simulation
-      for (const [phase, requests] of Object.entries(aptAttack)) {
+      for (const [_phase, requests] of Object.entries(aptAttack)) {
         for (const req of requests) {
           const request = new NextRequest(`http://localhost:3000/api/auto-sync?action=${req.action}`, {
             method: 'POST',

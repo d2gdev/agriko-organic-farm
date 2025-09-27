@@ -43,19 +43,23 @@ const SectionHeader = React.memo(function SectionHeader({
   return (
     <button
       onClick={() => onToggleSection(section)}
-      className="w-full flex items-center justify-between text-sm font-medium text-neutral-900 hover:text-primary-700 transition-colors py-2"
+      className="w-full flex items-center justify-between text-sm font-semibold text-green-700 hover:text-green-800 transition-colors py-2 group"
     >
       <span>{title}</span>
-      <svg
-        className={cn('w-4 h-4 transition-transform duration-200',
-          expandedSections.has(section) && 'rotate-180'
-        )}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
+      <div className={cn('p-1 rounded-lg transition-all duration-200 group-hover:bg-green-100',
+        expandedSections.has(section) && 'bg-green-100'
+      )}>
+        <svg
+          className={cn('w-4 h-4 transition-transform duration-200 text-green-600',
+            expandedSections.has(section) && 'rotate-180'
+          )}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
     </button>
   );
 });
@@ -94,7 +98,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
   }, [products]);
 
   const { prices, minProductPrice, maxProductPrice } = useMemo(() => {
-    const prices = products.map(p => parseFloat(p.price as string)).filter(p => !isNaN(p));
+    const prices = products.map(p => (p.price || 0)).filter(p => !isNaN(p));
     return {
       prices,
       minProductPrice: prices.length > 0 ? Math.min(...prices) : 0,
@@ -132,12 +136,12 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
         }
 
         if (testFilters.minPrice !== undefined) {
-          const price = parseFloat(product.price as string);
+          const price = (product.price || 0);
           if (isNaN(price) || price < testFilters.minPrice) return false;
         }
 
         if (testFilters.maxPrice !== undefined) {
-          const price = parseFloat(product.price as string);
+          const price = (product.price || 0);
           if (isNaN(price) || price > testFilters.maxPrice) return false;
         }
 
@@ -251,7 +255,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
 
 
   return (
-    <div className={cn('bg-white rounded-xl shadow-sm border border-neutral-200', className)}>
+    <div className={cn('bg-gradient-to-br from-white to-green-50/30 rounded-2xl shadow-lg border border-green-100/50', className)}>
       {/* No-JavaScript Fallback Form */}
       <noscript>
         <div className="p-4 border-b border-neutral-200 bg-yellow-50">
@@ -292,30 +296,33 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
       </noscript>
 
       {/* Filter Header */}
-      <div className="p-4 border-b border-neutral-200">
+      <div className="p-4 border-b border-green-100 bg-gradient-to-r from-green-50/50 to-transparent rounded-t-2xl">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-neutral-900 flex items-center space-x-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
-            </svg>
+          <h3 className="text-lg font-semibold text-green-800 flex items-center space-x-2">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
+              </svg>
+            </div>
             <span>Filters</span>
           </h3>
           
           <div className="flex items-center space-x-2">
             {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={clearFilters}
-                className="text-neutral-600 hover:text-neutral-900"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-green-700 bg-transparent border-2 border-green-600 rounded-full hover:bg-green-50 hover:shadow-md transition-all duration-300"
               >
+                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
                 Clear All
-              </Button>
+              </button>
             )}
             
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="lg:hidden p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
+              className="lg:hidden p-2 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-lg transition-all duration-300"
               aria-label={isExpanded ? 'Collapse filters' : 'Expand filters'}
             >
               <svg 
@@ -351,11 +358,11 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                   onChange={(e) => onSearchChange(e.target.value)}
                   placeholder="Search for products..."
                   disabled={isLoading}
-                  className={`w-full px-3 py-2 pl-10 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm ${
+                  className={`w-full px-3 py-2 pl-10 border border-green-200 bg-white/80 backdrop-blur-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm transition-all duration-200 hover:border-green-300 ${
                     isLoading ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 />
-                <svg className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-green-500 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 {isLoading && (
@@ -368,7 +375,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
           )}
 
           {/* Sort By Accordion */}
-          <div className="border-b border-neutral-100 pb-4">
+          <div className="border-b border-green-100/50 pb-4">
             <SectionHeader
               title="Sort By"
               section="sort"
@@ -389,10 +396,10 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                     key={option.value}
                     onClick={() => handleFilterChange('sortBy', option.value || undefined)}
                     className={cn(
-                      'w-full text-left px-3 py-2 rounded-lg text-sm transition-all',
+                      'w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200',
                       filters.sortBy === option.value
-                        ? 'bg-primary-100 text-primary-800 font-medium'
-                        : 'hover:bg-neutral-50 text-neutral-700'
+                        ? 'bg-gradient-to-r from-green-100 to-green-50 text-green-800 font-medium border border-green-200'
+                        : 'hover:bg-green-50/50 text-neutral-700 border border-transparent hover:border-green-100'
                     )}
                   >
                     {option.label}
@@ -404,7 +411,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
 
           {/* Category Filter Accordion */}
           {categories.length > 0 && (
-            <div className="border-b border-neutral-100 pb-4">
+            <div className="border-b border-green-100/50 pb-4">
               <SectionHeader
                 title="Categories"
                 section="category"
@@ -419,7 +426,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                     {filters.category && (
                       <button
                         onClick={() => handleFilterChange('category', undefined)}
-                        className="text-xs text-primary-600 hover:text-primary-800 font-medium"
+                        className="text-xs text-green-600 hover:text-green-800 font-medium transition-colors"
                       >
                         Clear All
                       </button>
@@ -437,24 +444,24 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                       return (
                         <label
                           key={category}
-                          className="flex items-center space-x-3 cursor-pointer hover:bg-neutral-50 p-2 rounded-lg transition-colors"
+                          className="flex items-center space-x-3 cursor-pointer hover:bg-green-50/50 p-2 rounded-lg transition-all duration-200 hover:shadow-sm"
                         >
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleCategoryToggle(category)}
-                            className="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500 focus:ring-2"
+                            className="w-4 h-4 text-green-600 border-green-300 rounded focus:ring-green-500 focus:ring-2 focus:ring-offset-1"
                           />
                           <span className={cn(
                             'text-sm flex-1',
                             isSelected
-                              ? 'text-neutral-900 font-medium'
+                              ? 'text-green-800 font-medium'
                               : 'text-neutral-700'
                           )}>
                             {category}
                           </span>
                           {/* Product count for each category */}
-                          <span className="text-xs text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full">
+                          <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded-full font-medium">
                             {products.filter(p => p.categories?.some(cat => cat.name === category)).length}
                           </span>
                         </label>
@@ -468,7 +475,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
 
           {/* Price Range Accordion */}
           {prices.length > 0 && (
-            <div className="border-b border-neutral-100 pb-4">
+            <div className="border-b border-green-100/50 pb-4">
               <SectionHeader
                 title="Price Range"
                 section="price"
@@ -496,14 +503,14 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                             handleFilterChange('maxPrice', range.maxPrice);
                           }}
                           className={cn(
-                            'px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center space-x-2',
+                            'px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center space-x-2 border',
                             (range.value === 'all' && !filters.minPrice && !filters.maxPrice) ||
                             (range.value === 'under-100' && !filters.minPrice && filters.maxPrice === 100) ||
                             (range.value === '100-300' && filters.minPrice === 100 && filters.maxPrice === 300) ||
                             (range.value === '300-500' && filters.minPrice === 300 && filters.maxPrice === 500) ||
                             (range.value === 'over-500' && filters.minPrice === 500 && !filters.maxPrice)
-                              ? 'bg-primary-600 text-white'
-                              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                              ? 'bg-gradient-to-r from-green-600 to-green-700 text-white border-green-700 shadow-md hover:shadow-lg transform hover:scale-105'
+                              : 'bg-white text-neutral-700 hover:bg-green-50 border-green-200 hover:border-green-300'
                           )}
                         >
                           <span>{range.label}</span>
@@ -534,7 +541,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                         setTempPriceRange(prev => ({ ...prev, min: newValue }));
                         debouncedPriceUpdate(newValue, tempPriceRange.max);
                       }}
-                      className="w-20 px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      className="w-20 px-2 py-1 border border-green-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white/80 hover:border-green-300 transition-colors"
                       min={minProductPrice}
                       max={maxProductPrice}
                     />
@@ -548,13 +555,13 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                         setTempPriceRange(prev => ({ ...prev, max: newValue }));
                         debouncedPriceUpdate(tempPriceRange.min, newValue);
                       }}
-                      className="w-20 px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      className="w-20 px-2 py-1 border border-green-200 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 bg-white/80 hover:border-green-300 transition-colors"
                       min={minProductPrice}
                       max={maxProductPrice}
                     />
                     <button
                       onClick={handlePriceRangeSubmit}
-                      className="px-3 py-1 border border-primary-600 text-primary-600 text-xs rounded-md hover:bg-primary-50 transition-colors font-medium"
+                      className="px-3 py-1 border-2 border-green-600 text-green-700 text-xs rounded-full hover:bg-green-50 hover:shadow-md transition-all duration-200 font-semibold"
                     >
                       Apply
                     </button>
@@ -566,7 +573,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
 
           {/* Health Benefits Accordion */}
           {healthBenefits.length > 0 && (
-            <div className="border-b border-neutral-100 pb-4">
+            <div className="border-b border-green-100/50 pb-4">
               <SectionHeader
                 title="Health Benefits"
                 section="benefits"
@@ -586,10 +593,10 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                         handleFilterChange('healthBenefits', updated.length > 0 ? updated : undefined);
                       }}
                       className={cn(
-                        'px-3 py-1.5 rounded-full text-sm font-medium transition-all capitalize',
+                        'px-3 py-1.5 rounded-full text-sm font-medium transition-all capitalize border',
                         filters.healthBenefits?.includes(benefit)
-                          ? 'bg-green-600 text-white'
-                          : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                          ? 'bg-gradient-to-r from-green-600 to-green-700 text-white border-green-700 shadow-md hover:shadow-lg'
+                          : 'bg-white text-neutral-700 hover:bg-green-50 border-green-200 hover:border-green-300'
                       )}
                     >
                       {benefit}
@@ -613,10 +620,10 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                 <button
                   onClick={() => handleFilterChange('inStock', filters.inStock ? undefined : true)}
                   className={cn(
-                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group',
+                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group border',
                     filters.inStock
-                      ? 'bg-primary-100 text-primary-800'
-                      : 'hover:bg-neutral-50 text-neutral-700'
+                      ? 'bg-gradient-to-r from-green-100 to-green-50 text-green-800 border-green-200'
+                      : 'hover:bg-green-50/50 text-neutral-700 border-transparent hover:border-green-100'
                   )}
                   title={`${filters.inStock ? 'Remove' : 'Apply'} in-stock filter`}
                 >
@@ -625,8 +632,8 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                     <span className={cn(
                       'px-2 py-0.5 rounded-full text-xs font-medium',
                       filters.inStock
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-neutral-100 text-neutral-600'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-green-100 text-green-600'
                     )}>
                       {filters.inStock ? filterPreviews.getFilteredCount(filters) : productCounts.inStock}
                     </span>
@@ -641,10 +648,10 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                 <button
                   onClick={() => handleFilterChange('featured', filters.featured ? undefined : true)}
                   className={cn(
-                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group',
+                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group border',
                     filters.featured
-                      ? 'bg-primary-100 text-primary-800'
-                      : 'hover:bg-neutral-50 text-neutral-700'
+                      ? 'bg-gradient-to-r from-green-100 to-green-50 text-green-800 border-green-200'
+                      : 'hover:bg-green-50/50 text-neutral-700 border-transparent hover:border-green-100'
                   )}
                   title={`${filters.featured ? 'Remove' : 'Apply'} featured products filter`}
                 >
@@ -653,8 +660,8 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                     <span className={cn(
                       'px-2 py-0.5 rounded-full text-xs font-medium',
                       filters.featured
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-neutral-100 text-neutral-600'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-green-100 text-green-600'
                     )}>
                       {filters.featured ? filterPreviews.getFilteredCount(filters) : productCounts.featured}
                     </span>
@@ -669,10 +676,10 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                 <button
                   onClick={() => handleFilterChange('organic', filters.organic ? undefined : true)}
                   className={cn(
-                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group',
+                    'w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group border',
                     filters.organic
-                      ? 'bg-primary-100 text-primary-800'
-                      : 'hover:bg-neutral-50 text-neutral-700'
+                      ? 'bg-gradient-to-r from-green-100 to-green-50 text-green-800 border-green-200'
+                      : 'hover:bg-green-50/50 text-neutral-700 border-transparent hover:border-green-100'
                   )}
                   title={`${filters.organic ? 'Remove' : 'Apply'} organic products filter`}
                 >
@@ -681,8 +688,8 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                     <span className={cn(
                       'px-2 py-0.5 rounded-full text-xs font-medium',
                       filters.organic
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-neutral-100 text-neutral-600'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-green-100 text-green-600'
                     )}>
                       {filters.organic ? filterPreviews.getFilteredCount(filters) : productCounts.organic}
                     </span>
@@ -702,7 +709,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
 
       {/* Active Filters Display */}
       {hasActiveFilters && (
-        <div className="p-4 border-t border-neutral-200 bg-neutral-50">
+        <div className="p-4 border-t border-green-100 bg-gradient-to-r from-green-50/50 to-transparent rounded-b-2xl">
           <div className="flex flex-wrap gap-2">
             {filters.category && (
               Array.isArray(filters.category) ? (
@@ -712,7 +719,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                     {category}
                     <button
                       onClick={() => handleCategoryToggle(category)}
-                      className="ml-2 text-primary-600 hover:text-primary-800"
+                      className="ml-2 text-green-600 hover:text-green-800 font-bold"
                       aria-label={`Remove ${category} filter`}
                     >
                       ×
@@ -721,11 +728,11 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                 ))
               ) : (
                 // Single category selected
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                   {filters.category}
                   <button
                     onClick={() => handleFilterChange('category', undefined)}
-                    className="ml-2 text-primary-600 hover:text-primary-800"
+                    className="ml-2 text-green-600 hover:text-green-800 font-bold"
                     aria-label={`Remove ${filters.category} filter`}
                   >
                     ×
@@ -735,14 +742,14 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
             )}
             
             {(filters.minPrice ?? filters.maxPrice) && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                 ₱{filters.minPrice ?? 0} - ₱{filters.maxPrice ?? '∞'}
                 <button
                   onClick={() => {
                     handleFilterChange('minPrice', undefined);
                     handleFilterChange('maxPrice', undefined);
                   }}
-                  className="ml-2 text-primary-600 hover:text-primary-800"
+                  className="ml-2 text-green-600 hover:text-green-800 font-bold"
                   aria-label="Remove price filter"
                 >
                   ×
@@ -751,11 +758,11 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
             )}
             
             {filters.sortBy && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                 Sort: {filters.sortBy.replace('_', ' ')}
                 <button
                   onClick={() => handleFilterChange('sortBy', undefined)}
-                  className="ml-2 text-primary-600 hover:text-primary-800"
+                  className="ml-2 text-green-600 hover:text-green-800 font-bold"
                   aria-label="Remove sort filter"
                 >
                   ×
@@ -764,11 +771,11 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
             )}
             
             {filters.inStock && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                 In Stock
                 <button
                   onClick={() => handleFilterChange('inStock', undefined)}
-                  className="ml-2 text-primary-600 hover:text-primary-800"
+                  className="ml-2 text-green-600 hover:text-green-800 font-bold"
                   aria-label="Remove in stock filter"
                 >
                   ×
@@ -777,11 +784,11 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
             )}
 
             {filters.featured && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                 Featured
                 <button
                   onClick={() => handleFilterChange('featured', undefined)}
-                  className="ml-2 text-primary-600 hover:text-primary-800"
+                  className="ml-2 text-green-600 hover:text-green-800 font-bold"
                   aria-label="Remove featured filter"
                 >
                   ×
@@ -790,11 +797,11 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
             )}
 
             {filters.organic && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                 🌿 Organic
                 <button
                   onClick={() => handleFilterChange('organic', undefined)}
-                  className="ml-2 text-primary-600 hover:text-primary-800"
+                  className="ml-2 text-green-600 hover:text-green-800 font-bold"
                   aria-label="Remove organic filter"
                 >
                   ×
@@ -803,11 +810,11 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
             )}
 
             {filters.healthBenefits && filters.healthBenefits.length > 0 && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                 Health: {filters.healthBenefits.join(', ')}
                 <button
                   onClick={() => handleFilterChange('healthBenefits', undefined)}
-                  className="ml-2 text-primary-600 hover:text-primary-800"
+                  className="ml-2 text-green-600 hover:text-green-800 font-bold"
                   aria-label="Remove health benefits filter"
                 >
                   ×

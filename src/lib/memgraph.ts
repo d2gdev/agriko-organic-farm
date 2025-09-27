@@ -1,3 +1,4 @@
+import { Core } from '@/types/TYPE_REGISTRY';
 import neo4j, { Driver, Session } from 'neo4j-driver';
 
 import { logger } from '@/lib/logger';
@@ -57,9 +58,9 @@ function safeExtractProductFromRecord(record: Neo4jRecord, key: string): GraphPr
     if (!('properties' in nodeValue) || !('labels' in nodeValue)) {
       return null;
     }
-    
-    const node = nodeValue as unknown as Neo4jNode;
-    const props = node.properties as Record<string, unknown> | undefined;
+
+    const node = nodeValue as Neo4jNode;
+    const props = node.properties;
     
     // Handle case where properties might be undefined
     if (!props) {
@@ -93,7 +94,7 @@ function safeExtractProductFromRecord(record: Neo4jRecord, key: string): GraphPr
 }
 
 // Memgraph connection configuration
-const MEMGRAPH_URL = process.env.MEMGRAPH_URL ?? 'bolt://localhost:7687';
+const MEMGRAPH_URL = process.env.MEMGRAPH_URL ?? 'bolt://143.42.189.57:7687';
 const MEMGRAPH_USER = process.env.MEMGRAPH_USER ?? 'memgraph';
 const MEMGRAPH_PASSWORD = process.env.MEMGRAPH_PASSWORD ?? 'memgraph';
 
@@ -567,7 +568,7 @@ export async function getGraphStats(): Promise<{
         ]);
 
         // Add comprehensive null checking for the values returned from get()
-        const productCountValue = results[0]?.records[0]?.get('count') as Neo4jValue | undefined;
+        const productCountValue = ((results && results[0]) || {})?.records?.[0]?.get('count') as Neo4jValue | undefined;
         const categoryCountValue = results[1]?.records[0]?.get('count') as Neo4jValue | undefined;
         const healthBenefitCountValue = results[2]?.records[0]?.get('count') as Neo4jValue | undefined;
         const relationshipCountValue = results[3]?.records[0]?.get('count') as Neo4jValue | undefined;
@@ -655,6 +656,50 @@ export async function getComplementaryProducts(productId: number, limit: number 
   }
 }
 
+// Generic query execution function
+export async function executeMemgraphQuery<T = unknown>(
+  query: string,
+  parameters: Record<string, unknown> = {}
+): Promise<T[]> {
+  try {
+    return await withSession<T[]>(
+      async (session) => {
+        const result = await session.run(query, parameters);
+        return result.records.map((record) => {
+          // Convert Neo4j record to plain object
+          const keys = record.keys;
+          const obj: Record<string, unknown> = {};
+
+          keys.forEach((key) => {
+            if (typeof key === 'string') {
+              const value = record.get(key);
+              if (value && typeof value === 'object' && 'properties' in value) {
+                // Neo4j node - extract properties
+                obj[key] = (value as Neo4jNode).properties;
+              } else {
+                obj[key] = value;
+              }
+            }
+          });
+
+          return obj as T;
+        });
+      },
+      async () => {
+        logger.warn('⚠️ Memgraph unavailable - returning empty results for query:', { query });
+        return [];
+      }
+    );
+  } catch (error) {
+    logger.error('❌ Failed to execute Memgraph query:', {
+      query,
+      parameters,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    return [];
+  }
+}
+
 // Get frequently bought together products
 export async function getFrequentlyBoughtTogether(productId: number, limit: number = 5): Promise<GraphProduct[]> {
   try {
@@ -688,7 +733,7 @@ export async function getFrequentlyBoughtTogether(productId: number, limit: numb
             id: 0,
             name: 'Unknown',
             slug: '',
-            price: 0,
+            price: 0 as Core.Money,
             categories: [],
             description: '',
             inStock: false,
@@ -715,3 +760,24 @@ export async function getFrequentlyBoughtTogether(productId: number, limit: numb
 }
 
 // Note: closeMemgraphConnection function is already defined above at line 74
+
+// Export service object for business intelligence modules
+export const memgraphService = {
+  query: executeMemgraphQuery,
+  getProductsFrequentlyBoughtTogether: getFrequentlyBoughtTogether,
+  executeMemgraphQuery: executeMemgraphQuery,
+  executeQuery: executeMemgraphQuery,
+  getCompetitorData: async (competitorId: string) => {
+    return executeMemgraphQuery(
+      'MATCH (c:Competitor {id: $competitorId}) RETURN c',
+      { competitorId }
+    );
+  },
+  getCompetitorsInSegment: async (segment: string) => {
+    return executeMemgraphQuery(
+      'MATCH (c:Competitor {segment: $segment}) RETURN c',
+      { segment }
+    );
+  },
+  close: closeMemgraphConnection
+};

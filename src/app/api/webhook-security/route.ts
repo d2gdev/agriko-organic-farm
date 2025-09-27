@@ -4,6 +4,8 @@ import { webhookSecurity } from '@/lib/enhanced-webhook-security';
 import { validateAdminAuth } from '@/lib/unified-auth';
 import { logger } from '@/lib/logger';
 
+export const runtime = 'nodejs';
+
 // GET /api/webhook-security - Get security status and metrics
 export async function GET(request: NextRequest) {
   try {
@@ -20,47 +22,49 @@ export async function GET(request: NextRequest) {
     const action = url.searchParams.get('action') || 'status';
 
     switch (action) {
-      case 'status':
-        const metrics = webhookSecurity.getSecurityMetrics();
-        const blockedIps = webhookSecurity.getBlockedIps();
+      case 'status': {
+          const metrics = webhookSecurity.getSecurityMetrics();
+          const blockedIps = webhookSecurity.getBlockedIps();
 
-        return NextResponse.json({
-          status: 'active',
-          timestamp: Date.now(),
-          metrics: {
-            blockedIps: metrics.blockedIps,
-            usedNonces: metrics.usedNonces,
-            activeBlocks: blockedIps.length
-          },
-          configuration: {
-            maxPayloadSize: metrics.config.maxPayloadSize,
-            signatureTimeout: metrics.config.signatureTimeout,
-            maxFailedAttempts: metrics.config.maxFailedAttempts,
-            blockDuration: metrics.config.blockDuration,
-            requireHttps: metrics.config.requireHttps,
-            enableReplayProtection: metrics.config.enableReplayProtection
-          },
-          blockedIps: blockedIps.map(block => ({
-            ip: block.ip,
-            blockedUntil: new Date(block.blockedUntil).toISOString(),
-            attempts: block.attempts,
-            timeRemaining: Math.max(0, block.blockedUntil - Date.now())
-          })),
-          securityFeatures: [
-            'Enhanced HMAC signature verification',
-            'IP-based blocking with auto-unblock',
-            'Replay attack protection',
-            'Payload size validation',
-            'Suspicious header detection',
-            'SQL injection and XSS protection',
-            'HTTPS enforcement in production',
-            'Topic whitelist validation',
-            'User agent analysis',
-            'Real-time security monitoring'
-          ]
-        });
+          return NextResponse.json({
+            status: 'active',
+            timestamp: Date.now(),
+            metrics: {
+              blockedIps: metrics.blockedIps,
+              usedNonces: metrics.usedNonces,
+              activeBlocks: blockedIps.length
+            },
+            configuration: {
+              maxPayloadSize: metrics.config.maxPayloadSize,
+              signatureTimeout: metrics.config.signatureTimeout,
+              maxFailedAttempts: metrics.config.maxFailedAttempts,
+              blockDuration: metrics.config.blockDuration,
+              requireHttps: metrics.config.requireHttps,
+              enableReplayProtection: metrics.config.enableReplayProtection
+            },
+            blockedIps: blockedIps.map(block => ({
+              ip: block.ip,
+              blockedUntil: new Date(block.blockedUntil).toISOString(),
+              attempts: block.attempts,
+              timeRemaining: Math.max(0, block.blockedUntil - Date.now())
+            })),
+            securityFeatures: [
+              'Enhanced HMAC signature verification',
+              'IP-based blocking with auto-unblock',
+              'Replay attack protection',
+              'Payload size validation',
+              'Suspicious header detection',
+              'SQL injection and XSS protection',
+              'HTTPS enforcement in production',
+              'Topic whitelist validation',
+              'User agent analysis',
+              'Real-time security monitoring'
+            ]
+          });
 
-      case 'blocked-ips':
+      }
+
+      case 'blocked-ips': {
         const allBlockedIps = webhookSecurity.getBlockedIps();
         return NextResponse.json({
           blockedIps: allBlockedIps,
@@ -68,7 +72,9 @@ export async function GET(request: NextRequest) {
           timestamp: Date.now()
         });
 
-      case 'health':
+      }
+
+      case 'health': {
         const healthMetrics = webhookSecurity.getSecurityMetrics();
         const isHealthy = healthMetrics.blockedIps < 100 && healthMetrics.usedNonces < 10000;
 
@@ -80,6 +86,8 @@ export async function GET(request: NextRequest) {
             healthMetrics.usedNonces >= 10000 ? 'Nonce cache getting large, cleanup needed' : null
           ].filter(Boolean)
         });
+
+      }
 
       default:
         return NextResponse.json(
@@ -113,7 +121,7 @@ export async function POST(request: NextRequest) {
     const { action, ip } = body;
 
     switch (action) {
-      case 'unblock-ip':
+      case 'unblock-ip': {
         if (!ip) {
           return NextResponse.json(
             { error: 'IP address required for unblock action' },
@@ -137,6 +145,7 @@ export async function POST(request: NextRequest) {
           wasBlocked,
           message: wasBlocked ? `IP ${ip} has been unblocked` : `IP ${ip} was not blocked`
         });
+      }
 
       case 'get-security-events':
         // This would typically query a database of security events
@@ -153,7 +162,7 @@ export async function POST(request: NextRequest) {
           message: 'Security events retrieved (limited to last 24 hours)'
         });
 
-      case 'test-security':
+      case 'test-security': {
         // Test current security configuration
         const testResult = await testSecurityConfiguration();
         return NextResponse.json({
@@ -161,6 +170,8 @@ export async function POST(request: NextRequest) {
           testResult,
           timestamp: Date.now()
         });
+
+      }
 
       default:
         return NextResponse.json(

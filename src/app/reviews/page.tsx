@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import HeroSection from '@/components/HeroSection';
 import Link from 'next/link';
 
@@ -28,7 +29,7 @@ export default function ReviewsPage() {
           setReviews(data.reviews || []);
         }
       } catch (error) {
-        console.error('Failed to fetch reviews:', error);
+        logger.error('Failed to fetch reviews:', error as Record<string, unknown>);
       } finally {
         setLoading(false);
       }

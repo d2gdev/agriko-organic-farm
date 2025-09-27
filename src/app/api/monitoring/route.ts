@@ -21,18 +21,20 @@ export async function GET(request: NextRequest) {
     const action = url.searchParams.get('action') || 'health';
 
     switch (action) {
-      case 'health':
+      case 'health': {
         const healthStatus = await monitoring.getHealthStatus();
         return createSuccessResponse(healthStatus, 'Health status retrieved');
+      }
 
-      case 'metrics':
+      case 'metrics': {
         const currentMetrics = monitoring.getCurrentMetrics();
         if (!currentMetrics) {
           return createErrorResponse('No metrics available yet', {}, 204);
         }
         return createSuccessResponse(currentMetrics, 'Current metrics retrieved');
+      }
 
-      case 'history':
+      case 'history': {
         const hours = parseInt(url.searchParams.get('hours') || '1');
         const metricsHistory = monitoring.getMetricsHistory(hours);
         return createSuccessResponse(
@@ -43,13 +45,14 @@ export async function GET(request: NextRequest) {
           },
           'Metrics history retrieved'
         );
+      }
 
-      case 'alerts':
+      case 'alerts': {
         const alertType = url.searchParams.get('type') || 'active';
-        const alerts = alertType === 'active' 
+        const alerts = alertType === 'active'
           ? monitoring.getActiveAlerts()
           : monitoring.getAlertHistory(parseInt(url.searchParams.get('limit') || '100'));
-        
+
         return createSuccessResponse(
           {
             alerts,
@@ -58,8 +61,9 @@ export async function GET(request: NextRequest) {
           },
           'Alerts retrieved'
         );
+      }
 
-      case 'dashboard':
+      case 'dashboard': {
         // Comprehensive dashboard data
         const dashboardData = {
           health: await monitoring.getHealthStatus(),
@@ -69,6 +73,7 @@ export async function GET(request: NextRequest) {
           recentAlerts: monitoring.getAlertHistory(10),
         };
         return createSuccessResponse(dashboardData, 'Dashboard data retrieved');
+      }
 
       default:
         return createErrorResponse(
@@ -106,26 +111,28 @@ export async function POST(request: NextRequest) {
     const { action, alertId } = body;
 
     switch (action) {
-      case 'resolve_alert':
+      case 'resolve_alert': {
         if (!alertId) {
           return createErrorResponse('Alert ID is required for resolve action', {}, 400);
         }
-        
+
         monitoring.resolveAlert(alertId);
         logger.info('Alert resolved manually', { alertId, userId: authResult.userId });
-        
+
         return createSuccessResponse(
           { alertId, resolved: true },
           'Alert resolved successfully'
         );
+      }
 
-      case 'force_metrics_collection':
+      case 'force_metrics_collection': {
         // This would trigger an immediate metrics collection
         const currentMetrics = monitoring.getCurrentMetrics();
         return createSuccessResponse(
           currentMetrics,
           'Metrics collection triggered'
         );
+      }
 
       default:
         return createErrorResponse(

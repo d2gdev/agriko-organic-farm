@@ -156,7 +156,7 @@ export class BundleOptimizer {
       });
 
       // Store reference for cleanup
-      (window as any).__cssOptimizationObserver = observer;
+      (window as Window & { __cssOptimizationObserver?: MutationObserver }).__cssOptimizationObserver = observer;
 
     } catch (error) {
       logger.error('BundleOptimizer.optimizeCSS failed', { error });
@@ -193,9 +193,9 @@ export class BundleOptimizer {
   // Cleanup method
   cleanup() {
     try {
-      if ((window as any).__cssOptimizationObserver) {
-        (window as any).__cssOptimizationObserver.disconnect();
-        delete (window as any).__cssOptimizationObserver;
+      if ((window as Window & { __cssOptimizationObserver?: MutationObserver }).__cssOptimizationObserver) {
+        (window as Window & { __cssOptimizationObserver?: MutationObserver }).__cssOptimizationObserver!.disconnect();
+        delete (window as Window & { __cssOptimizationObserver?: MutationObserver }).__cssOptimizationObserver;
       }
       this.isOptimizing = false;
     } catch (error) {

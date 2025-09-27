@@ -3,6 +3,18 @@ import { logger } from '@/lib/logger';
 import { config } from '@/lib/unified-config';
 import { EventEmitter } from 'events';
 
+// Generic types for better type safety
+type SyncEventData = Record<string, unknown>;
+type SyncMetadata = Record<string, unknown>;
+
+// Order item type
+interface OrderItem {
+  productId: number;
+  quantity: number;
+  price: number;
+  name?: string;
+}
+
 // Auto-sync modules
 import { autoSyncProductToMemgraph, autoSyncOrderToMemgraph, autoSyncUserBehaviorToMemgraph, autoSyncSearchToMemgraph } from '@/lib/memgraph-auto-sync';
 import { autoSyncProductToQdrant, autoSyncUserSearchToQdrant } from '@/lib/qdrant-auto-sync';
@@ -14,12 +26,12 @@ export interface SyncEvent {
   id: string;
   type: 'product' | 'order' | 'user' | 'search' | 'interaction';
   action: 'create' | 'update' | 'view' | 'search' | 'click' | 'purchase' | 'hover';
-  data: Record<string, any>;
+  data: SyncEventData;
   priority: 'high' | 'medium' | 'low';
   userId?: string;
   sessionId: string;
   timestamp: number;
-  metadata?: Record<string, any>;
+  metadata?: SyncMetadata;
 }
 
 export interface SyncResult {
@@ -138,7 +150,7 @@ class RealTimeSyncManager extends EventEmitter {
       promises.push(
         autoSyncProductToMemgraph({
           eventType: `product.${event.action}`,
-          productId: event.data.productId,
+          productId: event.data.productId as number,
           userId: event.userId,
           sessionId: event.sessionId,
           timestamp: event.timestamp,
@@ -155,7 +167,7 @@ class RealTimeSyncManager extends EventEmitter {
     if (config.features.enableQdrantSync) {
       promises.push(
         autoSyncProductToQdrant({
-          productId: event.data.productId,
+          productId: event.data.productId as number,
           eventType: `product.${event.action}`,
           metadata: event.metadata
         }).then(() => {
@@ -177,10 +189,10 @@ class RealTimeSyncManager extends EventEmitter {
       try {
         await autoSyncOrderToMemgraph({
           eventType: `order.${event.action}`,
-          orderId: event.data.orderId,
+          orderId: event.data.orderId as string,
           userId: event.userId,
-          items: event.data.items || [],
-          orderValue: event.data.orderValue || 0,
+          items: (event.data.items as OrderItem[]) || [],
+          orderTotal: (event.data.orderValue as number) || 0,
           timestamp: event.timestamp
         });
         result.databases.memgraph = true;
@@ -200,12 +212,12 @@ class RealTimeSyncManager extends EventEmitter {
     if (config.features.enableMemgraphSync) {
       promises.push(
         autoSyncSearchToMemgraph({
-          query: event.data.query,
-          resultsCount: event.data.resultsCount || 0,
+          query: event.data.query as string,
+          resultsCount: (event.data.resultsCount as number) || 0,
           userId: event.userId,
           sessionId: event.sessionId,
           timestamp: event.timestamp,
-          clickedResultId: event.data.clickedResultId
+          clickedResultId: event.data.clickedResultId as number | undefined
         }).then(() => {
           result.databases.memgraph = true;
         }).catch(error => {
@@ -218,11 +230,11 @@ class RealTimeSyncManager extends EventEmitter {
     if (config.features.enableQdrantSync) {
       promises.push(
         autoSyncUserSearchToQdrant({
-          query: event.data.query,
+          query: event.data.query as string,
           userId: event.userId,
           sessionId: event.sessionId,
-          resultsCount: event.data.resultsCount || 0,
-          clickedResults: event.data.clickedResults,
+          resultsCount: (event.data.resultsCount as number) || 0,
+          clickedResults: event.data.clickedResults as number[] | undefined,
           timestamp: event.timestamp
         }).then(() => {
           result.databases.qdrant = true;
@@ -339,11 +351,11 @@ export const realTimeSyncManager = new RealTimeSyncManager();
 export async function syncEvent(params: {
   type: SyncEvent['type'];
   action: SyncEvent['action'];
-  data: Record<string, any>;
+  data: SyncEventData;
   priority?: SyncEvent['priority'];
   userId?: string;
   sessionId?: string;
-  metadata?: Record<string, any>;
+  metadata?: SyncMetadata;
 }): Promise<string> {
   const eventId = `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const sessionId = params.sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -368,7 +380,7 @@ export async function syncEvent(params: {
  * Convenience functions for common sync operations
  */
 export const RealTimeSync = {
-  productView: (productId: number, userId?: string, sessionId?: string, metadata?: Record<string, any>) =>
+  productView: (productId: number, userId?: string, sessionId?: string, metadata?: SyncMetadata) =>
     syncEvent({
       type: 'product',
       action: 'view',
@@ -379,7 +391,7 @@ export const RealTimeSync = {
       metadata
     }),
 
-  productSearch: (query: string, resultsCount: number, userId?: string, sessionId?: string, metadata?: Record<string, any>) =>
+  productSearch: (query: string, resultsCount: number, userId?: string, sessionId?: string, metadata?: SyncMetadata) =>
     syncEvent({
       type: 'search',
       action: 'search',
@@ -390,7 +402,7 @@ export const RealTimeSync = {
       metadata
     }),
 
-  orderCreated: (orderId: string, orderValue: number, items: any[], userId?: string, sessionId?: string, metadata?: Record<string, any>) =>
+  orderCreated: (orderId: string, orderValue: number, items: OrderItem[], userId?: string, sessionId?: string, metadata?: SyncMetadata) =>
     syncEvent({
       type: 'order',
       action: 'create',
@@ -401,7 +413,7 @@ export const RealTimeSync = {
       metadata
     }),
 
-  userInteraction: (action: 'click' | 'view' | 'hover', data: Record<string, any>, userId?: string, sessionId?: string, metadata?: Record<string, any>) =>
+  userInteraction: (action: 'click' | 'view' | 'hover', data: SyncEventData, userId?: string, sessionId?: string, metadata?: SyncMetadata) =>
     syncEvent({
       type: 'interaction',
       action,

@@ -7,7 +7,7 @@ let driver: neo4j.Driver | null = null;
 
 function getDriver(): neo4j.Driver {
   if (!driver) {
-    const uri = process.env.MEMGRAPH_URL || 'bolt://localhost:7687';
+    const uri = process.env.MEMGRAPH_URL || 'bolt://143.42.189.57:7687';
     const user = process.env.MEMGRAPH_USER || '';
     const password = process.env.MEMGRAPH_PASSWORD || '';
 
@@ -322,7 +322,7 @@ export async function updateSessionEnd(sessionId: string, endTime: number, stats
 // Analytics Query Functions
 
 // Get user journey path
-export async function getUserJourney(userId: string, limit: number = 50): Promise<any[]> {
+export async function getUserJourney(userId: string, limit: number = 50): Promise<Array<{ path: string; timestamp: string; sessionId: string }>> {
   try {
     return await withSession(async (session) => {
       const result = await session.run(`
@@ -346,7 +346,7 @@ export async function getUserJourney(userId: string, limit: number = 50): Promis
 }
 
 // Get popular paths
-export async function getPopularPaths(limit: number = 10): Promise<any[]> {
+export async function getPopularPaths(limit: number = 10): Promise<Array<{ path: string; count: number }>> {
   try {
     return await withSession(async (session) => {
       const result = await session.run(`
@@ -358,7 +358,7 @@ export async function getPopularPaths(limit: number = 10): Promise<any[]> {
 
       return result.records.map(record => ({
         path: record.get('path'),
-        views: record.get('views').toNumber()
+        count: record.get('views').toNumber()
       }));
     });
   } catch (error) {
@@ -368,7 +368,12 @@ export async function getPopularPaths(limit: number = 10): Promise<any[]> {
 }
 
 // Get user behavior patterns
-export async function getUserBehaviorPatterns(userId: string): Promise<any> {
+export async function getUserBehaviorPatterns(userId: string): Promise<{
+  totalSessions: number;
+  averageSessionDuration: number;
+  topPages: Array<{ path: string; views: number }>;
+  deviceTypes: Array<{ type: string; count: number }>;
+}> {
   try {
     return await withSession(async (session) => {
       const result = await session.run(`
@@ -377,16 +382,49 @@ export async function getUserBehaviorPatterns(userId: string): Promise<any> {
         ORDER BY frequency DESC
       `, { userId });
 
-      const patterns = result.records.map(record => ({
-        eventType: record.get('eventType'),
-        frequency: record.get('frequency').toNumber()
-      }));
+      // Get session data
+      const sessionResult = await session.run(`
+        MATCH (u:AnalyticsUser {id: $userId})-[:HAS_SESSION]->(s:AnalyticsSession)
+        RETURN count(s) as totalSessions, avg(s.duration) as avgDuration
+      `, { userId });
 
-      return { userId, patterns };
+      // Get top pages
+      const pagesResult = await session.run(`
+        MATCH (u:AnalyticsUser {id: $userId})-[:VIEWED]->(p:PageView)
+        RETURN p.path as path, count(*) as views
+        ORDER BY views DESC
+        LIMIT 5
+      `, { userId });
+
+      // Get device types
+      const deviceResult = await session.run(`
+        MATCH (u:AnalyticsUser {id: $userId})-[:USES_DEVICE]->(d:Device)
+        RETURN d.type as type, count(*) as count
+      `, { userId });
+
+      const sessionData = sessionResult.records[0];
+
+      return {
+        totalSessions: sessionData ? sessionData.get('totalSessions').toNumber() : 0,
+        averageSessionDuration: sessionData ? sessionData.get('avgDuration')?.toNumber() || 0 : 0,
+        topPages: pagesResult.records.map(r => ({
+          path: r.get('path'),
+          views: r.get('views').toNumber()
+        })),
+        deviceTypes: deviceResult.records.map(r => ({
+          type: r.get('type'),
+          count: r.get('count').toNumber()
+        }))
+      };
     });
   } catch (error) {
     logger.error('Failed to get user behavior patterns:', error as Record<string, unknown>);
-    return { userId, patterns: [] };
+    return {
+      totalSessions: 0,
+      averageSessionDuration: 0,
+      topPages: [],
+      deviceTypes: []
+    };
   }
 }
 

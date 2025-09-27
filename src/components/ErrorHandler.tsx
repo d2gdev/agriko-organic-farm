@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 export default function ErrorHandler() {
   useEffect(() => {
@@ -9,13 +10,13 @@ export default function ErrorHandler() {
 
     // Handle unhandled promise rejections
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error('Unhandled promise rejection:', event.reason);
+      logger.error('Unhandled promise rejection:', event.reason);
       event.preventDefault(); // Prevent the default behavior
     };
 
     // Handle global errors
     const handleError = (event: ErrorEvent) => {
-      console.error('Global error:', {
+      logger.error('Global error:', {
         message: event.message,
         filename: event.filename,
         lineno: event.lineno,
@@ -28,7 +29,7 @@ export default function ErrorHandler() {
     const handleGlobalError = (event: Event) => {
       if (event.type === 'error') {
         const errorEvent = event as ErrorEvent;
-        console.error('Error event caught:', {
+        logger.error('Error event caught:', {
           type: errorEvent.type,
           message: errorEvent.message,
           filename: errorEvent.filename,

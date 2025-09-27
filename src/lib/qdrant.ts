@@ -1,6 +1,7 @@
 // Qdrant vector database integration for semantic search
 import { logger } from '@/lib/logger';
 import { WCProduct } from '@/types/woocommerce';
+import { Core } from '@/types/TYPE_REGISTRY';
 // Removed APP_CONSTANTS import due to dependency issues
 
 // Qdrant client configuration
@@ -11,13 +12,13 @@ interface QdrantConfig {
 }
 
 interface QdrantPoint {
-  id: string | number;
+  id: number;
   vector: number[];
   payload: Record<string, unknown>;
 }
 
 interface QdrantSearchResult {
-  id: string | number;
+  id: number;
   score: number;
   payload: Record<string, unknown>;
 }
@@ -99,7 +100,14 @@ class QdrantClient {
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to upsert points: ${response.statusText}`);
+        const errorText = await response.text();
+        logger.error('Qdrant upsert error details:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+          url: response.url
+        });
+        throw new Error(`Failed to upsert points: ${response.statusText} - ${errorText}`);
       }
 
       logger.info(`Upserted ${points.length} points to Qdrant`);
@@ -144,7 +152,7 @@ class QdrantClient {
   }
 
   // Delete points by IDs
-  async deletePoints(ids: (string | number)[]): Promise<void> {
+  async deletePoints(ids: (number)[]): Promise<void> {
     try {
       const response = await fetch(
         `${this.baseUrl}/collections/${this.config.collectionName}/points/delete`,
@@ -251,15 +259,15 @@ export async function indexProducts(products: WCProduct[]): Promise<void> {
     payload: {
       name: product.name,
       slug: product.slug,
-      price: product.price ? parseFloat(product.price) : 0,
-      sale_price: product.sale_price ? parseFloat(product.sale_price) : null,
+      price: product.price ? parseFloat(product.price.toString()) : (0 as Core.Money),
+      sale_price: product.sale_price ? parseFloat(product.sale_price.toString()) : null,
       categories: product.categories?.map(c => c.slug) || [],
       tags: product.tags?.map(t => t.slug) || [],
       in_stock: product.stock_status === 'instock',
-      featured: (product as unknown as { featured?: boolean }).featured || false,
+      featured: ('featured' in product && product.featured) || false,
       image: product.images?.[0]?.src || '',
       short_description: product.short_description?.replace(/<[^>]*>/g, '').slice(0, 200),
-      total_sales: (product as unknown as { total_sales?: number }).total_sales || 0,
+      total_sales: ('total_sales' in product && typeof product.total_sales === 'number' ? product.total_sales : 0),
       average_rating: product.average_rating || '0',
       indexed_at: new Date().toISOString()
     }
@@ -344,7 +352,7 @@ export async function hybridQdrantSearch(
     semanticWeight?: number; // 0-1, how much to weight semantic vs keyword
   } = {}
 ): Promise<Array<{
-  id: string | number;
+  id: number;
   score: number;
   payload: Record<string, unknown>;
   matchType: 'semantic' | 'keyword' | 'hybrid';
@@ -359,7 +367,7 @@ export async function hybridQdrantSearch(
 
   // Simple keyword matching on the payloads
   const queryWords = query.toLowerCase().split(/\s+/);
-  const keywordScores = new Map<string | number, number>();
+  const keywordScores = new Map<number, number>();
 
   semanticResults.forEach(result => {
     let keywordScore = 0;
@@ -405,28 +413,45 @@ export async function safeUpsertVectors(
     id: string;
     values: number[];
     metadata: Record<string, unknown>;
-  }>
+  }>,
+  collectionName?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const client = initializeQdrant();
 
-    // Ensure collection exists (768 dimensions for MPNet)
-    await client.createCollection(768);
+    // Use blog collection for blog posts, default collection for products
+    const targetCollection = collectionName || process.env.QDRANT_COLLECTION || 'agriko_products';
+
+    // Determine dimensions based on collection type
+    const dimensions = targetCollection.includes('blog') ? 768 : 384;
+
+    // Create a new client instance for the target collection
+    const blogClient = new QdrantClient({
+      url: process.env.QDRANT_URL || 'http://localhost:6333',
+      apiKey: process.env.QDRANT_API_KEY,
+      collectionName: targetCollection
+    });
+
+    // Ensure collection exists with correct dimensions
+    await blogClient.createCollection(dimensions);
 
     // Convert to Qdrant point format
     const points: QdrantPoint[] = vectors.map(v => ({
-      id: v.id,
+      id: typeof v.id === 'string' ? parseInt(v.id, 10) || Date.now() : v.id,
       vector: v.values,
       payload: v.metadata
     }));
 
     // Upsert points
-    await client.upsertPoints(points);
+    await blogClient.upsertPoints(points);
 
     return { success: true };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error('Failed to upsert vectors to Qdrant:', { error: errorMessage });
+    logger.error('Failed to upsert vectors to Qdrant:', {
+      error: errorMessage,
+      collectionName: collectionName || 'default'
+    });
     return { success: false, error: errorMessage };
   }
 }
@@ -445,17 +470,53 @@ export async function searchByText(
   return searchWithQdrant(query, options);
 }
 
+// Search for similar vectors with advanced filtering (for blog posts)
+export async function searchSimilarVectors(options: {
+  vector: number[];
+  limit?: number;
+  filter?: Record<string, unknown>;
+}): Promise<{ success: boolean; results?: QdrantSearchResult[]; error?: string }> {
+  try {
+    const client = initializeQdrant();
+
+    const results = await client.search(
+      options.vector,
+      options.limit || 10,
+      options.filter
+    );
+
+    return { success: true, results };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Failed to search similar vectors:', { error: errorMessage });
+    return { success: false, error: errorMessage };
+  }
+}
+
+// Delete vectors by IDs (for blog post cleanup)
+export async function deleteVectors(ids: (number)[]): Promise<{ success: boolean; error?: string }> {
+  try {
+    const client = initializeQdrant();
+    await client.deletePoints(ids);
+    return { success: true };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Failed to delete vectors:', { error: errorMessage });
+    return { success: false, error: errorMessage };
+  }
+}
+
 // Health check for Qdrant
 export async function checkQdrantHealth(): Promise<boolean> {
   try {
     const client = initializeQdrant();
     const response = await fetch(
-      `${(client as unknown as { baseUrl: string }).baseUrl}/collections`,
-      { headers: (client as unknown as { headers: HeadersInit }).headers }
+      `${client.baseUrl}/collections`,
+      { headers: client.headers }
     );
     return response.ok;
   } catch (error) {
-    logger.error('Qdrant health check failed:', error as Record<string, unknown>);
+    logger.error('Qdrant health check failed:', error);
     return false;
   }
 }

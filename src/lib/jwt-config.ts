@@ -1,11 +1,11 @@
 import { randomBytes } from 'crypto';
 import { logger } from '@/lib/logger';
-import { getValidatedEnv } from '@/lib/startup-validation';
+import { config } from '@/lib/unified-config';
 
 /**
  * Constant-time string comparison to prevent timing attacks
  */
-function constantTimeEquals(a: string, b: string): boolean {
+export function constantTimeEquals(a: string, b: string): boolean {
   // Always compare same length to prevent early termination
   const maxLength = Math.max(a.length, b.length);
   let result = a.length === b.length ? 0 : 1; // Different lengths = not equal
@@ -32,15 +32,16 @@ export function getJwtSecret(): string {
     return cachedSecret;
   }
 
-  // In production or when environment is validated, use the validated environment
+  // Use the unified config system
   try {
-    const env = getValidatedEnv();
-    cachedSecret = env.JWT_SECRET;
-    logger.info('✅ Using validated JWT_SECRET from environment');
-    return cachedSecret;
+    cachedSecret = config.security.jwtSecret;
+    if (cachedSecret) {
+      logger.info('✅ Using JWT_SECRET from unified config');
+      return cachedSecret;
+    }
   } catch {
-    // Environment not validated yet, fall back to direct access
-    logger.debug('Environment not validated yet, falling back to direct access');
+    // Config not available, fall back to direct access
+    logger.debug('Unified config not available yet, falling back to direct access');
   }
 
   // Try to get from environment directly (fallback for initialization phase)

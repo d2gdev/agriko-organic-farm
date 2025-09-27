@@ -3,7 +3,7 @@ import { logger } from '@/lib/logger';
 import { handleError } from '@/lib/error-sanitizer';
 
 import { timingSafeEqual, createHash } from 'crypto';
-import type { AuthResult, AuthUser } from './auth-types';
+import { AuthResult, AuthUser, UserRole, Permission } from '@/types/auth';
 
 function safeEqual(a: string, b: string): boolean {
   // Compare using constant-time hash comparison to avoid length leaks
@@ -21,8 +21,9 @@ export async function validateApiAuth(request: NextRequest): Promise<AuthResult>
       const user: AuthUser = {
         userId: sessionResult.session.userId,
         username: sessionResult.session.username,
-        role: sessionResult.session.role,
-        permissions: sessionResult.session.permissions,
+        email: sessionResult.session.email || `${sessionResult.session.username}@agriko.local`,
+        role: sessionResult.session.role as UserRole,
+        permissions: sessionResult.session.permissions as Permission[],
       };
       return { isAuthenticated: true, user };
     }
@@ -66,7 +67,13 @@ export async function validateApiAuth(request: NextRequest): Promise<AuthResult>
           const userOk = adminUsername ? safeEqual(username, adminUsername) : false;
           const passOk = await bcrypt.compare(password, adminPasswordBcrypt).catch(() => false);
           if (userOk && passOk) {
-            const user: AuthUser = { username, role: 'administrator' };
+            const user: AuthUser = {
+              userId: 'admin',
+              username,
+              email: `${username}@agriko.local`,
+              role: UserRole.ADMIN,
+              permissions: [Permission.ADMIN_FULL]
+            };
             return { isAuthenticated: true, user };
           }
         } catch (error) {
@@ -80,7 +87,13 @@ export async function validateApiAuth(request: NextRequest): Promise<AuthResult>
         const userOk = safeEqual(username, adminUsername);
         const passOk = safeEqual(password, adminPassword);
         if (userOk && passOk) {
-          const user: AuthUser = { username, role: 'administrator' };
+          const user: AuthUser = {
+            userId: 'admin',
+            username,
+            email: `${username}@agriko.local`,
+            role: UserRole.ADMIN,
+            permissions: [Permission.ADMIN_FULL]
+          };
           return { isAuthenticated: true, user };
         }
       }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAdminAuth, AdminAuthResult } from '@/lib/admin-auth';
 import { logger } from '@/lib/logger';
+import type { ReviewData } from '@/types/type-safety';
 
 // GET /api/admin/reviews - Get all reviews for admin dashboard
 async function handleGetReviews(request: NextRequest, authResult: AdminAuthResult): Promise<Response> {
@@ -9,7 +10,7 @@ async function handleGetReviews(request: NextRequest, authResult: AdminAuthResul
       undefined, 'admin-reviews');
 
     // Fetch reviews from database - currently returns empty until review system is integrated
-    const reviews: any[] = [];
+    const reviews: ReviewData[] = [];
 
     // TODO: Implement actual review database queries:
     // const reviews = await reviewDatabase.getAllReviews();
@@ -17,9 +18,9 @@ async function handleGetReviews(request: NextRequest, authResult: AdminAuthResul
     // Calculate stats
     const stats = {
       total: reviews.length,
-      pending: reviews.filter(r => r.status === 'pending').length,
-      approved: reviews.filter(r => r.status === 'approved').length,
-      rejected: reviews.filter(r => r.status === 'rejected').length,
+      pending: 0, // TODO: Add status field to ReviewData when implementing
+      approved: 0,
+      rejected: 0,
       averageRating: reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0
     };
 

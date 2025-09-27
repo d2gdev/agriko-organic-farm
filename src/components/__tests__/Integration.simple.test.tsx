@@ -1,4 +1,5 @@
 import React from 'react';
+import { Core } from '@/types/TYPE_REGISTRY';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -234,12 +235,12 @@ describe('Integration Tests - Core Functionality', () => {
           <div>
             <div data-testid="products">
               <button
-                onClick={() => addItem({ id: 1, name: 'Rice', price: 15.99 })}
+                onClick={() => addItem({ id: 1, name: 'Rice', price: 15.99 as Core.Money })}
               >
                 Add Rice
               </button>
               <button
-                onClick={() => addItem({ id: 2, name: 'Honey', price: 25.50 })}
+                onClick={() => addItem({ id: 2, name: 'Honey', price: 25.50 as Core.Money })}
               >
                 Add Honey
               </button>

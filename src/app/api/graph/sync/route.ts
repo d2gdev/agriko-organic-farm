@@ -62,7 +62,7 @@ export async function POST(_request: NextRequest) {
           id: product.id,
           name: product.name,
           slug: product.slug,
-          price: parseFloat(product.price || '0'),
+          price: product.price ? Number(product.price) / 100 : 0, // Convert centavos to pesos for display
           categories: product.categories?.map(cat => cat.name) || [],
           description: product.short_description || product.description || '',
           inStock: product.stock_status === 'instock',

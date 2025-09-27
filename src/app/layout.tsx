@@ -3,6 +3,7 @@ import React, { Suspense } from 'react';
 import { Inter, Crimson_Pro, Caveat } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
+import { WishlistProvider } from '@/context/WishlistContext';
 import NavbarWrapper from '@/components/NavbarWrapper';
 import CartDrawer from '@/components/CartDrawer';
 import Footer from '@/components/Footer';
@@ -14,11 +15,8 @@ import { SkipLinks } from '@/components/SkipLink';
 
 // Direct imports instead of lazy loading to fix manifest error
 import GoogleAnalytics from '@/components/GoogleAnalytics';
-import PageAnalytics from '@/components/PageAnalytics';
 // import PerformanceOptimizer from '@/components/PerformanceOptimizer';
-import { initializeEnvironmentValidation } from '@/lib/startup-validation';
 import { URL_CONSTANTS, urlHelpers } from '@/lib/url-constants';
-import { logger } from '@/lib/logger';
 // import GlobalErrorBoundary from '@/components/GlobalErrorBoundary'; // Temporarily disabled
 
 const inter = Inter({ 
@@ -43,24 +41,6 @@ const caveat = Caveat({
   weight: ['400', '700'],
 });
 
-// Validate environment variables on startup (server-side only)
-if (typeof window === 'undefined') {
-  // Only run on server-side to prevent client-side execution
-  try {
-    initializeEnvironmentValidation();
-  } catch (error) {
-    logger.warn('⚠️ Environment validation warnings (app will continue):', error as Record<string, unknown>);
-
-    // In development, continue with warnings instead of failing
-    if (process.env.NODE_ENV === 'development') {
-      logger.info('🔧 Development mode: API endpoints may have limited functionality without proper environment variables');
-    } else if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production' && !process.env.NEXT_PHASE) {
-      // Only exit in production runtime, not during build
-      logger.error('💥 Production environment validation failed - some features may not work');
-      // Don't exit immediately, let the app start but log critical error
-    }
-  }
-}
 
 export const metadata: Metadata = {
   metadataBase: new URL(urlHelpers.getShopUrl()),
@@ -141,8 +121,8 @@ export default function RootLayout({
           <GoogleAnalytics />
         </Suspense>
 
-        {/* Page Analytics and User Behavior Tracking */}
-        <PageAnalytics pageType="other" />
+        {/* Page Analytics and User Behavior Tracking - temporarily disabled to fix chunk loading */}
+        {/* <PageAnalytics pageType="other" /> */}
         
         {/* Performance Optimizations - temporarily disabled to fix preload warnings */}
         {/* <PerformanceOptimizer /> */}
@@ -157,7 +137,7 @@ export default function RootLayout({
                 legacyImages.forEach(function(imageName) {
                   const links = document.querySelectorAll('link[rel="preload"][href*="' + imageName + '"]');
                   links.forEach(function(link) {
-                    console.warn('🗑️ Removing legacy preload:', link.href);
+                    logger.warn('🗑️ Removing legacy preload:', { href: link.href });
                     link.remove();
                   });
                 });
@@ -175,7 +155,7 @@ export default function RootLayout({
                     mutation.addedNodes.forEach(function(node) {
                       if (node.nodeType === 1 && node.nodeName === 'LINK' && node.rel === 'preload') {
                         if (node.href && (node.href.includes('hero-organic-farm.jpg') || node.href.includes('products-hero.jpg'))) {
-                          console.warn('🚫 Blocked dynamic legacy preload:', node.href);
+                          logger.warn('🚫 Blocked dynamic legacy preload:', node.href);
                           node.remove();
                         }
                       }
@@ -185,15 +165,37 @@ export default function RootLayout({
                 observer.observe(document.head, { childList: true, subtree: true });
               }
 
+              // Event handler references for cleanup
+              let loadHandler = null;
+              let visibilityHandler = null;
+
               // Cleanup function to prevent memory leaks
               const cleanup = function() {
-                console.log('🧹 Cleaning up layout resources...');
+                logger.info('🧹 Cleaning up layout resources...');
                 if (cleanupInterval) {
                   clearInterval(cleanupInterval);
                 }
                 if (observer) {
                   observer.disconnect();
                   observer = null;
+                }
+                // Remove event listeners to prevent memory leaks
+                if (loadHandler) {
+                  window.removeEventListener('load', loadHandler);
+                  loadHandler = null;
+                }
+                if (visibilityHandler) {
+                  document.removeEventListener('visibilitychange', visibilityHandler);
+                  visibilityHandler = null;
+                }
+                window.removeEventListener('beforeunload', cleanup);
+                window.removeEventListener('pagehide', cleanup);
+              };
+
+              // Create named handlers for proper cleanup
+              visibilityHandler = function() {
+                if (document.visibilityState === 'hidden') {
+                  cleanup();
                 }
               };
 
@@ -202,19 +204,15 @@ export default function RootLayout({
               window.addEventListener('pagehide', cleanup);
 
               // Also cleanup on visibility change (when tab becomes hidden)
-              document.addEventListener('visibilitychange', function() {
-                if (document.visibilityState === 'hidden') {
-                  cleanup();
-                }
-              });
+              document.addEventListener('visibilitychange', visibilityHandler);
 
               // Register fixed service worker
               if ('serviceWorker' in navigator && typeof window !== 'undefined') {
-                window.addEventListener('load', function() {
+                loadHandler = function() {
                   // First clear old registrations and caches
                   navigator.serviceWorker.getRegistrations().then(function(registrations) {
                     for (let registration of registrations) {
-                      console.log('🗑️ Unregistering old SW:', registration.scope);
+                      logger.info('🗑️ Unregistering old SW:', registration.scope);
                       registration.unregister();
                     }
 
@@ -222,7 +220,7 @@ export default function RootLayout({
                     if ('caches' in window) {
                       caches.keys().then(function(cacheNames) {
                         cacheNames.forEach(function(cacheName) {
-                          console.log('🗑️ Deleting old cache:', cacheName);
+                          logger.info('🗑️ Deleting old cache:', cacheName);
                           caches.delete(cacheName);
                         });
                       });
@@ -232,14 +230,15 @@ export default function RootLayout({
                     setTimeout(function() {
                       navigator.serviceWorker.register('/sw.js')
                         .then(function(registration) {
-                          console.log('✅ Fixed SW registered successfully');
+                          logger.info('✅ Fixed SW registered successfully');
                         })
                         .catch(function(error) {
-                          console.log('❌ SW registration failed:', error);
+                          logger.info('❌ SW registration failed:', error);
                         });
                     }, 1000);
                   });
-                });
+                };
+                window.addEventListener('load', loadHandler);
               }
             `,
           }}
@@ -254,10 +253,11 @@ export default function RootLayout({
         {/* Global error handler - temporarily disabled due to SSR issues */}
         {/* <ErrorHandler /> */}
 
-        <CartProvider>
-          {/* GlobalErrorBoundary temporarily removed */}
-          {/* Site navigation */}
-          <header
+        <WishlistProvider>
+          <CartProvider>
+            {/* GlobalErrorBoundary temporarily removed */}
+            {/* Site navigation */}
+            <header
             id="site-navigation"
             role="banner"
             aria-label="Site navigation"
@@ -316,7 +316,9 @@ export default function RootLayout({
               },
             }}
           />
-        </CartProvider>
+
+          </CartProvider>
+        </WishlistProvider>
       </body>
     </html>
   );

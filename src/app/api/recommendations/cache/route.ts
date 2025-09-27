@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const action = searchParams.get('action');
 
     switch (action) {
-      case 'stats':
+      case 'stats': {
         const stats = recommendationCache.getStats();
         return NextResponse.json({
           success: true,
@@ -21,7 +21,9 @@ export async function GET(request: NextRequest) {
           timestamp: new Date().toISOString()
         });
 
-      case 'popular':
+      }
+
+      case 'popular': {
         const limit = parseInt(searchParams.get('limit') || '10');
         const popular = recommendationCache.getPopularEntries(limit);
         return NextResponse.json({
@@ -34,7 +36,9 @@ export async function GET(request: NextRequest) {
           timestamp: new Date().toISOString()
         });
 
-      default:
+      }
+
+      default: {
         const basicStats = recommendationCache.getStats();
         return NextResponse.json({
           success: true,
@@ -47,6 +51,7 @@ export async function GET(request: NextRequest) {
           },
           timestamp: new Date().toISOString()
         });
+      }
     }
 
   } catch (error) {

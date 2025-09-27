@@ -1,110 +1,28 @@
 // Client-Safe Event System for Automatic Data Persistence
 'use client';
 
-// Event types for automatic persistence
-export enum EventType {
-  // Product Events
-  PRODUCT_VIEWED = 'product.viewed',
-  PRODUCT_ADDED_TO_CART = 'product.added_to_cart',
-  PRODUCT_REMOVED_FROM_CART = 'product.removed_from_cart',
-  PRODUCT_PURCHASED = 'product.purchased',
-  PRODUCT_REVIEWED = 'product.reviewed',
-  PRODUCT_WISHLISTED = 'product.wishlisted',
+import {
+  EventType,
+  BaseEvent,
+  ProductEvent,
+  SearchEvent,
+  UserEvent,
+  NavigationEvent,
+  OrderEvent,
+  PageEvent
+} from '@/types/events';
 
-  // User Journey Events
-  USER_REGISTERED = 'user.registered',
-  USER_LOGIN = 'user.login',
-  USER_LOGOUT = 'user.logout',
-  USER_PROFILE_UPDATED = 'user.profile_updated',
-
-  // Search Events
-  SEARCH_PERFORMED = 'search.performed',
-  SEARCH_RESULT_CLICKED = 'search.result_clicked',
-  SEARCH_NO_RESULTS = 'search.no_results',
-
-  // Navigation Events
-  PAGE_VIEWED = 'page.viewed',
-  PAGE_EXITED = 'page.exited',
-  NAVIGATION_EVENT = 'navigation.event',
-
-  // E-commerce Events
-  ORDER_CREATED = 'order.created',
-  ORDER_UPDATED = 'order.updated',
-  ORDER_CANCELLED = 'order.cancelled',
-  PAYMENT_COMPLETED = 'payment.completed',
-  PAYMENT_FAILED = 'payment.failed',
-
-  // Engagement Events
-  NEWSLETTER_SUBSCRIBED = 'newsletter.subscribed',
-  SOCIAL_SHARE = 'social.share',
-  REVIEW_HELPFUL_VOTED = 'review.helpful_voted',
-
-  // Admin Events
-  PRODUCT_CREATED = 'admin.product.created',
-  PRODUCT_UPDATED = 'admin.product.updated',
-  PRODUCT_DELETED = 'admin.product.deleted',
-
-  // System Events
-  TRACKING_ERROR = 'tracking.error',
-  NAVIGATION_CLICK = 'navigation.click',
-  SEARCH_OPEN = 'search.open',
-  CART_TOGGLE = 'cart.toggle',
-  TEST_EVENT = 'test.event',
-  NESTED_TEST = 'nested.test',
-}
-
-export interface BaseEvent {
-  id: string;
-  type: EventType;
-  timestamp: number;
-  sessionId?: string;
-  userId?: string;
-  anonymousId?: string;
-  metadata?: Record<string, unknown>;
-}
-
-export interface ProductEvent extends BaseEvent {
-  productId: number;
-  productName: string;
-  productPrice: number;
-  productCategory: string;
-  variantId?: number;
-}
-
-export interface SearchEvent extends BaseEvent {
-  query: string;
-  resultsCount: number;
-  filters?: Record<string, unknown>;
-  clickedResultId?: number;
-  clickedPosition?: number;
-}
-
-export interface OrderEvent extends BaseEvent {
-  orderId: string;
-  orderValue: number;
-  itemCount: number;
-  paymentMethod?: string;
-  shippingMethod?: string;
-  items: Array<{
-    productId: number;
-    quantity: number;
-    price: number;
-  }>;
-}
-
-export interface PageEvent extends BaseEvent {
-  pageUrl: string;
-  pageTitle?: string;
-  referrer?: string;
-  timeSpent?: number;
-  deviceType?: string;
-  browserType?: string;
-}
-
-export interface UserEvent extends BaseEvent {
-  userEmail?: string;
-  userSegment?: string;
-}
+// Re-export for backward compatibility
+export { EventType };
+export type {
+  BaseEvent,
+  ProductEvent,
+  SearchEvent,
+  UserEvent,
+  NavigationEvent,
+  OrderEvent,
+  PageEvent
+};
 
 // Client-side event queue for collecting events
 class ClientEventBus {

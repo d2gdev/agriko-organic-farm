@@ -1,13 +1,13 @@
 // Graph database and relationship types
 
 export interface GraphNode {
-  id: string | number;
+  id: number;
   labels: string[];
   properties: GraphNodeProperties;
 }
 
 export interface GraphNodeProperties {
-  id?: string | number;
+  id?: number;
   name?: string;
   type?: string;
   createdAt?: string;
@@ -16,10 +16,10 @@ export interface GraphNodeProperties {
 }
 
 export interface GraphRelationship {
-  id: string | number;
+  id: number;
   type: string;
-  startNodeId: string | number;
-  endNodeId: string | number;
+  startNodeId: number;
+  endNodeId: number;
   properties: GraphRelationshipProperties;
 }
 

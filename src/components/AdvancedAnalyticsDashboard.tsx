@@ -62,7 +62,7 @@ interface ConversionData {
   steps: Array<{ name: string; sessions: number; rate: number }>;
 }
 
-interface AnalyticsData {
+interface DashboardAnalyticsData {
   realTime?: RealTimeData;
   historical?: HistoricalData;
   recommendations?: RecommendationData;
@@ -84,7 +84,7 @@ export default function AdvancedAnalyticsDashboard({
   showMockData = true,
   className = ''
 }: AdvancedAnalyticsDashboardProps) {
-  const [data, setData] = useState<AnalyticsData>({});
+  const [data, setData] = useState<DashboardAnalyticsData>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTimeRange, setSelectedTimeRange] = useState(timeRange);
@@ -101,7 +101,7 @@ export default function AdvancedAnalyticsDashboard({
       const response = await fetch(`/api/analytics/dashboard?${params}`);
       const result = await response.json() as {
         success: boolean;
-        data?: AnalyticsData;
+        data?: DashboardAnalyticsData;
         error?: string;
       };
 
@@ -331,7 +331,7 @@ export default function AdvancedAnalyticsDashboard({
             <RealTimeCard label="Live Users" value={realTimeData.activeUsers ?? 0} color="green" />
             <RealTimeCard label="Sessions" value={realTimeData.activeSessions ?? 0} color="blue" />
             <RealTimeCard label="Page Views/min" value={Math.round((realTimeData.productViews ?? 0) / 60)} color="purple" />
-            <RealTimeCard label="Conversion Rate" value={`${realTimeData.conversionRate ?? 0}%`} color="orange" />
+            <RealTimeCard label="Conversion Rate" value={realTimeData.conversionRate ?? 0} color="orange" />
           </div>
 
           {/* Live Activity Chart */}
@@ -541,7 +541,7 @@ function MetricCard({ title, value, icon, trend, color }: MetricCardProps) {
 // Real-time Card Component
 interface RealTimeCardProps {
   label: string;
-  value: string | number;
+  value: number;
   color: 'blue' | 'green' | 'purple' | 'orange';
 }
 

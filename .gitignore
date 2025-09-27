@@ -115,3 +115,8 @@ temp/
 *.njsproj
 *.sln
 *.sw?
+# Competitor configuration data
+/data/competitor-configs.json
+
+/generated/prisma
+sanity/node_modules/

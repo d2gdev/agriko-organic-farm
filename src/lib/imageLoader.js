@@ -1,7 +1,7 @@
 // Custom image loader for production static export
 // This loader optimizes images for better Core Web Vitals
 
-function customImageLoader({ src, width, quality }) {
+function customImageLoader({ src, _width, _quality }) { // width and quality not used in static export
   // For static export, we'll return the original image with optimizations
   // In a production environment, this would integrate with a CDN or image service
   

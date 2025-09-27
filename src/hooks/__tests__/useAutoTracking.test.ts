@@ -1,5 +1,6 @@
 // Auto Tracking Hooks Tests
 import { renderHook, act } from '@testing-library/react';
+import { Core } from '@/types/TYPE_REGISTRY';
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
@@ -83,7 +84,7 @@ document.addEventListener = jest.fn();
 document.removeEventListener = jest.fn();
 
 // Mock PerformanceObserver
-const MockPerformanceObserver = jest.fn().mockImplementation((callback) => ({
+const MockPerformanceObserver = jest.fn().mockImplementation((_callback) => ({ // callback not used
   observe: jest.fn(),
   disconnect: jest.fn()
 })) as any;
@@ -91,7 +92,7 @@ MockPerformanceObserver.supportedEntryTypes = ['navigation', 'paint', 'largest-c
 global.PerformanceObserver = MockPerformanceObserver;
 import {
   useAutoTracking,
-  usePageTracking,
+  // usePageTracking, // Currently unused
   useProductTracking,
   useSearchTracking,
   useOrderTracking,
@@ -103,7 +104,7 @@ describe('Auto Tracking Hooks', () => {
   // Get mock functions
   const mockTrackProductView = require('@/lib/event-system').trackProductView;
   const mockTrackSearch = require('@/lib/event-system').trackSearch;
-  const mockTrackPageView = require('@/lib/event-system').trackPageView;
+  const _mockTrackPageView = require('@/lib/event-system').trackPageView; // Currently unused
   const mockTrackOrder = require('@/lib/event-system').trackOrder;
   const mockEventBusEmit = require('@/lib/event-system').eventBus.emit;
 
@@ -121,7 +122,7 @@ describe('Auto Tracking Hooks', () => {
       const productData = {
         id: 123,
         name: 'Test Product',
-        price: 25.99,
+        price: 25.99 as Core.Money,
         category: 'grains',
         quantity: 2
       };
@@ -152,7 +153,7 @@ describe('Auto Tracking Hooks', () => {
       const productData = {
         id: 456,
         name: 'Another Product',
-        price: 15.50,
+        price: 15.50 as Core.Money,
         category: 'spices'
       };
 
@@ -177,7 +178,7 @@ describe('Auto Tracking Hooks', () => {
       const productData = {
         id: 789,
         name: 'Removed Product',
-        price: 30.00,
+        price: 30.00 as Core.Money,
         category: 'oils'
       };
 
@@ -199,7 +200,7 @@ describe('Auto Tracking Hooks', () => {
       const productData = {
         id: 101,
         name: 'Purchased Product',
-        price: 45.00,
+        price: 45.00 as Core.Money,
         category: 'tea'
       };
 
@@ -281,7 +282,7 @@ describe('Auto Tracking Hooks', () => {
 
       const orderData = {
         orderId: 'order_123',
-        orderValue: 75.50,
+        orderTotal: 75.50,
         itemCount: 3,
         paymentMethod: 'credit_card',
         shippingMethod: 'standard',
@@ -387,7 +388,7 @@ describe('Auto Tracking Hooks', () => {
         await result.current.trackProduct('view', {
           id: 999,
           name: 'Test',
-          price: 10,
+          price: 10 as Core.Money,
           category: 'test'
         });
       });
@@ -407,7 +408,7 @@ describe('Auto Tracking Hooks', () => {
         await result.current.trackProduct('view', {
           id: 1,
           name: 'Test',
-          price: 10,
+          price: 10 as Core.Money,
           category: 'test'
         });
       });
@@ -428,7 +429,7 @@ describe('Auto Tracking Hooks', () => {
         await result.current.trackProduct('view', {
           id: 1,
           name: 'Test',
-          price: 10,
+          price: 10 as Core.Money,
           category: 'test'
         });
       });
@@ -450,7 +451,7 @@ describe('Auto Tracking Hooks', () => {
         await result.current.trackProduct('view', {
           id: 1,
           name: 'Test',
-          price: 10,
+          price: 10 as Core.Money,
           category: 'test'
         });
       });
@@ -478,7 +479,7 @@ describe('Auto Tracking Hooks', () => {
         await result.current.trackProduct('view', {
           id: 1,
           name: 'Test',
-          price: 10,
+          price: 10 as Core.Money,
           category: 'test'
         });
       });

@@ -1,6 +1,14 @@
 // Background Job Processor for Automatic Data Persistence
 import { Redis } from 'ioredis';
 import { logger } from '@/lib/logger';
+import type {
+  ProductSyncData,
+  SearchSyncData,
+  UserBehaviorSyncData,
+  QdrantProductData,
+  QdrantSearchData,
+  QdrantBehaviorData
+} from '@/types/business-intelligence-types';
 import {
   BaseEvent,
   EventType,
@@ -9,6 +17,8 @@ import {
   PageEvent,
   OrderEvent
 } from './event-system';
+import { validateProductSyncData, ProductSyncDataSchema } from '@/types/validators';
+import { z } from 'zod';
 
 // Database persistence modules
 // Removed unused import: addProductToGraph
@@ -212,8 +222,8 @@ export class JobProcessor {
       eventType: event.type,
       orderId: event.orderId,
       userId: event.userId,
-      items: event.items,
-      orderValue: event.orderValue,
+      items: event.items || [],
+      orderValue: event.orderTotal,  // OrderEvent has orderTotal, not orderValue
       timestamp: event.timestamp,
     }, 0); // High priority
 
@@ -221,15 +231,17 @@ export class JobProcessor {
     await this.addJob(JobType.PERSIST_ANALYTICS_TO_MEMGRAPH, event);
 
     // Update product relationships based on purchase
-    for (const item of event.items) {
+    if (event.items) {
+      for (const item of event.items) {
       await this.addJob(JobType.PERSIST_TO_MEMGRAPH, {
         eventType: 'product.purchased.relationship',
         productId: item.productId,
         orderId: event.orderId,
         quantity: item.quantity,
         price: item.price,
-        coProducts: event.items.filter(i => i.productId !== item.productId),
+        coProducts: event.items?.filter(i => i.productId !== item.productId) || [],
       });
+      }
     }
   }
 
@@ -311,15 +323,15 @@ export class JobProcessor {
 
       switch (job.type) {
         case JobType.PERSIST_TO_MEMGRAPH:
-          await this.persistToMemgraph(job.data);
+          await this.persistToMemgraph(job.data as Record<string, unknown>);
           break;
 
         case JobType.PERSIST_TO_QDRANT:
-          await this.persistToQdrant(job.data);
+          await this.persistToQdrant(job.data as Record<string, unknown>);
           break;
 
         case JobType.PERSIST_ANALYTICS_TO_MEMGRAPH:
-          await this.persistAnalyticsToMemgraph(job.data);
+          await this.persistAnalyticsToMemgraph(job.data as Record<string, unknown>);
           break;
 
         case JobType.UPDATE_USER_PROFILE:
@@ -367,17 +379,41 @@ export class JobProcessor {
   }
 
   // Job execution methods
-  private async persistToMemgraph(data: any): Promise<void> {
+  private async persistToMemgraph(data: Record<string, unknown>): Promise<void> {
     try {
       if (data.eventType) {
-        // Use enhanced auto-sync for product/user events
-        await autoSyncProductToMemgraph(data);
+        // Validate and parse the data with Zod
+        const productData = validateProductSyncData({
+          eventType: data.eventType,
+          productId: data.productId,
+          userId: data.userId,
+          sessionId: data.sessionId,
+          timestamp: data.timestamp,
+          metadata: data.metadata || {}
+        });
+        await autoSyncProductToMemgraph(productData);
       } else if (data.query) {
         // Search event
-        await autoSyncSearchToMemgraph(data);
+        const searchData: SearchSyncData = {
+          query: String(data.query),
+          resultsCount: Number(data.resultsCount),
+          userId: data.userId ? String(data.userId) : undefined,
+          sessionId: String(data.sessionId),
+          timestamp: Number(data.timestamp),
+          clickedResultId: data.clickedResultId ? Number(data.clickedResultId) : undefined
+        };
+        await autoSyncSearchToMemgraph(searchData);
       } else {
         // Generic user behavior
-        await autoSyncUserBehaviorToMemgraph(data);
+        const behaviorData: UserBehaviorSyncData = {
+          userId: String(data.userId),
+          sessionId: String(data.sessionId),
+          pageUrl: String(data.pageUrl),
+          timestamp: Number(data.timestamp),
+          eventType: String(data.eventType),
+          metadata: (data.metadata || {}) as Record<string, unknown>
+        };
+        await autoSyncUserBehaviorToMemgraph(behaviorData);
       }
       logger.info('Successfully persisted to Memgraph:', { type: data.eventType || data.type });
     } catch (error) {
@@ -386,17 +422,40 @@ export class JobProcessor {
     }
   }
 
-  private async persistToQdrant(data: any): Promise<void> {
+  private async persistToQdrant(data: Record<string, unknown>): Promise<void> {
     try {
       if (data.productId) {
         // Product event
-        await autoSyncProductToQdrant(data);
+        const qdrantProductData: QdrantProductData = {
+          productId: Number(data.productId),
+          eventType: String(data.eventType),
+          metadata: data.metadata as Record<string, unknown> | undefined
+        };
+        await autoSyncProductToQdrant(qdrantProductData);
       } else if (data.query || data.type === 'search_pattern') {
         // Search event
-        await autoSyncUserSearchToQdrant(data);
+        const qdrantSearchData: QdrantSearchData = {
+          query: String(data.query),
+          userId: data.userId ? String(data.userId) : undefined,
+          sessionId: String(data.sessionId),
+          resultsCount: Number(data.resultsCount),
+          clickedResults: data.clickedResults as number[] | undefined,
+          timestamp: Number(data.timestamp)
+        };
+        await autoSyncUserSearchToQdrant(qdrantSearchData);
       } else {
         // User behavior event
-        await autoSyncUserBehaviorToQdrant(data);
+        const qdrantBehaviorData: QdrantBehaviorData = {
+          userId: String(data.userId),
+          sessionId: String(data.sessionId),
+          interactions: (data.interactions || []) as Array<{
+            productId: number;
+            type: string;
+            timestamp: number;
+            duration?: number;
+          }>
+        };
+        await autoSyncUserBehaviorToQdrant(qdrantBehaviorData);
       }
       logger.info('Successfully persisted to Qdrant:', { type: data.eventType || data.type });
     } catch (error) {
@@ -405,17 +464,17 @@ export class JobProcessor {
     }
   }
 
-  private async persistAnalyticsToMemgraph(data: any): Promise<void> {
+  private async persistAnalyticsToMemgraph(data: Record<string, unknown>): Promise<void> {
     try {
       // Store analytics data as graph nodes in Memgraph
       // This will be implemented in the memgraph-analytics.ts file
       await autoSyncUserBehaviorToMemgraph({
-        userId: data.userId || `anonymous_${data.sessionId}`,
-        sessionId: data.sessionId,
-        pageUrl: data.pageUrl || '/',
-        timestamp: data.timestamp,
-        eventType: data.type,
-        metadata: data.metadata || {}
+        userId: String(data.userId || `anonymous_${data.sessionId}`),
+        sessionId: String(data.sessionId),
+        pageUrl: String(data.pageUrl || '/'),
+        timestamp: Number(data.timestamp),
+        eventType: String(data.type),
+        metadata: (data.metadata as Record<string, unknown>) || {}
       });
       logger.info('Successfully persisted analytics to Memgraph:', { type: data.type });
     } catch (error) {

@@ -332,8 +332,8 @@ export class DatabaseSchemaOptimizer {
     qdrant: { status: 'healthy' | 'warning' | 'critical'; details: string[] };
   }> {
     const healthCheck = {
-      memgraph: { status: 'healthy' as const, details: [] as string[] },
-      qdrant: { status: 'healthy' as const, details: [] as string[] }
+      memgraph: { status: 'healthy' as 'healthy' | 'warning' | 'critical', details: [] as string[] },
+      qdrant: { status: 'healthy' as 'healthy' | 'warning' | 'critical', details: [] as string[] }
     };
 
     try {
@@ -341,7 +341,7 @@ export class DatabaseSchemaOptimizer {
       await withSession(async (session) => {
         const result = await session.run('RETURN 1 as test');
         if (result.records.length === 0) {
-          healthCheck.memgraph.status = 'healthy' as any; // Health check failed
+          healthCheck.memgraph.status = 'critical'; // Health check failed
           healthCheck.memgraph.details.push('Memgraph connection failed');
         } else {
           healthCheck.memgraph.details.push('Memgraph connection successful');
@@ -349,17 +349,17 @@ export class DatabaseSchemaOptimizer {
 
         // Check for performance issues
         if (this.performanceMetrics.memgraph.nodeCount > 1000000) {
-          healthCheck.memgraph.status = 'healthy' as any; // Performance warning
+          healthCheck.memgraph.status = 'warning'; // Performance warning
           healthCheck.memgraph.details.push('Large number of nodes may impact performance');
         }
 
         if (this.performanceMetrics.memgraph.relationshipCount > 5000000) {
-          healthCheck.memgraph.status = 'healthy' as any; // Performance warning
+          healthCheck.memgraph.status = 'warning'; // Performance warning
           healthCheck.memgraph.details.push('Large number of relationships may impact performance');
         }
       });
     } catch (error) {
-      healthCheck.memgraph.status = 'healthy' as any; // Critical error
+      healthCheck.memgraph.status = 'critical'; // Critical error
       healthCheck.memgraph.details.push(`Memgraph health check failed: ${error}`);
     }
 
@@ -374,12 +374,12 @@ export class DatabaseSchemaOptimizer {
                           this.performanceMetrics.qdrant.searchLatency.length;
 
         if (avgLatency > 1000) {
-          healthCheck.qdrant.status = 'healthy' as any; // Warning
+          healthCheck.qdrant.status = 'warning'; // Warning
           healthCheck.qdrant.details.push('High search latency detected');
         }
       }
     } catch (error) {
-      healthCheck.qdrant.status = 'healthy' as any; // Critical
+      healthCheck.qdrant.status = 'critical'; // Critical
       healthCheck.qdrant.details.push(`Qdrant health check failed: ${error}`);
     }
 

@@ -7,8 +7,8 @@ interface EnvValidationRule {
   type: 'string' | 'number' | 'boolean' | 'url' | 'email';
   description: string;
   validation?: (value: string) => boolean;
-  transform?: (value: string) => string | number | boolean;
-  defaultValue?: string | number | boolean;
+  transform?: (value: string) => number | boolean;
+  defaultValue?: number | boolean;
   sensitiveData?: boolean;
 }
 

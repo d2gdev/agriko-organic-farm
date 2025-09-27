@@ -690,7 +690,7 @@ export async function getExtendedGraphStats(): Promise<{
 
     return {
       nodeCount: {
-        products: Number(results[0]?.records[0]?.get('count') ?? 0),
+        products: Number(((results && results[0]) || {})?.records?.[0]?.get('count') ?? 0),
         categories: Number(results[1]?.records[0]?.get('count') ?? 0),
         healthBenefits: Number(results[2]?.records[0]?.get('count') ?? 0),
         ingredients: Number(results[3]?.records[0]?.get('count') ?? 0),

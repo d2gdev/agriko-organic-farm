@@ -37,7 +37,7 @@ interface Neo4jPathSegment {
 
 interface ConnectedEntity {
   type: string;
-  id: string | number;
+  id: number;
   name: string;
   properties: Record<string, unknown>;
 }
@@ -73,21 +73,23 @@ function getStringProperty(properties: Record<string, unknown>, key: string, fal
   return typeof value === 'string' ? value : fallback;
 }
 
-function getStringOrNumberProperty(properties: Record<string, unknown>, key: string): string | number {
+function getStringOrNumberProperty(properties: Record<string, unknown>, key: string): number {
   const value = properties[key];
-  return typeof value === 'string' || typeof value === 'number' ? value : 'Unknown';
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') return parseInt(value, 10) || 0;
+  return 0;
 }
 
 // Interface for discovered relationships
 export interface DiscoveredRelationship {
   source: {
     type: string;
-    id: string | number;
+    id: number;
     name: string;
   };
   target: {
     type: string;
-    id: string | number;
+    id: number;
     name: string;
   };
   relationship: {
@@ -102,7 +104,7 @@ export interface DiscoveredRelationship {
 export interface RelationshipPath {
   nodes: Array<{
     type: string;
-    id: string | number;
+    id: number;
     name: string;
   }>;
   relationships: Array<{
@@ -118,7 +120,7 @@ export interface RelationshipPath {
  */
 export async function discoverDirectRelationships(
   entityType: string,
-  entityId: string | number,
+  entityId: number,
   limit: number = 20
 ): Promise<DiscoveredRelationship[]> {
   const session = await getSession();
@@ -147,12 +149,12 @@ export async function discoverDirectRelationships(
       return {
         source: {
           type: sourceNode.labels[0] ?? 'Unknown',
-          id: getStringOrNumberProperty(sourceProps, 'id') !== 'Unknown' ? getStringOrNumberProperty(sourceProps, 'id') : getStringOrNumberProperty(sourceProps, 'name'),
+          id: sourceProps.id ? getStringOrNumberProperty(sourceProps, 'id') : getStringOrNumberProperty(sourceProps, 'name'),
           name: getStringProperty(sourceProps, 'name') !== 'Unknown' ? getStringProperty(sourceProps, 'name') : getStringProperty(sourceProps, 'title')
         },
         target: {
           type: targetNode.labels[0] ?? 'Unknown',
-          id: getStringOrNumberProperty(targetProps, 'id') !== 'Unknown' ? getStringOrNumberProperty(targetProps, 'id') : getStringOrNumberProperty(targetProps, 'name'),
+          id: targetProps.id ? getStringOrNumberProperty(targetProps, 'id') : getStringOrNumberProperty(targetProps, 'name'),
           name: getStringProperty(targetProps, 'name') !== 'Unknown' ? getStringProperty(targetProps, 'name') : getStringProperty(targetProps, 'title')
         },
         relationship: {
@@ -176,9 +178,9 @@ export async function discoverDirectRelationships(
  */
 export async function discoverRelationshipPaths(
   sourceType: string,
-  sourceId: string | number,
+  sourceId: number,
   targetType: string,
-  targetId: string | number,
+  targetId: number,
   maxHops: number = 3,
   limit: number = 10
 ): Promise<RelationshipPath[]> {
@@ -212,7 +214,7 @@ export async function discoverRelationshipPaths(
       
       const nodes = nodeProperties.map((nodeProps: Record<string, unknown>, index: number) => ({
         type: index < path.segments.length ? path.segments[index]?.start.labels[0] ?? 'Unknown' : path.end.labels[0] ?? 'Unknown',
-        id: getStringOrNumberProperty(nodeProps, 'id') !== 'Unknown' ? getStringOrNumberProperty(nodeProps, 'id') : getStringOrNumberProperty(nodeProps, 'name'),
+        id: nodeProps.id ? getStringOrNumberProperty(nodeProps, 'id') : getStringOrNumberProperty(nodeProps, 'name'),
         name: getStringProperty(nodeProps, 'name') !== 'Unknown' ? getStringProperty(nodeProps, 'name') : getStringProperty(nodeProps, 'title')
       }));
       
@@ -241,7 +243,7 @@ export async function discoverRelationshipPaths(
  */
 export async function findConnectedEntities(
   entityType: string,
-  entityId: string | number,
+  entityId: number,
   connectionTypes: string[] = [],
   limit: number = 20
 ): Promise<Array<{ entity: ConnectedEntity; connectionStrength: number; commonRelationships: string[] }>> {
@@ -288,7 +290,7 @@ export async function findConnectedEntities(
       return {
         entity: {
           type: connectedNode.labels[0] ?? 'Unknown',
-          id: getStringOrNumberProperty(connected, 'id') !== 'Unknown' ? getStringOrNumberProperty(connected, 'id') : getStringOrNumberProperty(connected, 'name'),
+          id: connected.id ? getStringOrNumberProperty(connected, 'id') : getStringOrNumberProperty(connected, 'name'),
           name: getStringProperty(connected, 'name') !== 'Unknown' ? getStringProperty(connected, 'name') : getStringProperty(connected, 'title'),
           properties: connected
         },
@@ -309,7 +311,7 @@ export async function findConnectedEntities(
  */
 export async function discoverTransitiveRelationships(
   entityType: string,
-  entityId: string | number,
+  entityId: number,
   relationshipType: string,
   transitiveType: string,
   limit: number = 10
@@ -341,12 +343,12 @@ export async function discoverTransitiveRelationships(
       return {
         source: {
           type: sourceNode.labels[0] ?? 'Unknown',
-          id: getStringOrNumberProperty(sourceProps, 'id') !== 'Unknown' ? getStringOrNumberProperty(sourceProps, 'id') : getStringOrNumberProperty(sourceProps, 'name'),
+          id: sourceProps.id ? getStringOrNumberProperty(sourceProps, 'id') : getStringOrNumberProperty(sourceProps, 'name'),
           name: getStringProperty(sourceProps, 'name') !== 'Unknown' ? getStringProperty(sourceProps, 'name') : getStringProperty(sourceProps, 'title')
         },
         target: {
           type: targetNode.labels[0] ?? 'Unknown',
-          id: getStringOrNumberProperty(targetProps, 'id') !== 'Unknown' ? getStringOrNumberProperty(targetProps, 'id') : getStringOrNumberProperty(targetProps, 'name'),
+          id: targetProps.id ? getStringOrNumberProperty(targetProps, 'id') : getStringOrNumberProperty(targetProps, 'name'),
           name: getStringProperty(targetProps, 'name') !== 'Unknown' ? getStringProperty(targetProps, 'name') : getStringProperty(targetProps, 'title')
         },
         relationship: {
@@ -524,7 +526,7 @@ function calculateRelationshipStrength(properties: Record<string, unknown>): num
  * Generate human-readable explanation for a relationship path
  */
 function generatePathExplanation(
-  nodes: Array<{ type: string; id: string | number; name: string }>,
+  nodes: Array<{ type: string; id: number; name: string }>,
   relationships: Array<{ type: string; properties: Record<string, unknown> }>
 ): string {
   if (nodes.length < 2) return 'Direct relationship';
@@ -572,7 +574,7 @@ function generatePathExplanation(
  * Wrapper function for findConnectedEntities to match API route expectations
  */
 export async function findConnectedEntitiesWrapper(
-  sourceId: string | number,
+  sourceId: number,
   sourceType: string,
   limit: number = 20
 ): Promise<Array<{ entity: ConnectedEntity; connectionStrength: number; commonRelationships: string[] }>> {
@@ -583,7 +585,7 @@ export async function findConnectedEntitiesWrapper(
  * Wrapper function for discoverDirectRelationships to match API route expectations
  */
 export async function findDirectRelationships(
-  sourceId: string | number,
+  sourceId: number,
   sourceType: string,
   targetType: string,
   limit: number = 20
@@ -597,7 +599,7 @@ export async function findDirectRelationships(
  * Find multi-hop relationship paths between entities
  */
 export async function findMultiHopPaths(
-  sourceId: string | number,
+  sourceId: number,
   sourceType: string,
   targetType: string,
   maxDepth: number = 3,

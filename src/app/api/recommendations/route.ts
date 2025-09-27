@@ -39,14 +39,14 @@ export async function POST(request: NextRequest) {
     let recommendations;
     
     switch (type) {
-      case 'personalized':
+      case 'personalized': {
         if (!userProfile) {
           return NextResponse.json(
             { error: 'User profile is required for personalized recommendations' },
             { status: 400 }
           );
         }
-        
+
         // Convert the validated userProfile to the expected UserProfile interface
         const completeUserProfile: UserProfile = {
           userId: userProfile.userId,
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
           location: userProfile.demographics?.location,
           // seasonalPreferences not in schema, so omit
         };
-        
+
         // Convert context to proper RecommendationContext type
         let recommendationContext: RecommendationContext | undefined;
         if (context) {
@@ -75,9 +75,10 @@ export async function POST(request: NextRequest) {
             })
           };
         }
-        
+
         recommendations = await getPersonalizedRecommendations(completeUserProfile, recommendationContext);
         break;
+      }
 
       case 'similar':
         if (!productId) {
@@ -146,7 +147,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     const { handleApiError } = await import('@/lib/error-sanitizer');
-    return handleApiError(error, 'Failed to generate recommendations');
+    return handleApiError(error as Error, 'Failed to generate recommendations');
   }
 }
 
@@ -246,6 +247,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     const { handleApiError } = await import('@/lib/error-sanitizer');
-    return handleApiError(error, 'Failed to generate recommendations');
+    return handleApiError(error as Error, 'Failed to generate recommendations');
   }
 }

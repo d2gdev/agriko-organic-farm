@@ -9,8 +9,41 @@ import { saveAnalyticsEvent } from '@/lib/analytics-db';
 import { EventType } from '@/lib/event-system';
 
 // Validation and monitoring
-import { validateWebhookData, validateTrackingEvent, validateProductTracking, validateOrderTracking, validateSearchTracking } from '@/lib/data-validation';
+import { validateWebhookData, validateTrackingEvent, validateProductTracking, validateOrderTracking, validateSearchTracking, ValidatedProductTracking, ValidatedOrderTracking } from '@/lib/data-validation';
 import { monitoring, monitorAPICall, monitorSyncEvent } from '@/lib/monitoring-observability';
+
+// Type definitions for the auto-sync data
+interface ProductSyncData {
+  productId: number;
+  eventType: string;
+  productData?: {
+    name?: string;
+    price?: number;
+    categories?: Array<{ name: string; id: number }>;
+  };
+  metadata?: Record<string, unknown>;
+}
+
+interface OrderSyncData {
+  orderId: string;
+  userId?: string;
+  orderTotal?: number;
+  items: Array<{
+    productId: number;
+    quantity: number;
+    price: number;
+  }>;
+  metadata?: Record<string, unknown>;
+}
+
+interface SanitizedProductData extends ValidatedProductTracking {
+  userId?: string;
+  anonymousId?: string;
+}
+
+interface SanitizedOrderData extends ValidatedOrderTracking {
+  orderTotal?: number;
+}
 
 // Webhook endpoint for WooCommerce product updates
 export async function POST(request: NextRequest) {
@@ -182,7 +215,7 @@ export async function POST(request: NextRequest) {
 async function handleProductSync(data: {
   productId: number;
   eventType: string;
-  productData?: any;
+  productData?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
 }): Promise<void> {
   const syncMonitor = monitorSyncEvent('product_sync');
@@ -195,9 +228,9 @@ async function handleProductSync(data: {
       timestamp: Date.now(),
       sessionId: `system_${Date.now()}`,
       productId: data.productId,
-      productName: data.productData?.name || 'Unknown Product',
-      productPrice: parseFloat(data.productData?.price || '0'),
-      productCategory: data.productData?.categories?.[0]?.name || 'Uncategorized',
+      productName: (data.productData?.name as string) || 'Unknown Product',
+      productPrice: parseFloat(String(data.productData?.price || '0')),
+      productCategory: (Array.isArray(data.productData?.categories) && data.productData.categories[0]?.name) || 'Uncategorized',
       metadata: data.metadata
     };
 
@@ -253,8 +286,8 @@ async function handleProductSync(data: {
           type: sanitizedData.type as import('@/lib/event-system').EventType,
           timestamp: sanitizedData.timestamp,
           sessionId: sanitizedData.sessionId,
-          userId: (sanitizedData as any).userId || undefined,
-          anonymousId: (sanitizedData as any).anonymousId || undefined,
+          userId: (sanitizedData as SanitizedProductData).userId || undefined,
+          anonymousId: (sanitizedData as SanitizedProductData).anonymousId || undefined,
           metadata: {
             productId: data.productId,
             syncSource: 'webhook',
@@ -285,7 +318,7 @@ async function handleProductSync(data: {
 async function handleOrderSync(data: {
   orderId: string;
   userId?: string;
-  orderValue: number;
+  orderTotal: number;
   items: Array<{
     productId: number;
     quantity: number;
@@ -304,7 +337,7 @@ async function handleOrderSync(data: {
       sessionId: `system_${Date.now()}`,
       userId: data.userId,
       orderId: data.orderId,
-      orderValue: data.orderValue,
+      orderTotal: data.orderTotal,
       itemCount: data.items.length,
       items: data.items,
       metadata: data.metadata
@@ -315,7 +348,7 @@ async function handleOrderSync(data: {
       logger.error('Order sync validation failed:', {
         errors: validationResult.errors,
         orderId: data.orderId,
-        orderValue: data.orderValue
+        orderTotal: data.orderTotal
       });
       monitoring.recordMetric('sync.validation_failures', 1, { operation: 'order_sync' });
       syncMonitor.finish(false);
@@ -333,7 +366,7 @@ async function handleOrderSync(data: {
         orderId: sanitizedData.orderId,
         userId: sanitizedData.userId,
         items: sanitizedData.items,
-        orderValue: sanitizedData.orderValue,
+        orderTotal: (sanitizedData as SanitizedOrderData).orderTotal || data.orderTotal,
         timestamp: sanitizedData.timestamp
       }).then(() => memgraphMonitor.finish(true)).catch(error => {
         memgraphMonitor.finish(false);
@@ -352,7 +385,7 @@ async function handleOrderSync(data: {
         userId: sanitizedData.userId,
         metadata: {
           orderId: sanitizedData.orderId,
-          orderValue: sanitizedData.orderValue,
+          orderTotal: (sanitizedData as SanitizedOrderData).orderTotal || data.orderTotal,
           itemCount: sanitizedData.itemCount,
           syncSource: 'webhook',
           validatedAt: Date.now(),
@@ -638,7 +671,7 @@ async function bulkSyncProducts(options: { batchSize: number; maxItems: number }
       handleProductSync({
         productId: product.id,
         eventType: 'bulk_sync.product',
-        productData: product,
+        productData: product as unknown as Record<string, unknown>,
         metadata: {
           bulkSync: true,
           batch: page,

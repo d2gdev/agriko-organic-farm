@@ -6,8 +6,8 @@ import { getValidatedJwtSecret } from './jwt-config';
 // JWT payload interface
 interface CustomJwtPayload {
   userId: string;
-  role: string;
-  permissions: string[];
+  role: UserRole;
+  permissions: Permission[];
   iat: number;
   exp: number;
   jti?: string;
@@ -26,10 +26,10 @@ function getJwtSecret(): string {
 }
 
 // Generate a secure API key with expiration
-export function generateApiKey(payload: { 
-  userId: string; 
-  role: string; 
-  permissions: string[];
+export function generateApiKey(payload: {
+  userId: string;
+  role: UserRole;
+  permissions: Permission[];
   expiresIn?: string;
 }): string {
   const secret = getJwtSecret();
@@ -71,8 +71,8 @@ export function validateJwtToken(token: string): TokenValidationResult {
     // Define the expected JWT payload structure
     interface JwtPayloadStructure {
       userId: string;
-      role: string;
-      permissions: string[];
+      role: UserRole;
+      permissions: Permission[];
       iat: number;
       exp: number;
       jti?: string;
@@ -114,31 +114,17 @@ export function hashToken(token: string): string {
 }
 
 // Generate API key with specific permissions
-export function generatePermissionedApiKey(role: 'admin' | 'readonly' | 'api-user'): string {
-  const permissions = {
-    admin: ['read', 'write', 'delete', 'admin', 'analytics'],
-    readonly: ['read'],
-    'api-user': ['read', 'write']
-  };
-
+export function generatePermissionedApiKey(role: UserRole.ADMIN | UserRole.READONLY | UserRole.API_USER): string {
   return generateApiKey({
     userId: `${role}-${Date.now()}`,
     role,
-    permissions: permissions[role],
+    permissions: ROLE_PERMISSIONS[role],
     expiresIn: '30d' // 30 days for API keys
   });
 }
 
-// Enhanced API authentication with JWT
-export interface AuthResult {
-  isAuthenticated: boolean;
-  user?: {
-    userId: string;
-    role: string;
-    permissions: string[];
-  };
-  error?: string;
-}
+// Import shared AuthResult type
+import { AuthResult, AuthUser, UserRole, Permission, ROLE_PERMISSIONS } from '@/types/auth';
 
 export function validateApiAuthSecure(request: NextRequest): AuthResult {
   // Check for session cookies (from web interface)
@@ -150,9 +136,11 @@ export function validateApiAuthSecure(request: NextRequest): AuthResult {
       isAuthenticated: true,
       user: {
         userId: 'web-admin',
-        role: 'admin',
-        permissions: ['read', 'write', 'delete', 'admin', 'analytics']
-      }
+        username: 'admin',
+        email: 'admin@agriko.local',
+        role: UserRole.ADMIN,
+        permissions: ROLE_PERMISSIONS[UserRole.ADMIN]
+      } as AuthUser
     };
   }
   
@@ -168,9 +156,11 @@ export function validateApiAuthSecure(request: NextRequest): AuthResult {
         isAuthenticated: true,
         user: {
           userId: validation.payload.userId,
+          username: validation.payload.userId,  // Use userId as fallback
+          email: `${validation.payload.userId}@agriko.local`,
           role: validation.payload.role,
           permissions: validation.payload.permissions || []
-        }
+        } as AuthUser
       };
     } else {
       return {
@@ -191,8 +181,8 @@ export function validateApiAuthSecure(request: NextRequest): AuthResult {
 }
 
 // Check if user has specific permission
-export function hasPermission(user: { permissions: string[] }, requiredPermission: string): boolean {
-  return user.permissions.includes(requiredPermission) || user.permissions.includes('admin');
+export function hasPermission(user: { permissions: Permission[] }, requiredPermission: Permission): boolean {
+  return user.permissions.includes(requiredPermission) || user.permissions.includes(Permission.ADMIN_FULL);
 }
 
 // Rate limiting with token buckets (more sophisticated than simple counters)

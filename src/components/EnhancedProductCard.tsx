@@ -1,5 +1,6 @@
 'use client';
 
+import { Core } from '@/types/TYPE_REGISTRY';
 import Link from 'next/link';
 import Image from 'next/image';
 import { WCProduct } from '@/types/woocommerce';
@@ -68,7 +69,7 @@ export default function EnhancedProductCard({
   const mainImage = getProductMainImage(product);
   const shortDescription = product.short_description ? stripHtml(product.short_description) : '';
   const discountPercentage = product.on_sale && product.regular_price && product.price && product.regular_price !== product.price
-    ? Math.round(((parseFloat(product.regular_price) - parseFloat(product.price)) / parseFloat(product.regular_price)) * 100)
+    ? Math.round(((product.regular_price - product.price) / product.regular_price) * 100)
     : null;
 
   return (
@@ -173,15 +174,15 @@ export default function EnhancedProductCard({
                 {product.on_sale && product.regular_price !== product.price ? (
                   <>
                     <span className="text-xl font-bold text-primary-700">
-                      {formatPrice(product.price || '0')}
+                      {formatPrice(product.price || (0 as Core.Money))}
                     </span>
                     <span className="text-sm text-neutral-500 line-through">
-                      {formatPrice(product.regular_price || product.price || '0')}
+                      {formatPrice(product.regular_price || product.price || (0 as Core.Money))}
                     </span>
                   </>
                 ) : (
                   <span className="text-xl font-bold text-neutral-900">
-                    {formatPrice(product.price || '0')}
+                    {formatPrice(product.price || (0 as Core.Money))}
                   </span>
                 )}
               </div>

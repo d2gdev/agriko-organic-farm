@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
 // } from 'lucide-react';
 import { behaviorEvent } from '@/lib/gtag';
 
-interface AnalyticsData {
+interface OverviewAnalyticsData {
   overview: {
     totalVisitors: number;
     totalPageviews: number;
@@ -78,7 +78,7 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsDashboard() {
-  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [data, setData] = useState<OverviewAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d');
   const [activeTab, setActiveTab] = useState('overview');

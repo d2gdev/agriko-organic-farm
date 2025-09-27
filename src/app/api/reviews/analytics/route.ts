@@ -191,25 +191,27 @@ export async function POST(request: NextRequest) {
     logger.info(`📊 Review Analytics POST: action=${action}`);
 
     switch (action) {
-      case 'track_review_submission':
-        // Track when a review is submitted
-        const { reviewId, productId, rating, verified } = data;
+      case 'track_review_submission': {
+          // Track when a review is submitted
+          const { reviewId, productId, rating, verified } = data;
         
-        // In a real implementation, this would update analytics metrics
-        logger.info('📝 Review submission tracked', {
-          reviewId,
-          productId,
-          rating,
-          verified
-        });
+          // In a real implementation, this would update analytics metrics
+          logger.info('📝 Review submission tracked', {
+            reviewId,
+            productId,
+            rating,
+            verified
+          });
         
-        return NextResponse.json({
-          success: true,
-          action,
-          message: 'Review submission tracked successfully'
-        });
+          return NextResponse.json({
+            success: true,
+            action,
+            message: 'Review submission tracked successfully'
+          });
 
-      case 'track_review_moderation':
+      }
+
+      case 'track_review_moderation': {
         // Track when a review is moderated
         const { reviewId: moderatedId, status, moderatorId } = data;
         
@@ -225,21 +227,26 @@ export async function POST(request: NextRequest) {
           message: 'Review moderation tracked successfully'
         });
 
-      case 'track_review_helpfulness':
-        // Track when users vote on review helpfulness
-        const { reviewId: helpfulReviewId, helpful, userId } = data;
+      }
+
+      case 'track_review_helpfulness': {
+          // Track when users vote on review helpfulness
+          const { reviewId: helpfulReviewId, helpful, userId } = data;
         
-        logger.info('👍 Review helpfulness tracked', {
-          reviewId: helpfulReviewId,
-          helpful,
-          userId
-        });
+          logger.info('👍 Review helpfulness tracked', {
+            reviewId: helpfulReviewId,
+            helpful,
+            userId
+          });
         
-        return NextResponse.json({
-          success: true,
-          action,
-          message: 'Review helpfulness tracked successfully'
-        });
+          return NextResponse.json({
+            success: true,
+            action,
+            message: 'Review helpfulness tracked successfully'
+          });
+
+
+      }
 
       case 'clear_cache':
         // Clear analytics cache

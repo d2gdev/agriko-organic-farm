@@ -1,7 +1,76 @@
 // WooCommerce Webhook Configuration for Auto-Sync
+import { Core } from '@/types/TYPE_REGISTRY';
 import { logger } from '@/lib/logger';
 import { config } from '@/lib/unified-config';
 import crypto from 'crypto';
+
+// WooCommerce webhook response types
+interface WCWebhook {
+  id: number;
+  name: string;
+  topic: string;
+  delivery_url: string;
+  secret: string;
+  status: 'active' | 'paused' | 'disabled';
+  api_version: string;
+  date_created?: string;
+  date_modified?: string;
+}
+
+interface WCProductWebhookData {
+  id: number;
+  name: string;
+  price: Core.Money;
+  status: string;
+  categories?: Array<{ name: string; id: number }>;
+}
+
+interface WCOrderWebhookData {
+  id: number;
+  customer_id?: number;
+  total: string;
+  status: string;
+  payment_method?: string;
+  billing?: {
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+  };
+  line_items?: Array<{
+    product_id: number;
+    quantity: number;
+    price: Core.Money;
+  }>;
+}
+
+type WebhookData = WCProductWebhookData | WCOrderWebhookData;
+
+interface ProcessedWebhookResult {
+  action: string;
+  processedData: {
+    productId?: number;
+    orderId?: string;
+    userId?: string;
+    orderValue?: number;
+    items?: Array<{
+      productId: number;
+      quantity: number;
+      price: number;
+    }>;
+    eventType?: string;
+    productData?: WCProductWebhookData;
+    metadata: {
+      name?: string;
+      price?: string;
+      status: string;
+      categories?: string[];
+      paymentMethod?: string;
+      customerEmail?: string;
+      webhook: boolean;
+      timestamp: number;
+    };
+  };
+}
 
 export interface WebhookConfig {
   name: string;
@@ -79,7 +148,7 @@ export async function setupAutoSyncWebhooks(): Promise<{
     const { wcRequest } = await import('./woocommerce');
 
     // Get existing webhooks
-    const existingWebhooks = await wcRequest<any[]>('/webhooks');
+    const existingWebhooks = await wcRequest<WCWebhook[]>('/webhooks');
 
     for (const webhookConfig of AUTO_SYNC_WEBHOOKS) {
       try {
@@ -163,29 +232,28 @@ export function verifyWebhookSignature(
 /**
  * Processes incoming webhook data
  */
-export function processWebhookData(topic: string, data: any): {
-  action: string;
-  processedData: any;
-} {
+export function processWebhookData(topic: string, data: WebhookData): ProcessedWebhookResult {
   switch (topic) {
     case 'product.created':
-    case 'product.updated':
+    case 'product.updated': {
+      const productData = data as WCProductWebhookData;
       return {
         action: topic.replace('.', '_'),
         processedData: {
-          productId: data.id,
+          productId: productData.id,
           eventType: topic,
-          productData: data,
+          productData: productData,
           metadata: {
-            name: data.name,
-            price: data.price,
-            status: data.status,
-            categories: data.categories?.map((cat: any) => cat.name) || [],
+            name: productData.name,
+            price: productData.price?.toString(),
+            status: productData.status,
+            categories: productData.categories?.map((cat) => cat.name) || [],
             webhook: true,
             timestamp: Date.now()
           }
         }
       };
+    }
 
     case 'order.created':
     case 'order.updated':
@@ -193,17 +261,17 @@ export function processWebhookData(topic: string, data: any): {
         action: topic.replace('.', '_'),
         processedData: {
           orderId: data.id.toString(),
-          userId: data.customer_id ? data.customer_id.toString() : undefined,
-          orderValue: parseFloat(data.total || '0'),
-          items: data.line_items?.map((item: any) => ({
+          userId: (data as WCOrderWebhookData).customer_id ? (data as WCOrderWebhookData).customer_id!.toString() : undefined,
+          orderValue: parseFloat((data as WCOrderWebhookData).total || '0'),
+          items: (data as WCOrderWebhookData).line_items?.map((item) => ({
             productId: item.product_id,
             quantity: item.quantity,
-            price: parseFloat(item.price || '0')
+            price: parseFloat(item.price?.toString() || '0')
           })) || [],
           metadata: {
             status: data.status,
-            paymentMethod: data.payment_method,
-            customerEmail: data.billing?.email,
+            paymentMethod: (data as WCOrderWebhookData).payment_method,
+            customerEmail: (data as WCOrderWebhookData).billing?.email,
             webhook: true,
             timestamp: Date.now()
           }
@@ -231,13 +299,19 @@ export async function testWebhookConnectivity(): Promise<{
 }> {
   const results = {
     success: true,
-    webhooks: [] as any[],
+    webhooks: [] as Array<{
+      id: number;
+      name: string;
+      topic: string;
+      status: string;
+      lastDelivery?: string;
+    }>,
     errors: [] as string[]
   };
 
   try {
     const { wcRequest } = await import('./woocommerce');
-    const webhooks = await wcRequest<any[]>('/webhooks');
+    const webhooks = await wcRequest<WCWebhook[]>('/webhooks');
 
     results.webhooks = webhooks
       .filter(wh => wh.delivery_url?.includes('/api/auto-sync'))

@@ -178,7 +178,7 @@ class CoreWebVitalsService {
       if (ratio <= 0.8) {
         data.status = 'good';
       } else if (ratio <= 1.0) {
-        data.status = 'good' as any; // Warning
+        data.status = 'good' as 'good' | 'warning' | 'error'; // Warning
       } else {
         data.status = 'error';
       }

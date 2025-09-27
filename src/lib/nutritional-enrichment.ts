@@ -56,7 +56,7 @@ export interface HealthBenefit {
 export interface ExtractedEntity {
   type: 'nutrient' | 'compound' | 'benefit' | 'property' | 'usage';
   name: string;
-  value?: string | number;
+  value?: number;
   unit?: string;
   confidence: number;
 }

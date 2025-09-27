@@ -552,7 +552,7 @@ export class SafeLocalStorage {
     try {
       let size = 0;
       for (const key in localStorage) {
-        if (localStorage.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
           const value = localStorage.getItem(key);
           size += (value?.length ?? 0) + key.length;
         }

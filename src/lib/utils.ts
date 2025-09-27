@@ -1,41 +1,34 @@
+import { Money } from '@/lib/money';
 import { WCProduct } from '@/types/woocommerce';
-import { parsePrice } from '@/lib/price-validation';
 
 // Client-safe utility functions that don't require API credentials
 
-export function formatPrice(price: string | number, currency: string = 'PHP'): string {
-  const priceResult = parsePrice(price, 'formatPrice');
-  
-  // Handle parsing failures
-  if (!priceResult.success) {
+export function formatPrice(price: number | Money | string, currency: string = 'PHP'): string {
+  try {
+    // Handle string prices from WooCommerce API
+    if (typeof price === 'string') {
+      const numPrice = parseFloat(price);
+      if (isNaN(numPrice)) return 'N/A';
+      return Money.pesos(numPrice).format();
+    }
+
+    const money = price instanceof Money ? price : Money.pesos(price as number);
+    return money.format();
+  } catch (error) {
+    console.error('formatPrice error:', error, 'for price:', price);
     return 'N/A';
   }
-  
-  return new Intl.NumberFormat('en-PH', {
-    style: 'currency',
-    currency: currency,
-  }).format(priceResult.value);
 }
 
-export function calculateCartTotal(items: Array<{ price: string; quantity: number }>): number {
+export function calculateCartTotal(items: Array<{ price: Money; quantity: number }>): Money {
   return items.reduce((total, item) => {
-    const priceResult = parsePrice(item.price, 'calculateCartTotal');
-    const quantityResult = parsePrice(item.quantity, 'calculateCartTotal quantity');
-    
-    if (!priceResult.success || !quantityResult.success) {
+    try {
+      const itemTotal = item.price.multiply(item.quantity);
+      return total.add(itemTotal);
+    } catch {
       return total; // Skip invalid items instead of breaking
     }
-    
-    const itemTotal = priceResult.value * quantityResult.value;
-    
-    // Check for overflow before addition
-    const MAX_SAFE_TOTAL = 999999999;
-    if (total > MAX_SAFE_TOTAL - itemTotal) {
-      return MAX_SAFE_TOTAL; // Cap at maximum safe value
-    }
-    
-    return total + itemTotal;
-  }, 0);
+  }, Money.ZERO);
 }
 
 export function isProductInStock(product: WCProduct): boolean {

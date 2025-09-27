@@ -1,5 +1,6 @@
 // Integration test for AutoTrackingProvider with actual components
 import React from 'react';
+import { Core } from '@/types/TYPE_REGISTRY';
 import { EventType } from '@/lib/client-event-system';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AutoTrackingProvider, useTracking } from '../AutoTrackingProvider';
@@ -61,7 +62,7 @@ const TestTrackingComponent: React.FC = () => {
     tracking.trackProduct('view', {
       id: 1,
       name: 'Test Product',
-      price: 99.99,
+      price: 99.99 as Core.Money,
       category: 'Test Category'
     });
   };
@@ -176,7 +177,7 @@ describe('AutoTrackingProvider Integration', () => {
       expect(mockTrackProduct).toHaveBeenCalledWith('view', {
         id: 1,
         name: 'Test Product',
-        price: 99.99,
+        price: 99.99 as Core.Money,
         category: 'Test Category'
       });
     });
@@ -263,9 +264,9 @@ describe('AutoTrackingProvider Integration', () => {
       // Test component outside of AutoTrackingProvider
       const TestComponentOutsideProvider = () => {
         try {
-          const tracking = useTracking();
+          const _tracking = useTracking();
           return <div data-testid="has-tracking">Has tracking</div>;
-        } catch (error) {
+        } catch (_error) {
           return <div data-testid="no-tracking">No tracking</div>;
         }
       };

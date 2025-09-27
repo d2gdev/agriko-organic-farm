@@ -11,7 +11,7 @@ interface CacheInstance {
     size: number;
     maxSize: number;
     utilizationPercent: number;
-    [key: string]: string | number | boolean | undefined;
+    [key: string]: number | boolean | undefined;
   };
   cleanup?(aggressive?: boolean): void;
   clear(): void;

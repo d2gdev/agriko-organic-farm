@@ -4,6 +4,7 @@ import type {
   AnalyticsEvent,
   AnalyticsMetadata
 } from '@/types/analytics';
+
 // Client-side analytics tracking for user behavior
 'use client';
 
@@ -220,7 +221,7 @@ class ClientAnalytics {
 
     // Track scroll milestones
     const scrollMilestones = [25, 50, 75, 90];
-    let trackedMilestones: number[] = [];
+    const trackedMilestones: number[] = [];
 
     const checkScrollMilestones = () => {
       scrollMilestones.forEach(milestone => {

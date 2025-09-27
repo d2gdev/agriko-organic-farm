@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { WCProduct } from '@/types/woocommerce';
 
 // Simple utility functions to avoid external dependencies
-function formatPrice(price: string | number): string {
+function formatPrice(price: number): string {
   const numPrice = typeof price === 'string' ? parseFloat(price) : price;
   return `$${numPrice.toFixed(2)}`;
 }
@@ -100,7 +100,7 @@ export default function ProductCardSimple({
             </>
           ) : (
             <span className="text-lg font-bold text-gray-900">
-              {formatPrice(product.price as string | number)}
+              {formatPrice((product.price || 0) as number)}
             </span>
           )}
         </div>

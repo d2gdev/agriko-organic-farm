@@ -4,10 +4,29 @@ import React, { createContext, useContext, useReducer, useEffect, useCallback, u
 import { logger } from '@/lib/logger';
 import SafeLocalStorage from '@/lib/safe-localstorage';
 
+import { Core } from '@/types/TYPE_REGISTRY';
 import { WCProduct } from '@/types/woocommerce';
 import { ecommerceEvent, funnelEvent } from '@/lib/gtag';
 import { parseCartData, compareVariations, validateCartItem } from '@/lib/cart-validation';
-import { parsePrice, safePriceMultiply } from '@/lib/price-validation';
+import { PHPCurrency } from '@/lib/php-currency';
+
+// Safe price parsing helpers
+const parsePrice = (price: Core.Money | undefined, context: string): { success: boolean; value: number } => {
+  if (price === undefined || price === null) {
+    return { success: false, value: 0 };
+  }
+  return { success: true, value: price };
+};
+
+const safePriceMultiply = (price: number, quantity: number, context: string): { success: boolean; value: Core.Money } => {
+  try {
+    const result = PHPCurrency.multiply(price as Core.Money, quantity);
+    return { success: true, value: result };
+  } catch (error) {
+    logger.error(`Price multiplication failed in ${context}`, { error, price, quantity });
+    return { success: false, value: 0 as Core.Money };
+  }
+};
 
 export interface CartItem {
   product: WCProduct;
@@ -21,7 +40,7 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
-  total: number;
+  total: Core.Money;
   itemCount: number;
 }
 
@@ -38,52 +57,38 @@ type CartAction =
 const initialState: CartState = {
   items: [],
   isOpen: false,
-  total: 0,
+  total: 0 as Core.Money,
   itemCount: 0,
 };
 
-const calculateTotals = (items: CartItem[]): { total: number; itemCount: number } => {
+const calculateTotals = (items: CartItem[]): { total: Core.Money; itemCount: number } => {
   const MAX_SAFE_CURRENCY = 999999999; // Max safe currency value
   const MAX_SAFE_QUANTITY = 9999; // Max reasonable quantity
   
   const total = items.reduce((sum, item) => {
-    const multiplyResult = safePriceMultiply(
-      item.product.price as string | number, 
-      Math.min(item.quantity, MAX_SAFE_QUANTITY),
-      `CartItem ${item.product.name}`
-    );
-    
-    if (!multiplyResult.success) {
-      logger.error('Cart item calculation failed', { 
-        error: multiplyResult.error,
+    const price = item.product.price || (0 as Core.Money);
+    const quantity = Math.min(item.quantity, MAX_SAFE_QUANTITY);
+
+    try {
+      const itemTotal = PHPCurrency.multiply(price, quantity);
+      return PHPCurrency.add(sum, itemTotal);
+    } catch (error) {
+      logger.error('Cart item calculation failed', {
+        error,
         productId: item.product.id,
         price: item.product.price,
         quantity: item.quantity
       });
       return sum; // Skip this item to prevent errors
     }
-    
-    const itemTotal = multiplyResult.value;
-    
-    // Check for overflow before addition
-    if (sum > MAX_SAFE_CURRENCY - itemTotal) {
-      logger.error('Cart total overflow detected', { 
-        currentSum: sum, 
-        itemTotal, 
-        productId: item.product.id 
-      });
-      return MAX_SAFE_CURRENCY; // Cap at maximum safe value
-    }
-    
-    return sum + itemTotal;
-  }, 0);
+  }, 0 as Core.Money);
 
   const itemCount = items.reduce((sum, item) => {
     const quantity = Math.min(item.quantity, MAX_SAFE_QUANTITY);
     return sum + quantity;
   }, 0);
 
-  return { total: Math.min(total, MAX_SAFE_CURRENCY), itemCount };
+  return { total, itemCount };
 };
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
@@ -165,7 +170,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return {
         ...state,
         items: [],
-        total: 0,
+        total: 0 as Core.Money,
         itemCount: 0,
       };
 
@@ -187,7 +192,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         isOpen: false,
       };
 
-    case 'LOAD_CART':
+    case 'LOAD_CART': {
       const { total, itemCount } = calculateTotals(action.payload);
       return {
         ...state,
@@ -195,6 +200,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         total,
         itemCount,
       };
+    }
 
     default:
       return state;
@@ -254,7 +260,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         dispatch({ type: 'LOAD_CART', payload: cartItems });
       }
     } catch (error) {
-      logger.error('Error loading cart from localStorage:', error as Record<string, unknown>);
+      logger.error('Error loading cart from localStorage', { error: error instanceof Error ? error.message : String(error) });
       // Clear corrupted cart data
       SafeLocalStorage.removeItem('agriko-cart');
     }
@@ -267,7 +273,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     try {
       SafeLocalStorage.setJSON('agriko-cart', state.items);
     } catch (error) {
-      logger.error('Error saving cart to localStorage:', error as Record<string, unknown>);
+      logger.error('Error saving cart to localStorage', { error: error instanceof Error ? error.message : String(error) });
     }
   }, [state.items, isMounted]);
 
@@ -279,9 +285,26 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [state.isOpen, state.itemCount, state.total]);
 
   const addItem = useCallback((product: WCProduct, quantity = 1, variation?: CartItem['variation']) => {
+    // Check if product is defined first
+    if (!product) {
+      logger.error('Invalid cart item, refusing to add undefined product');
+      return;
+    }
+
     // Validate cart item before adding
     if (!validateCartItem(product, quantity, variation)) {
-      logger.error('Invalid cart item, refusing to add');
+      logger.error('Invalid cart item, refusing to add', {
+        productId: product?.id,
+        productName: product?.name,
+        quantity,
+        productKeys: product ? Object.keys(product) : [],
+        hasRequiredFields: product ? {
+          hasId: 'id' in product,
+          hasName: 'name' in product,
+          hasSlug: 'slug' in product,
+          hasPrice: 'price' in product
+        } : null
+      });
       return;
     }
 

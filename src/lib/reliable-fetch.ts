@@ -141,11 +141,28 @@ export async function reliableFetch(
       const timeoutError = new Error(
         `Request timeout after ${timeoutMs}ms for ${url}`
       );
-      logger.error('⏱️ Fetch timeout', {
-        url,
-        timeoutMs,
-        timeoutLevel,
-      });
+
+      // Check if we're on localhost to reduce noisy timeout logs
+      const isLocalhost = typeof window !== 'undefined' && (
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname.startsWith('192.168.')
+      );
+
+      if (isLocalhost) {
+        logger.debug('⏱️ Fetch timeout on localhost', {
+          url,
+          timeoutMs,
+          timeoutLevel,
+        });
+      } else {
+        logger.error('⏱️ Fetch timeout', {
+          url,
+          timeoutMs,
+          timeoutLevel,
+        });
+      }
+
       if (onError) {
         onError(timeoutError);
       }
@@ -155,11 +172,26 @@ export async function reliableFetch(
     // Log and handle other errors
     const sanitizedError = handleError(error, 'reliableFetch');
 
-    logger.error('❌ Fetch failed', {
-      url,
-      error: sanitizedError.message,
-      timeoutLevel,
-    });
+    // Check if we're on localhost to reduce noisy error logs
+    const isLocalhost = typeof window !== 'undefined' && (
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.startsWith('192.168.')
+    );
+
+    if (isLocalhost) {
+      logger.debug('❌ Fetch failed on localhost', {
+        url,
+        error: sanitizedError.message,
+        timeoutLevel,
+      });
+    } else {
+      logger.error('❌ Fetch failed', {
+        url,
+        error: sanitizedError.message,
+        timeoutLevel,
+      });
+    }
 
     if (onError) {
       onError(new Error(String(sanitizedError?.message || 'Unknown error')));

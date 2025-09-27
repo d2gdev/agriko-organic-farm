@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     logger.info(`🔍 Extended graph API GET: action=${action}`);
 
     switch (action) {
-      case 'products_by_ingredient':
+      case 'products_by_ingredient': {
         if (!ingredientId) {
           return NextResponse.json(
             { error: 'ingredientId parameter is required' },
@@ -63,8 +63,9 @@ export async function GET(request: NextRequest) {
           products: ingredientProducts,
           count: ingredientProducts.length
         });
+      }
 
-      case 'ingredients_by_product':
+      case 'ingredients_by_product': {
         if (!productId) {
           return NextResponse.json(
             { error: 'productId parameter is required' },
@@ -79,8 +80,9 @@ export async function GET(request: NextRequest) {
           ingredients: productIngredients,
           count: productIngredients.length
         });
+      }
 
-      case 'products_by_nutrient':
+      case 'products_by_nutrient': {
         if (!nutrientName) {
           return NextResponse.json(
             { error: 'nutrient parameter is required' },
@@ -98,8 +100,9 @@ export async function GET(request: NextRequest) {
           products: nutrientProducts,
           count: nutrientProducts.length
         });
+      }
 
-      case 'products_for_condition':
+      case 'products_for_condition': {
         if (!conditionId) {
           return NextResponse.json(
             { error: 'condition parameter is required' },
@@ -114,20 +117,24 @@ export async function GET(request: NextRequest) {
           products: conditionProducts,
           count: conditionProducts.length
         });
+      }
 
-      case 'seasonal_products':
-        const monthParam = searchParams.get('month');
-        const currentMonth = monthParam ? parseInt(monthParam) : new Date().getMonth() + 1;
-        const seasonalProducts = await getSeasonalProducts(currentMonth.toString(), undefined, limit);
-        return NextResponse.json({
-          success: true,
-          action,
-          month: currentMonth,
-          products: seasonalProducts,
-          count: seasonalProducts.length
-        });
+      case 'seasonal_products': {
+          const monthParam = searchParams.get('month');
+          const currentMonth = monthParam ? parseInt(monthParam) : new Date().getMonth() + 1;
+          const seasonalProducts = await getSeasonalProducts(currentMonth.toString(), undefined, limit);
+          return NextResponse.json({
+            success: true,
+            action,
+            month: currentMonth,
+            products: seasonalProducts,
+            count: seasonalProducts.length
+          });
 
-      case 'regional_products':
+
+      }
+
+      case 'regional_products': {
         if (!region) {
           return NextResponse.json(
             { error: 'region parameter is required' },
@@ -145,22 +152,25 @@ export async function GET(request: NextRequest) {
           products: regionalProducts,
           count: regionalProducts.length
         });
+      }
 
-      case 'stats':
+      case 'stats': {
         const stats = await getExtendedGraphStats();
         return NextResponse.json({
           success: true,
           action,
           stats
         });
+      }
 
-      case 'validate':
+      case 'validate': {
         const validation = await validateGraphData();
         return NextResponse.json({
           success: true,
           action,
           validation
         });
+      }
 
       default:
         return NextResponse.json(
@@ -227,7 +237,7 @@ interface PostRequestBody {
   region?: RegionData;
   condition?: ConditionData;
   nutrient?: NutrientData;
-  productId?: string | number;
+  productId?: number;
   ingredientId?: string;
   regionId?: string;
   conditionId?: string;
@@ -250,7 +260,7 @@ export async function POST(request: NextRequest) {
     logger.info(`🔧 Extended graph API POST: action=${action}`);
 
     switch (action) {
-      case 'add_ingredient':
+      case 'add_ingredient': {
         const { ingredient } = body;
         if (!ingredient?.id || !ingredient.name) {
           return NextResponse.json(
@@ -278,8 +288,9 @@ export async function POST(request: NextRequest) {
           ingredient: ingredient.id,
           message: ingredientSuccess ? 'Ingredient added successfully' : 'Failed to add ingredient'
         });
+      }
 
-      case 'add_region':
+      case 'add_region': {
         const { region } = body;
         if (!region?.id || !region.name) {
           return NextResponse.json(
@@ -306,8 +317,9 @@ export async function POST(request: NextRequest) {
           region: region.id,
           message: regionSuccess ? 'Region added successfully' : 'Failed to add region'
         });
+      }
 
-      case 'add_condition':
+      case 'add_condition': {
         const { condition } = body;
         if (!condition?.id || !condition.name) {
           return NextResponse.json(
@@ -334,8 +346,9 @@ export async function POST(request: NextRequest) {
           condition: condition.id,
           message: conditionSuccess ? 'Condition added successfully' : 'Failed to add condition'
         });
+      }
 
-      case 'add_nutrient':
+      case 'add_nutrient': {
         const { nutrient } = body;
         if (!nutrient?.id || !nutrient.name) {
           return NextResponse.json(
@@ -362,8 +375,9 @@ export async function POST(request: NextRequest) {
           nutrient: nutrient.id,
           message: nutrientSuccess ? 'Nutrient added successfully' : 'Failed to add nutrient'
         });
+      }
 
-      case 'create_contains_relationship':
+      case 'create_contains_relationship': {
         const { productId, ingredientId, properties } = body;
         if (!productId || !ingredientId) {
           return NextResponse.json(
@@ -386,8 +400,9 @@ export async function POST(request: NextRequest) {
           ingredientId,
           message: containsSuccess ? 'CONTAINS relationship created' : 'Failed to create CONTAINS relationship'
         });
+      }
 
-      case 'create_grown_in_relationship':
+      case 'create_grown_in_relationship': {
         const { ingredientId: ingId, regionId, grownInProperties } = body;
         if (!ingId || !regionId) {
           return NextResponse.json(
@@ -411,8 +426,9 @@ export async function POST(request: NextRequest) {
           regionId,
           message: grownInSuccess ? 'GROWN_IN relationship created' : 'Failed to create GROWN_IN relationship'
         });
+      }
 
-      case 'create_treats_relationship':
+      case 'create_treats_relationship': {
         const { productId: prodId, conditionId: condId, treatsProperties } = body;
         if (!prodId || !condId) {
           return NextResponse.json(
@@ -436,8 +452,9 @@ export async function POST(request: NextRequest) {
           conditionId: condId,
           message: treatsSuccess ? 'TREATS relationship created' : 'Failed to create TREATS relationship'
         });
+      }
 
-      case 'create_rich_in_relationship':
+      case 'create_rich_in_relationship': {
         const { productId: pId, nutrientId, richInProperties } = body;
         if (!pId || !nutrientId) {
           return NextResponse.json(
@@ -462,8 +479,9 @@ export async function POST(request: NextRequest) {
           nutrientId,
           message: richInSuccess ? 'RICH_IN relationship created' : 'Failed to create RICH_IN relationship'
         });
+      }
 
-      case 'batch_import':
+      case 'batch_import': {
         const { data } = body;
         if (!data) {
           return NextResponse.json(
@@ -535,8 +553,9 @@ export async function POST(request: NextRequest) {
           results: importResults,
           message: importResults.errors.length === 0 ? 'Batch import completed' : 'Batch import completed with errors'
         });
+      }
 
-      case 'build_relationships':
+      case 'build_relationships': {
         const { relationshipType, mappings } = body;
         if (!relationshipType || !mappings || !Array.isArray(mappings)) {
           return NextResponse.json(
@@ -547,58 +566,62 @@ export async function POST(request: NextRequest) {
 
         let relationshipsCreated = 0;
         switch (relationshipType) {
-          case 'product_ingredient':
-            // Transform mappings to the expected format
-            const productIngredientMappings = mappings.map(mapping => ({
-              productId: typeof mapping.productId === 'string' ? parseInt(mapping.productId) : (mapping.productId as number),
-              ingredientId: mapping.ingredientId as string,
-              properties: {
-                concentrationLevel: 'moderate' as const,
-                ...(mapping.properties || {})
-              }
-            }));
+          case 'product_ingredient': {
+              // Transform mappings to the expected format
+              const productIngredientMappings = mappings.map(mapping => ({
+                productId: typeof mapping.productId === 'string' ? parseInt(mapping.productId) : (mapping.productId as number),
+                ingredientId: mapping.ingredientId as string,
+                properties: {
+                  concentrationLevel: 'moderate' as const,
+                  ...(mapping.properties || {})
+                }
+              }));
             relationshipsCreated = await buildProductIngredientRelationships(productIngredientMappings);
             break;
-          case 'regional_growing':
-            // Transform mappings to the expected format
-            const regionalGrowingMappings = mappings.map(mapping => ({
-              ingredientId: mapping.ingredientId as string,
-              regionId: mapping.regionId as string,
-              properties: {
-                quality: 'good' as const,
-                sustainability: 'conventional' as const,
-                ...(mapping.properties || {})
-              }
-            }));
+          }
+          case 'regional_growing': {
+              // Transform mappings to the expected format
+              const regionalGrowingMappings = mappings.map(mapping => ({
+                ingredientId: mapping.ingredientId as string,
+                regionId: mapping.regionId as string,
+                properties: {
+                  quality: 'good' as const,
+                  sustainability: 'conventional' as const,
+                  ...(mapping.properties || {})
+                }
+              }));
             relationshipsCreated = await buildRegionalGrowingRelationships(regionalGrowingMappings);
             break;
-          case 'health_benefits':
-            // Transform mappings to the expected format
-            const healthBenefitMappings = mappings.map(mapping => ({
-              productId: typeof mapping.productId === 'string' ? parseInt(mapping.productId) : (mapping.productId as number),
-              conditionId: mapping.conditionId as string,
-              properties: {
-                effectiveness: 'potential' as const,
-                evidenceLevel: 'traditional' as const,
-                ...(mapping.properties || {})
-              }
-            }));
+          }
+          case 'health_benefits': {
+              // Transform mappings to the expected format
+              const healthBenefitMappings = mappings.map(mapping => ({
+                productId: typeof mapping.productId === 'string' ? parseInt(mapping.productId) : (mapping.productId as number),
+                conditionId: mapping.conditionId as string,
+                properties: {
+                  effectiveness: 'potential' as const,
+                  evidenceLevel: 'traditional' as const,
+                  ...(mapping.properties || {})
+                }
+              }));
             relationshipsCreated = await buildHealthBenefitRelationships(healthBenefitMappings);
             break;
-          case 'nutritional':
-            // Transform mappings to the expected format
-            const nutritionalMappings = mappings.map(mapping => ({
-              productId: typeof mapping.productId === 'string' ? parseInt(mapping.productId) : (mapping.productId as number),
-              nutrientId: mapping.nutrientId as string,
-              properties: {
-                amount: 0,
-                unit: 'mg',
-                form: 'natural' as const,
-                ...(mapping.properties || {})
-              }
-            }));
+          }
+          case 'nutritional': {
+              // Transform mappings to the expected format
+              const nutritionalMappings = mappings.map(mapping => ({
+                productId: typeof mapping.productId === 'string' ? parseInt(mapping.productId) : (mapping.productId as number),
+                nutrientId: mapping.nutrientId as string,
+                properties: {
+                  amount: 0,
+                  unit: 'mg',
+                  form: 'natural' as const,
+                  ...(mapping.properties || {})
+                }
+              }));
             relationshipsCreated = await buildNutritionalRelationships(nutritionalMappings);
             break;
+          }
           default:
             return NextResponse.json(
               { error: 'Invalid relationshipType. Supported: product_ingredient, regional_growing, health_benefits, nutritional' },
@@ -613,8 +636,9 @@ export async function POST(request: NextRequest) {
           relationshipsCreated,
           message: `Created ${relationshipsCreated} ${relationshipType} relationships`
         });
+      }
 
-      case 'cleanup':
+      case 'cleanup': {
         const cleanupResults = await cleanupIncompleteData();
         return NextResponse.json({
           success: true,
@@ -622,6 +646,7 @@ export async function POST(request: NextRequest) {
           results: cleanupResults,
           message: `Cleaned up ${cleanupResults.nodesRemoved} nodes and ${cleanupResults.relationshipsRemoved} relationships`
         });
+      }
 
       default:
         return NextResponse.json(

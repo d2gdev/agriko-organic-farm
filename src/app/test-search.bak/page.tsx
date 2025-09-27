@@ -1,5 +1,6 @@
 'use client';
 
+import { Core } from '@/types/TYPE_REGISTRY';
 import { useState } from 'react';
 import { logger } from '@/lib/logger';
 
@@ -9,7 +10,7 @@ interface SearchResult {
   productId: number;
   slug: string;
   title: string;
-  price: string;
+  price: Core.Money;
   categories: string[];
   inStock: boolean;
   featured: boolean;

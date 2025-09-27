@@ -18,7 +18,7 @@ interface AutoTrackingContextType {
   trackSearchClick: (query: string, resultId: number, position: number) => Promise<void>;
   trackOrderCreated: (orderData: {
     orderId: string;
-    orderValue: number;
+    orderTotal: number;
     itemCount: number;
     paymentMethod?: string;
     shippingMethod?: string;

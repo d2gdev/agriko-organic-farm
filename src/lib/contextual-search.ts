@@ -1,4 +1,5 @@
 // Enhanced Contextual Search with AI-Powered Features
+import { Core } from '@/types/TYPE_REGISTRY';
 import { hybridSearch, HybridSearchOptions, HybridSearchResult } from './hybrid-search';
 import { logger } from '@/lib/logger';
 import { analyzeSearchIntent, reRankSearchResults, type SearchIntent } from './deepseek';
@@ -150,7 +151,7 @@ export async function contextualSearch(
   if (enableIntentAnalysis) {
     try {
       searchIntent = await analyzeSearchIntent(query);
-      (contextualInsights as any).searchIntent = searchIntent;
+      (contextualInsights as typeof contextualInsights & { searchIntent?: unknown }).searchIntent = searchIntent;
       contextualInsights.appliedContext.push('intent_analysis');
 
       logger.info(`  🧠 Intent analysis: ${searchIntent.intent} (confidence: ${searchIntent.confidence.toFixed(2)})`);
@@ -213,7 +214,7 @@ export async function contextualSearch(
 
   // 6. Execute Enhanced Search with caching
   const primaryQuery = searchQueries[0] ?? query;
-  let cacheHitRate = 0;
+  const cacheHitRate = 0;
 
   const { results, searchStats } = await hybridSearch(primaryQuery, {
     ...hybridOptions,
@@ -244,7 +245,7 @@ export async function contextualSearch(
           name: r.product.name,
           description: r.product.description,
           categories: r.product.categories,
-          price: parseFloat(r.product.price || '0'),
+          price: r.product.price || (0 as Core.Money),
           score: r.score
         })),
         {
@@ -353,7 +354,7 @@ export async function contextualSearch(
     }
 
     // Final score combines all factors
-    if (!(result as any).reRankingScore) {
+    if (!(result as typeof result & { reRankingScore?: number }).reRankingScore) {
       contextualResult.score *= contextualResult.contextualBoost ?? 1.0;
     }
 
@@ -457,8 +458,8 @@ export async function contextualSearch(
   });
 
   // Add insights
-  (contextualInsights as any).semanticClusters = semanticClusters;
-  (contextualInsights as any).semanticFacets = semanticFacets;
+  (contextualInsights as typeof contextualInsights & { semanticClusters?: unknown }).semanticClusters = semanticClusters;
+  (contextualInsights as typeof contextualInsights & { semanticFacets?: unknown }).semanticFacets = semanticFacets;
 
   logger.info(`  ✅ Enhanced contextual search completed: ${limitedResults.length} results in ${executionTime}ms with ${contextualInsights.appliedContext.join(', ')}`);
 

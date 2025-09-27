@@ -1,0 +1,31 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Only handle admin route protection, nothing else
+  if (pathname.startsWith('/admin') &&
+      pathname !== '/admin/login' &&
+      !pathname.startsWith('/_next/') &&
+      !pathname.includes('.')) {
+
+    const authCookie = request.cookies.get('admin-auth');
+    const sessionCookie = request.cookies.get('admin-session');
+
+    // Simple cookie check
+    if (!authCookie || authCookie.value !== 'authenticated' || !sessionCookie) {
+      // Redirect to login page
+      const loginUrl = new URL('/admin/login', request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // Allow everything else by default
+  return NextResponse.next();
+}
+
+// Very specific matcher - only admin pages, not assets
+export const config = {
+  matcher: '/admin/:path((?!_next|.*\\.).*)*'
+};

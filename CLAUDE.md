@@ -1,0 +1,1 @@
+- Always run rpm run dev on port 3001

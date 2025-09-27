@@ -44,10 +44,25 @@ export default function NavbarWrapper() {
     const loadProducts = async () => {
       setIsLoading(true);
       try {
-        // Try API route first (works in development and server deployment)
+        // Check if we're on localhost and be more permissive with timeouts
+        const isLocalhost = typeof window !== 'undefined' &&
+          (window.location.hostname === 'localhost' ||
+           window.location.hostname === '127.0.0.1' ||
+           window.location.hostname.startsWith('192.168.'));
+
+        // On localhost, use a shorter timeout and no retries to fail fast
         const response = await reliableFetch('/api/products?per_page=100&status=publish', {
-          timeoutLevel: 'standard'
+          timeoutLevel: isLocalhost ? 'critical' : 'background', // 5s on localhost, 30s elsewhere
+          retries: 0, // No retries to fail fast
+          onError: () => {
+            if (isLocalhost) {
+              logger.debug('Products API not available on localhost, using empty product list for search');
+            } else {
+              logger.debug('Products API not available, using empty product list');
+            }
+          }
         });
+
         if (!cancelled && response.ok) {
           const data = await response.json();
           setProducts(Array.isArray(data) ? data : []);
@@ -55,14 +70,23 @@ export default function NavbarWrapper() {
           return;
         }
 
-        // Fallback for static export builds - skip product loading
+        // Fallback: use empty product list (search will still work, just no autocomplete)
         if (!cancelled) {
-          logger.info('API routes not available in static export, skipping product preload');
+          logger.debug('API routes not available, using empty product list for search');
           setProducts([]);
         }
       } catch (error) {
         if (!cancelled) {
-          logger.error('Error fetching products for search:', error as Record<string, unknown>);
+          const isLocalhost = typeof window !== 'undefined' &&
+            (window.location.hostname === 'localhost' ||
+             window.location.hostname === '127.0.0.1' ||
+             window.location.hostname.startsWith('192.168.'));
+
+          if (isLocalhost) {
+            logger.debug('Products API failed on localhost - WooCommerce server may not be accessible');
+          } else {
+            logger.warn('Error fetching products for search:', error as Record<string, unknown>);
+          }
           // Set empty array on error to prevent UI issues
           setProducts([]);
         }

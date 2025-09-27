@@ -46,14 +46,14 @@ export function useProductFilters({
     // Price range filter
     if (filters.minPrice !== undefined) {
       filtered = filtered.filter(product => {
-        const price = parseFloat(product.price as string);
+        const price = (product.price || 0);
         return !isNaN(price) && price >= (filters.minPrice || 0);
       });
     }
 
     if (filters.maxPrice !== undefined) {
       filtered = filtered.filter(product => {
-        const price = parseFloat(product.price as string);
+        const price = (product.price || 0);
         return !isNaN(price) && price <= (filters.maxPrice || Number.MAX_VALUE);
       });
     }
@@ -74,19 +74,20 @@ export function useProductFilters({
             return a.name.localeCompare(b.name);
           
           case 'price_low':
-            return parseFloat(a.price as string) - parseFloat(b.price as string);
+            return (a.price || 0) - (b.price || 0);
           
           case 'price_high':
-            return parseFloat(b.price as string) - parseFloat(a.price as string);
+            return (b.price || 0) - (a.price || 0);
           
           case 'newest':
             return new Date(b.date_created || 0).getTime() - new Date(a.date_created || 0).getTime();
           
-          case 'popularity':
+          case 'popularity': {
             // Sort by rating count and average rating
             const aRating = (a.rating_count || 0) * (parseFloat(a.average_rating || '0'));
             const bRating = (b.rating_count || 0) * (parseFloat(b.average_rating || '0'));
             return bRating - aRating;
+          }
           
           default:
             return 0;
@@ -112,7 +113,7 @@ export function useProductFilters({
     ).sort();
 
     // Get price range
-    const prices = products.map(p => parseFloat(p.price as string)).filter(p => !isNaN(p));
+    const prices = products.map(p => (p.price || 0)).filter(p => !isNaN(p));
     const priceRange = prices.length > 0 ? {
       min: Math.min(...prices),
       max: Math.max(...prices)
@@ -141,7 +142,7 @@ export function useProductFilters({
   };
 
   // Update a specific filter
-  const updateFilter = (key: keyof SearchFilters, value: string | number | boolean | string[] | undefined) => {
+  const updateFilter = (key: keyof SearchFilters, value: number | boolean | string[] | undefined) => {
     setFilters(prev => ({
       ...prev,
       [key]: value
@@ -171,7 +172,7 @@ export function useProductFilters({
     
     getProductsInPriceRange: (min: number, max: number) =>
       products.filter(p => {
-        const price = parseFloat(p.price as string);
+        const price = (p.price || 0);
         return !isNaN(price) && price >= min && price <= max;
       }),
 

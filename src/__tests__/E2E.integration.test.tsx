@@ -1,8 +1,10 @@
 import React from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
-import { CartProvider } from '@/context/CartContext';
+// import { CartProvider } from '@/context/CartContext'; // Mock provided below
 import ProductsWithFilters from '@/components/ProductsWithFilters';
 import SearchModal from '@/components/SearchModal';
 import CheckoutPage from '@/app/checkout/page';
@@ -12,7 +14,7 @@ import { WCProduct } from '@/types/woocommerce';
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
   useSearchParams: () => ({
-    get: (key: string) => null,
+    get: (_key: string) => null,
   }),
   usePathname: () => '/products',
 }));
@@ -36,8 +38,7 @@ jest.mock('next/image', () => ({
     if (fill) imgProps['data-fill'] = fill.toString();
     if (priority) imgProps['data-priority'] = priority.toString();
 
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img alt={alt} {...imgProps} />;
+    return <img alt={alt} {...imgProps} />; // Next/Image mock
   },
 }));
 
@@ -70,7 +71,7 @@ jest.mock('@/lib/woocommerce', () => ({
 
 // Mock utility functions
 jest.mock('@/lib/utils', () => ({
-  formatPrice: (price: string | number) => `$${parseFloat(price.toString()).toFixed(2)}`,
+  formatPrice: (price: Core.Money) => `$${parseFloat(price.toString()).toFixed(2)}`,
   getProductMainImage: (product: WCProduct) => `/images/${product.slug || 'placeholder'}.jpg`,
   stripHtml: (str: string) => str.replace(/<[^>]*>/g, ''),
   isProductInStock: (product: WCProduct) => product.stock_status === 'instock',
@@ -90,9 +91,9 @@ const mockProducts: WCProduct[] = [
     id: 1,
     name: 'Organic Brown Rice',
     slug: 'organic-brown-rice',
-    price: '15.99',
-    regular_price: '15.99',
-    sale_price: '',
+    price: Money.centavos(1599),
+    regular_price: Money.centavos(1599),
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic brown rice from our farm',
@@ -139,9 +140,9 @@ const mockProducts: WCProduct[] = [
     id: 2,
     name: 'Organic Honey',
     slug: 'organic-honey',
-    price: '25.50',
-    regular_price: '25.50',
-    sale_price: '',
+    price: Money.centavos(2550),
+    regular_price: Money.centavos(2550),
+    sale_price: undefined,
     on_sale: false,
     stock_status: 'instock',
     description: 'Pure organic honey from local hives',
@@ -215,13 +216,13 @@ const createCartProvider = (initialState: CartState = { items: [], total: 0 }) =
           );
           return {
             items: updatedItems,
-            total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price as string) * item.quantity), 0),
+            total: updatedItems.reduce((sum, item) => sum + ((item.product.price || 0) * item.quantity), 0),
           };
         } else {
           const newItems = [...prevState.items, { product, quantity, variation: null }];
           return {
             items: newItems,
-            total: newItems.reduce((sum, item) => sum + (parseFloat(item.product.price as string) * item.quantity), 0),
+            total: newItems.reduce((sum, item) => sum + ((item.product.price || 0) * item.quantity), 0),
           };
         }
       });
@@ -237,7 +238,7 @@ const createCartProvider = (initialState: CartState = { items: [], total: 0 }) =
 
         return {
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price as string) * item.quantity), 0),
+          total: updatedItems.reduce((sum, item) => sum + ((item.product.price || 0) * item.quantity), 0),
         };
       });
     });
@@ -247,7 +248,7 @@ const createCartProvider = (initialState: CartState = { items: [], total: 0 }) =
         const updatedItems = prevState.items.filter(item => item.product.id !== productId);
         return {
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + (parseFloat(item.product.price as string) * item.quantity), 0),
+          total: updatedItems.reduce((sum, item) => sum + ((item.product.price || 0) * item.quantity), 0),
         };
       });
     });
@@ -314,7 +315,7 @@ describe('E2E Integration Tests', () => {
 
       const App = () => {
         const [showSearch, setShowSearch] = React.useState(false);
-        const [cartItems, setCartItems] = React.useState([]);
+        const [_cartItems, _setCartItems] = React.useState([]);
 
         return (
           <CartProvider>
@@ -589,8 +590,8 @@ describe('E2E Integration Tests', () => {
         id: i + 1,
         name: `Product ${i + 1}`,
         slug: `product-${i + 1}`,
-        price: (Math.random() * 50 + 10).toFixed(2),
-        regular_price: (Math.random() * 50 + 10).toFixed(2),
+        price: Money.centavos(Math.round((Math.random() * 50 + 10) * 100)),
+        regular_price: Money.centavos(Math.round((Math.random() * 50 + 10) * 100)),
       }));
 
       const startTime = performance.now();
@@ -705,7 +706,7 @@ describe('E2E Integration Tests', () => {
 
   describe('State Management Integration', () => {
     it('should maintain consistent state across cart operations', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       const CartProvider = createCartProvider();
 
       const App = () => {

@@ -21,7 +21,7 @@ export async function PUT(
 
     // In production, this would update the database
     let newStatus: ReviewRequestStatus | undefined;
-    let updateFields: Record<string, string> = {};
+    const updateFields: Record<string, string> = {};
 
     switch (action) {
       case 'send':

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     logger.info(`📊 Performance API GET: action=${action}`);
 
     switch (action) {
-      case 'metrics':
+      case 'metrics': {
         const aggregatedMetrics = performanceMonitor.getAggregatedMetrics();
         return NextResponse.json({
           success: true,
@@ -22,6 +22,8 @@ export async function GET(request: NextRequest) {
           data: aggregatedMetrics,
           timestamp: Date.now()
         });
+
+      }
 
       case 'bundle_analysis':
         // This would typically be done client-side, but we can provide server analysis
@@ -34,18 +36,18 @@ export async function GET(request: NextRequest) {
           }
         });
 
-      case 'page_metrics':
+      case 'page_metrics': {
         if (!page) {
           return NextResponse.json(
             { error: 'page parameter is required' },
             { status: 400 }
           );
         }
-        
+
         // Get real page metrics from Core Web Vitals service
         const realPageMetrics = coreWebVitalsService.getPageMetrics(page);
         const pageMetricsData = realPageMetrics || generateFallbackPageMetrics(page);
-        
+
         return NextResponse.json({
           success: true,
           action,
@@ -54,20 +56,24 @@ export async function GET(request: NextRequest) {
           source: realPageMetrics ? 'real_data' : 'fallback_data',
           timestamp: Date.now()
         });
+      }
 
-      case 'vitals_report':
-        // Get real Core Web Vitals report
-        const realVitalsReport = coreWebVitalsService.getCoreWebVitalsReport(timeRange);
-        return NextResponse.json({
-          success: true,
-          action,
-          timeRange,
-          data: realVitalsReport,
-          source: 'core_web_vitals_service',
-          timestamp: Date.now()
-        });
+      case 'vitals_report': {
+          // Get real Core Web Vitals report
+          const realVitalsReport = coreWebVitalsService.getCoreWebVitalsReport(timeRange);
+          return NextResponse.json({
+            success: true,
+            action,
+            timeRange,
+            data: realVitalsReport,
+            source: 'core_web_vitals_service',
+            timestamp: Date.now()
+          });
 
-      case 'performance_budget':
+
+      }
+
+      case 'performance_budget': {
         // Get real performance budget status
         const realBudgetStatus = coreWebVitalsService.checkPerformanceBudget();
         return NextResponse.json({
@@ -78,7 +84,9 @@ export async function GET(request: NextRequest) {
           timestamp: Date.now()
         });
 
-      case 'optimization_suggestions':
+      }
+
+      case 'optimization_suggestions': {
         const suggestions = generateOptimizationSuggestions();
         return NextResponse.json({
           success: true,
@@ -87,7 +95,9 @@ export async function GET(request: NextRequest) {
           timestamp: Date.now()
         });
 
-      case 'resource_analysis':
+      }
+
+      case 'resource_analysis': {
         const resourceAnalysis = analyzeResourcePerformance();
         return NextResponse.json({
           success: true,
@@ -95,6 +105,8 @@ export async function GET(request: NextRequest) {
           data: resourceAnalysis,
           timestamp: Date.now()
         });
+
+      }
 
       default:
         return NextResponse.json(
@@ -124,7 +136,7 @@ export async function POST(request: NextRequest) {
     logger.info(`📊 Performance API POST: action=${action}`);
 
     switch (action) {
-      case 'track_metrics':
+      case 'track_metrics': {
         const { page, metrics, sessionId, userId, userAgent } = body;
         if (!page || !metrics) {
           return NextResponse.json(
@@ -160,8 +172,9 @@ export async function POST(request: NextRequest) {
           page,
           message: 'Metrics tracked successfully in both systems'
         });
+      }
 
-      case 'batch_track_metrics':
+      case 'batch_track_metrics': {
         const { entries } = body;
         if (!entries || !Array.isArray(entries)) {
           return NextResponse.json(
@@ -208,8 +221,9 @@ export async function POST(request: NextRequest) {
           failedEntries: entries.length - successCount,
           message: `Tracked ${successCount}/${entries.length} metric entries in both systems`
         });
+      }
 
-      case 'report_issue':
+      case 'report_issue': {
         const { issueType, details, userAgent: issueUserAgent, url } = body;
         if (!issueType || !details) {
           return NextResponse.json(
@@ -234,8 +248,9 @@ export async function POST(request: NextRequest) {
           issueId: `perf_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           message: 'Performance issue reported successfully'
         });
+      }
 
-      case 'update_budget':
+      case 'update_budget': {
         const { budgets } = body;
         if (!budgets) {
           return NextResponse.json(
@@ -253,6 +268,7 @@ export async function POST(request: NextRequest) {
           budgets,
           message: 'Performance budgets updated successfully'
         });
+      }
 
       default:
         return NextResponse.json(

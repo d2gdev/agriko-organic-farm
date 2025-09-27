@@ -171,7 +171,7 @@ export class AnalyticsCollector {
   private async createEventRelationships(session: Session, event: AnalyticsEvent): Promise<void> {
     switch (event.type) {
       case 'product_view':
-      case 'recommendation_clicked':
+      case 'recommendation_clicked': {
         interface ProductEventData {
           productId?: number;
         }
@@ -185,8 +185,9 @@ export class AnalyticsCollector {
           `, { eventId: event.id, productId: neo4j.int(productId) });
         }
         break;
+      }
 
-      case 'search_performed':
+      case 'search_performed': {
         // Create search query nodes for analysis
         interface SearchEventData {
           query?: string;
@@ -201,8 +202,9 @@ export class AnalyticsCollector {
           `, { eventId: event.id, query });
         }
         break;
+      }
 
-      case 'recommendation_shown':
+      case 'recommendation_shown': {
         // Track recommendation context
         interface RecommendationEventData {
           recommendationType?: string;
@@ -217,6 +219,7 @@ export class AnalyticsCollector {
           `, { eventId: event.id, recType });
         }
         break;
+      }
     }
   }
 
@@ -247,7 +250,7 @@ export class AnalyticsCollector {
         case 'add_to_cart':
           metrics.incrementCartAdditions();
           break;
-        case 'purchase_completed':
+        case 'purchase_completed': {
           interface CartEventData {
             cartValue?: number;
           }
@@ -255,6 +258,7 @@ export class AnalyticsCollector {
           const orderValue = cartData.cartValue ?? 0;
           metrics.incrementPurchases(orderValue);
           break;
+        }
       }
     }
   }

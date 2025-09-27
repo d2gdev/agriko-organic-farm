@@ -272,7 +272,10 @@ export function sanitizeFileName(fileName: string): string {
   }
   
   return fileName
-    .replace(/[<>:"/\\|?*\x00-\x1f]/g, '') // Remove invalid characters
+    .replace(/[<>:"/\\|?*]/g, '') // Remove invalid characters
+    .split('')
+    .filter(char => char.charCodeAt(0) > 31) // Remove control characters (0-31)
+    .join('')
     .replace(/^\.+/, '') // Remove leading dots
     .slice(0, 255) // Limit length
     .trim();

@@ -2,6 +2,7 @@
 // Addresses the 47MB memory usage issue identified in testing
 
 import { logger } from '@/lib/logger';
+import type { IndexableObject } from '@/types/business-intelligence-types';
 
 interface MemoryStats {
   heapUsed: number;
@@ -152,7 +153,7 @@ export class MemoryOptimizedCache<T> {
 // Event bus memory optimization
 export class MemoryOptimizedEventBus {
   private listeners = new Map<string, Set<Function>>();
-  private eventHistory = new MemoryOptimizedCache<any>(100, 60000); // Keep last 100 events for 1 minute
+  private eventHistory = new MemoryOptimizedCache<{ event: string; data: unknown; timestamp: number }>(100, 60000); // Keep last 100 events for 1 minute
 
   on(event: string, listener: Function): () => void {
     if (!this.listeners.has(event)) {
@@ -172,9 +173,9 @@ export class MemoryOptimizedEventBus {
     };
   }
 
-  emit(event: string, data: any): void {
+  emit(event: string, data: unknown): void {
     // Store in history for debugging
-    this.eventHistory.set(`${event}_${Date.now()}`, data);
+    this.eventHistory.set(`${event}_${Date.now()}`, { event, data, timestamp: Date.now() });
 
     const listeners = this.listeners.get(event);
     if (listeners) {
@@ -344,10 +345,10 @@ export function createMemoryOptimizedMap<K, V>(
 }
 
 // Memory-optimized JSON stringify with circular reference detection
-export function safeJSONStringify(obj: any, maxDepth = 10): string {
+export function safeJSONStringify(obj: unknown, maxDepth = 10): string {
   const seen = new WeakSet();
 
-  const stringifyWithCircularCheck = (value: any, depth: number): any => {
+  const stringifyWithCircularCheck = (value: unknown, depth: number): unknown => {
     if (depth > maxDepth) return '[Max Depth Reached]';
 
     if (value === null || typeof value !== 'object') {
@@ -364,10 +365,10 @@ export function safeJSONStringify(obj: any, maxDepth = 10): string {
       return value.map(item => stringifyWithCircularCheck(item, depth + 1));
     }
 
-    const result: any = {};
+    const result: Record<string, unknown> = {};
     for (const key in value) {
-      if (value.hasOwnProperty(key)) {
-        result[key] = stringifyWithCircularCheck(value[key], depth + 1);
+      if (Object.prototype.hasOwnProperty.call(value, key)) {
+        result[key] = stringifyWithCircularCheck((value as IndexableObject)[key], depth + 1);
       }
     }
 

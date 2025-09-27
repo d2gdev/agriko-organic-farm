@@ -16,7 +16,7 @@ const cssFile = path.join(browserDir, 'default-stylesheet.css');
 function ensureDirectoryExists(dirPath) {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
-    console.log(`Created directory: ${dirPath}`);
+    console.warn(`Created directory: ${dirPath}`);
   }
 }
 
@@ -28,12 +28,12 @@ function createStubCssFile() {
 `;
 
   fs.writeFileSync(cssFile, cssContent);
-  console.log(`Created stub CSS file: ${cssFile}`);
+  console.warn(`Created stub CSS file: ${cssFile}`);
 }
 
 // Only run during build
 if (process.env.NODE_ENV === 'production' || process.argv.includes('--build')) {
-  console.log('Running pre-build fix for @xenova/transformers CSS loading...');
+  console.warn('Running pre-build fix for @xenova/transformers CSS loading...');
   createStubCssFile();
-  console.log('Pre-build fix completed.');
+  console.warn('Pre-build fix completed.');
 }

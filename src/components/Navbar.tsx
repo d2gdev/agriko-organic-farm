@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 import { usePathname } from 'next/navigation';
 import { WCProduct } from '@/types/woocommerce';
 import { useTracking } from '@/components/AutoTrackingProvider';
@@ -43,6 +44,7 @@ export default function Navbar({
   const isSearchOpen = externalIsSearchOpen ?? internalIsSearchOpen;
   const setIsSearchOpen = externalSetIsSearchOpen ?? setInternalIsSearchOpen;
   const { state, toggleCart } = useCart();
+  const wishlist = useWishlist();
   const tracking = useSafeTracking();
   const hasMounted = useHydrationSafe();
 
@@ -122,6 +124,7 @@ export default function Navbar({
   const navItems = [
     { name: 'Home', href: '/', icon: '🏠' },
     { name: 'Shop', href: '/products', icon: '🛍️' },
+    { name: 'Blog', href: '/blog', icon: '📝' },
     { name: 'About', href: '/about', icon: '🏡' },
     { name: 'Find Us', href: '/find-us', icon: '📍' },
     { name: 'FAQ', href: '/faq', icon: '❓' },
@@ -312,6 +315,28 @@ export default function Navbar({
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary-500 rounded-full animate-pulse"></span>
               </button>
             </div>
+
+            {/* Wishlist Button */}
+            <Link
+              href="/wishlist"
+              className="relative p-2 text-neutral-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200 group"
+              aria-label={`Wishlist with ${wishlist.state.items.length} items`}
+            >
+              <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+
+              {/* Wishlist Counter - hydration-safe rendering */}
+              {hasMounted && wishlist.state.items.length > 0 && (
+                <div className="absolute -top-1 -right-1">
+                  <div className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">
+                    {wishlist.state.items.length > 99 ? '99+' : wishlist.state.items.length}
+                  </div>
+                  {/* Pulsing ring */}
+                  <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-20"></div>
+                </div>
+              )}
+            </Link>
 
             {/* Enhanced Cart Button */}
             <button

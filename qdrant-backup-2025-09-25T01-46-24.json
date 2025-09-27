@@ -1,0 +1,235 @@
+{
+  "timestamp": "2025-09-25T01:46:24.179Z",
+  "source": "http://localhost:6335",
+  "collections": 10,
+  "totalPoints": 7,
+  "data": [
+    {
+      "name": "sessions",
+      "points": 0,
+      "data": []
+    },
+    {
+      "name": "competitors",
+      "points": 2,
+      "config": {
+        "vectors": {
+          "size": 384,
+          "distance": "Cosine"
+        },
+        "shard_number": 1,
+        "replication_factor": 1,
+        "write_consistency_factor": 1,
+        "on_disk_payload": true
+      },
+      "data": [
+        {
+          "id": 1758764122100,
+          "payload": {
+            "id": 1758764122100,
+            "domain": "wholefoodsmarket.com",
+            "name": "Whole Foods Market",
+            "active": true,
+            "lastScraped": null,
+            "categories": [
+              "organic",
+              "natural",
+              "grocery"
+            ],
+            "metadata": {
+              "priceRange": "premium",
+              "marketShare": 0.15
+            }
+          }
+        },
+        {
+          "id": 1758764122101,
+          "payload": {
+            "id": 1758764122101,
+            "domain": "naturesbasket.co.in",
+            "name": "Nature's Basket",
+            "active": true,
+            "lastScraped": null,
+            "categories": [
+              "organic",
+              "imported",
+              "gourmet"
+            ],
+            "metadata": {
+              "priceRange": "premium",
+              "marketShare": 0.08
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "scraping_jobs",
+      "points": 0,
+      "data": []
+    },
+    {
+      "name": "analytics",
+      "points": 1,
+      "config": {
+        "vectors": {
+          "size": 256,
+          "distance": "Euclid"
+        },
+        "shard_number": 1,
+        "replication_factor": 2,
+        "write_consistency_factor": 1,
+        "on_disk_payload": true
+      },
+      "data": [
+        {
+          "id": 1758764122222,
+          "payload": {
+            "id": 1758764122222,
+            "event": "page_view",
+            "userId": null,
+            "sessionId": "sess_1758764122022",
+            "path": "/",
+            "timestamp": "2025-09-25T01:35:22.022Z",
+            "metadata": {
+              "referrer": "direct",
+              "device": "desktop"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "scraped_products",
+      "points": 0,
+      "data": []
+    },
+    {
+      "name": "cache",
+      "points": 0,
+      "data": []
+    },
+    {
+      "name": "graph_edges",
+      "points": 0,
+      "data": []
+    },
+    {
+      "name": "users",
+      "points": 1,
+      "config": {
+        "vectors": {
+          "size": 384,
+          "distance": "Cosine"
+        },
+        "shard_number": 1,
+        "replication_factor": 2,
+        "write_consistency_factor": 1,
+        "on_disk_payload": true
+      },
+      "data": [
+        {
+          "id": 1758764121907,
+          "payload": {
+            "id": "user_admin_1758764121907",
+            "email": "admin@agriko.com",
+            "passwordHash": "$2a$12$SQxGJ8DUaL3vc7aHJdqpZuPCdom6YtDlw/zs3EK5gf4tkvDIRY2ba",
+            "role": "admin",
+            "permissions": [
+              "users:read",
+              "users:write",
+              "users:delete",
+              "products:read",
+              "products:write",
+              "products:delete",
+              "scraper:use",
+              "analytics:read",
+              "analytics:write",
+              "settings:read",
+              "settings:write"
+            ],
+            "metadata": {
+              "createdAt": "2025-09-25T01:35:21.907Z",
+              "updatedAt": "2025-09-25T01:35:21.907Z",
+              "emailVerified": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "competitor_products",
+      "points": 0,
+      "data": []
+    },
+    {
+      "name": "products",
+      "points": 3,
+      "config": {
+        "vectors": {
+          "size": 768,
+          "distance": "Cosine"
+        },
+        "shard_number": 1,
+        "replication_factor": 2,
+        "write_consistency_factor": 1,
+        "on_disk_payload": true
+      },
+      "data": [
+        {
+          "id": 1758764121934,
+          "payload": {
+            "id": 1758764121934,
+            "sku": "ORG-AVD-001",
+            "name": "Organic Avocados",
+            "category": "produce",
+            "price": 3.99,
+            "stock": 100,
+            "description": "Fresh organic Hass avocados",
+            "metadata": {
+              "origin": "Mexico",
+              "organic": true,
+              "unit": "each"
+            }
+          }
+        },
+        {
+          "id": 1758764121935,
+          "payload": {
+            "id": 1758764121935,
+            "sku": "ORG-BAN-002",
+            "name": "Organic Bananas",
+            "category": "produce",
+            "price": 0.79,
+            "stock": 200,
+            "description": "Sweet organic bananas",
+            "metadata": {
+              "origin": "Ecuador",
+              "organic": true,
+              "unit": "lb"
+            }
+          }
+        },
+        {
+          "id": 1758764121936,
+          "payload": {
+            "id": 1758764121936,
+            "sku": "ALM-MLK-001",
+            "name": "Almond Milk",
+            "category": "dairy-alternatives",
+            "price": 4.99,
+            "stock": 50,
+            "description": "Unsweetened almond milk",
+            "metadata": {
+              "brand": "Califia Farms",
+              "size": "64oz",
+              "allergens": [
+                "tree nuts"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

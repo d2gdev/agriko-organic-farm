@@ -231,11 +231,35 @@ export async function withRetry<T>(
         // Final failure - update circuit breaker
         updateCircuitBreaker(key, false);
         
-        logger.error(`Operation failed after ${attempt} attempts: ${key}`, {
+        // Check if we're on localhost to reduce noisy error logs
+        const isLocalhost = (typeof window !== 'undefined' && (
+          window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1' ||
+          window.location.hostname.startsWith('192.168.')
+        )) || (
+          // Server-side detection: check if the operation key indicates localhost
+          typeof key === 'string' && (
+            key.includes('localhost') ||
+            key.includes('127.0.0.1') ||
+            key.includes('192.168.') ||
+            // In development, assume localhost for API calls
+            (process.env.NODE_ENV === 'development' && key.startsWith('/api/'))
+          )
+        );
+
+        const logLevel = isLocalhost ? 'debug' : 'error';
+        const logMessage = `Operation failed after ${attempt} attempts: ${key}`;
+        const logData = {
           error: error instanceof Error ? error.message : String(error),
           isRetryable,
           attempts: attempt
-        } as Record<string, unknown>);
+        } as Record<string, unknown>;
+
+        if (logLevel === 'debug') {
+          logger.debug(logMessage, logData);
+        } else {
+          logger.error(logMessage, logData);
+        }
         
         throw error;
       }
@@ -303,9 +327,19 @@ export function withCriticalRetry<T>(
 // HTTP-specific retry with status code awareness
 export async function withHttpRetry<T>(
   httpOperation: () => Promise<Response>,
+  dataExtractor: (response: Response) => Promise<T>,
+  operationKey?: string
+): Promise<T>;
+export async function withHttpRetry(
+  httpOperation: () => Promise<Response>,
+  dataExtractor?: undefined,
+  operationKey?: string
+): Promise<Response>;
+export async function withHttpRetry<T>(
+  httpOperation: () => Promise<Response>,
   dataExtractor?: (response: Response) => Promise<T>,
   operationKey?: string
-): Promise<T> {
+): Promise<T | Response> {
   const config: RetryConfig = {
     ...DEFAULT_RETRY_CONFIGS.external_api,
     retryableErrors: (error: unknown) => {
@@ -348,8 +382,8 @@ export async function withHttpRetry<T>(
     if (dataExtractor) {
       return await dataExtractor(response);
     }
-    
-    return response as unknown as T;
+
+    return response;
   }, config, operationKey);
 }
 

@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
     if (filters.priceRange) {
       const { min, max } = filters.priceRange;
       results = results.filter(result => {
-        const price = parseFloat(result.price);
+        const price = typeof result.price === 'number' ? result.price : 0;
         return price >= min && price <= max;
       });
     }

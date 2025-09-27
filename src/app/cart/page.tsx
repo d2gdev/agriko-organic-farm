@@ -4,8 +4,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
-import { safePriceMultiply } from '@/lib/price-validation';
+import { Money } from '@/lib/money';
 import HeroSection from '@/components/HeroSection';
+import { Core } from '@/types/TYPE_REGISTRY';
 
 export default function CartPage() {
   const { state, updateQuantity, removeItem } = useCart();
@@ -133,8 +134,7 @@ export default function CartPage() {
             <div className="divide-y divide-gray-200">
               {state.items.map((item) => {
                 const itemKey = `${item.product.id}-${item.variation?.id || 'no-variation'}`;
-                const itemTotalResult = safePriceMultiply(item.product.price as string | number, item.quantity, `cart-item-${item.product.id}`);
-                const itemTotal = itemTotalResult.success ? itemTotalResult.value : 0;
+                const itemTotal = Money.parse(String(item.product.price || '0')).multiply(item.quantity);
 
                 return (
                   <div key={itemKey} className="p-6 animate-fadeInUp hover:bg-gray-50 transition-colors duration-200">
@@ -190,7 +190,7 @@ export default function CartPage() {
                         <div className="flex items-center justify-between md:justify-center">
                           <span className="text-sm text-neutral-500 md:hidden">Price:</span>
                           <span className="font-medium text-neutral-900">
-                            {formatPrice(item.product.price as string | number)}
+                            {formatPrice((item.product.price || 0) as Core.Money)}
                           </span>
                         </div>
                       </div>
@@ -284,8 +284,7 @@ export default function CartPage() {
               <div className="space-y-2 pb-2">
                 {state.items.slice(0, 3).map((item) => {
                   const itemKey = `${item.product.id}-${item.variation?.id || 'no-variation'}`;
-                  const itemTotalResult = safePriceMultiply(item.product.price as string | number, item.quantity, `cart-summary-${item.product.id}`);
-                  const itemTotal = itemTotalResult.success ? itemTotalResult.value : 0;
+                  const itemTotal = Money.parse(String(item.product.price || '0')).multiply(item.quantity);
                   return (
                     <div key={itemKey} className="flex justify-between text-sm">
                       <span className="text-neutral-600 truncate mr-2">

@@ -79,7 +79,28 @@ export function createUserId(id: string): UserId {
   return id.trim() as UserId;
 }
 
-// Branded types
+export function createCategoryId(id: number): CategoryId {
+  assertIsNumber(id, 'category ID');
+  if (id <= 0) {
+    throw new Error('Category ID must be positive');
+  }
+  return id as CategoryId;
+}
+
+// Type guards for branded types
+export function isProductId(value: unknown): value is ProductId {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0;
+}
+
+export function isUserId(value: unknown): value is UserId {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+export function isCategoryId(value: unknown): value is CategoryId {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0;
+}
+
+// Branded types for type safety
 export type ProductId = number & { readonly __brand: 'ProductId' };
 export type UserId = string & { readonly __brand: 'UserId' };
 export type CategoryId = number & { readonly __brand: 'CategoryId' };
@@ -90,7 +111,7 @@ export function parseJSON<T>(
   validator: (value: unknown) => value is T
 ): T {
   try {
-    const parsed = JSON.parse(json) as unknown;
+    const parsed: unknown = JSON.parse(json);
     if (validator(parsed)) {
       return parsed;
     }

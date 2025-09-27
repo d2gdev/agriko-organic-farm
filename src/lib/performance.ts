@@ -47,6 +47,9 @@ class PerformanceOptimizer {
   private metrics: PerformanceMetrics = {};
   private observers: PerformanceObserver[] = [];
 
+  // Maximum number of observers to prevent memory leaks
+  private readonly MAX_OBSERVERS = 10;
+
   constructor() {
     if (typeof window !== 'undefined') {
       this.initializeObservers();
@@ -60,6 +63,19 @@ class PerformanceOptimizer {
     this.observeCLS();
     this.observeFCP();
     this.observeNavigation();
+  }
+
+  // Add observer with size limit enforcement
+  private addObserver(observer: PerformanceObserver): void {
+    // Enforce size limit to prevent memory leaks
+    if (this.observers.length >= this.MAX_OBSERVERS) {
+      logger.warn('Max observers limit reached, cleaning up oldest observer');
+      const oldestObserver = this.observers.shift();
+      if (oldestObserver) {
+        oldestObserver.disconnect();
+      }
+    }
+    this.observers.push(observer);
   }
 
   // Largest Contentful Paint observer
@@ -90,7 +106,7 @@ class PerformanceOptimizer {
       });
 
       observer.observe({ entryTypes: ['largest-contentful-paint'] });
-      this.observers.push(observer);
+      this.addObserver(observer);
     } catch {
       logger.warn('LCP observer not supported');
     }
@@ -127,7 +143,7 @@ class PerformanceOptimizer {
       });
 
       observer.observe({ entryTypes: ['first-input'] });
-      this.observers.push(observer);
+      this.addObserver(observer);
     } catch {
       logger.warn('FID observer not supported');
     }
@@ -168,7 +184,7 @@ class PerformanceOptimizer {
       });
 
       observer.observe({ entryTypes: ['layout-shift'] });
-      this.observers.push(observer);
+      this.addObserver(observer);
     } catch {
       logger.warn('CLS observer not supported');
     }
@@ -188,7 +204,7 @@ class PerformanceOptimizer {
       });
 
       observer.observe({ entryTypes: ['paint'] });
-      this.observers.push(observer);
+      this.addObserver(observer);
     } catch {
       logger.warn('FCP observer not supported');
     }
@@ -215,7 +231,7 @@ class PerformanceOptimizer {
       });
 
       observer.observe({ entryTypes: ['navigation'] });
-      this.observers.push(observer);
+      this.addObserver(observer);
     } catch {
       logger.warn('Navigation observer not supported');
     }
@@ -228,8 +244,11 @@ class PerformanceOptimizer {
 
     performanceEvent.pageLoad(window.location.pathname, value, this.metrics);
 
-    // Track individual metric
-    if (typeof window !== 'undefined' && window.gtag) {
+    // Track individual metric (skip on localhost)
+    const isLocalhost = window.location.hostname === 'localhost' ||
+                        window.location.hostname === '127.0.0.1' ||
+                        window.location.hostname.startsWith('192.168.');
+    if (typeof window !== 'undefined' && window.gtag && !isLocalhost) {
       window.gtag('event', `performance_${name}`, {
         value: Math.round(value),
         score: score,
@@ -388,8 +407,13 @@ export class PerformanceMonitor {
     if (violations.length > 0) {
       logger.warn(`🚨 Performance Budget Violations on ${page}:`, { violations });
       
-      // Send budget violation to analytics
-      if (typeof window !== 'undefined' && window.gtag) {
+      // Send budget violation to analytics (skip on localhost)
+      const isLocalhost = typeof window !== 'undefined' && (
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname.startsWith('192.168.')
+      );
+      if (typeof window !== 'undefined' && window.gtag && !isLocalhost) {
         window.gtag('event', 'performance_budget_violation', {
           page_path: page,
           violations: violations.length,
@@ -658,6 +682,14 @@ export const ResourcePreloader = {
 
   _cleanupObserver: null as MutationObserver | null,
 
+  // Cleanup the mutation observer
+  cleanup() {
+    if (this._cleanupObserver) {
+      this._cleanupObserver.disconnect();
+      this._cleanupObserver = null;
+    }
+  },
+
   // Prefetch next page resources
   prefetchNextPageResources() {
     const prefetchUrls = [
@@ -695,6 +727,8 @@ export const ResourcePreloader = {
 
 // Image optimization utilities
 export const ImageOptimizer = {
+  _imageObserver: null as IntersectionObserver | null,
+
   // Create responsive image component props
   getOptimizedImageProps(src: string, alt: string, width?: number, height?: number) {
     return {
@@ -711,8 +745,8 @@ export const ImageOptimizer = {
 
   // Lazy load images with intersection observer
   lazyLoadImages() {
-    if ('IntersectionObserver' in window) {
-      const imageObserver = new IntersectionObserver((entries) => {
+    if ('IntersectionObserver' in window && !this._imageObserver) {
+      this._imageObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const img = entry.target as HTMLImageElement;
@@ -720,15 +754,23 @@ export const ImageOptimizer = {
             if (src) {
               img.src = src;
               img.classList.remove('blur-sm');
-              imageObserver.unobserve(img);
+              this._imageObserver!.unobserve(img);
             }
           }
         });
       });
 
       Array.from(document.querySelectorAll('img[data-src]')).forEach(img => {
-        imageObserver.observe(img);
+        this._imageObserver!.observe(img);
       });
+    }
+  },
+
+  // Cleanup the image observer
+  cleanup() {
+    if (this._imageObserver) {
+      this._imageObserver.disconnect();
+      this._imageObserver = null;
     }
   }
 };

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { type CartItem as CartItemType } from '@/context/CartContext';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
+import { Core } from '@/types/TYPE_REGISTRY';
 
 interface CartItemProps {
   item: CartItemType;
@@ -34,7 +35,7 @@ const CartItem = React.memo(({
   }, [removeItem, item.product.id, item.variation?.id]);
 
   const productImage = useMemo(() => getProductMainImage(item.product), [item.product]);
-  const formattedPrice = useMemo(() => formatPrice(item.product.price as string | number), [item.product.price]);
+  const formattedPrice = useMemo(() => formatPrice((item.product.price || 0) as Core.Money), [item.product.price]);
 
   return (
     <div

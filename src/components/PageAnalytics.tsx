@@ -14,11 +14,17 @@ interface PageAnalyticsProps {
   categoryName?: string;
 }
 
-export default function PageAnalytics({ 
-  pageType = 'other', 
-  productId, 
-  productName, 
-  categoryName 
+// Check if we're on localhost to prevent analytics tracking
+const isLocalhost = typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' ||
+   window.location.hostname === '127.0.0.1' ||
+   window.location.hostname.startsWith('192.168.'));
+
+export default function PageAnalytics({
+  pageType = 'other',
+  productId,
+  productName,
+  categoryName
 }: PageAnalyticsProps) {
   const pathname = usePathname();
   const startTimeRef = useRef<number>(Date.now());
@@ -26,6 +32,11 @@ export default function PageAnalytics({
   const hasTrackedVisitRef = useRef<boolean>(false);
 
   useEffect(() => {
+    // Skip all analytics on localhost
+    if (isLocalhost) {
+      logger.debug('PageAnalytics: Disabled on localhost');
+      return;
+    }
     const startTime = Date.now();
     startTimeRef.current = startTime;
 
@@ -110,17 +121,19 @@ export default function PageAnalytics({
 
     // Set up scroll depth tracking
     const trackScrollDepth = () => {
+      let scrollHandler: ((e: Event) => void) | null = null;
+
       try {
-        const scrollHandler = () => {
+        scrollHandler = () => {
           try {
             const scrollTop = window.pageYOffset ?? document.documentElement.scrollTop;
             const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
             const scrollPercent = Math.round((scrollTop / scrollHeight) * 100);
-            
+
             // Track significant scroll milestones
             if (scrollPercent > scrollDepthRef.current) {
               scrollDepthRef.current = scrollPercent;
-              
+
               if (scrollPercent >= 25 && scrollPercent < 50) {
                 behaviorEvent.scrollDepth(pathname, 25);
               } else if (scrollPercent >= 50 && scrollPercent < 75) {
@@ -135,17 +148,30 @@ export default function PageAnalytics({
         };
 
         window.addEventListener('scroll', scrollHandler, { passive: true });
-        return () => window.removeEventListener('scroll', scrollHandler);
+
+        return () => {
+          if (scrollHandler) {
+            window.removeEventListener('scroll', scrollHandler);
+            scrollHandler = null;
+          }
+        };
       } catch (error) {
         logger.error('Error setting up scroll depth tracking:', error as Record<string, unknown>);
-        return () => {};
+        return () => {
+          if (scrollHandler) {
+            window.removeEventListener('scroll', scrollHandler);
+            scrollHandler = null;
+          }
+        };
       }
     };
 
     // Set up exit intent detection
     const trackExitIntent = () => {
+      let exitHandler: ((e: MouseEvent) => void) | null = null;
+
       try {
-        const exitHandler = (e: MouseEvent) => {
+        exitHandler = (e: MouseEvent) => {
           try {
             if (e.clientY <= 0) {
               const timeOnPage = Date.now() - startTimeRef.current;
@@ -157,15 +183,26 @@ export default function PageAnalytics({
         };
 
         document.addEventListener('mouseleave', exitHandler);
-        return () => document.removeEventListener('mouseleave', exitHandler);
+
+        return () => {
+          if (exitHandler) {
+            document.removeEventListener('mouseleave', exitHandler);
+            exitHandler = null;
+          }
+        };
       } catch (error) {
         logger.error('Error setting up exit intent tracking:', error as Record<string, unknown>);
-        return () => {};
+        return () => {
+          if (exitHandler) {
+            document.removeEventListener('mouseleave', exitHandler);
+            exitHandler = null;
+          }
+        };
       }
     };
 
-    // Initialize tracking
-    setTimeout(() => {
+    // Initialize tracking with cleanup
+    const timeoutId = setTimeout(() => {
       trackPageLoad();
       trackFunnelEvent();
       trackSEOMetrics();
@@ -179,11 +216,17 @@ export default function PageAnalytics({
     // Track time on page when component unmounts
     return () => {
       try {
+        clearTimeout(timeoutId);
         const timeOnPage = Date.now() - startTimeRef.current;
         behaviorEvent.timeOnPage(pathname, timeOnPage);
-        
+
         cleanupScrollTracking();
         cleanupExitTracking();
+
+        // Reset refs to prevent memory leaks
+        scrollDepthRef.current = 0;
+        hasTrackedVisitRef.current = false;
+        startTimeRef.current = 0;
       } catch (error) {
         logger.error('Error in cleanup:', error as Record<string, unknown>);
       }

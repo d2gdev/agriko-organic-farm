@@ -1,7 +1,15 @@
 // Only import Transformers.js on server side to prevent worker spawning
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let pipeline: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let env: any = null;
 let transformersInitialized = false;
+
+// Helper to check Next.js build flags safely
+function isNextBuildTime(): boolean {
+  const g = globalThis as unknown as Record<string, unknown>;
+  return !!(g.__NEXT_PREBUILD__ || g.__NEXT_DATA_COLLECTION__);
+}
 
 // Prevent any execution on client side or during static generation
 async function initializeTransformers() {
@@ -12,8 +20,7 @@ async function initializeTransformers() {
       process.env.NEXT_PHASE === 'phase-production-build' ||
       process.env.NODE_ENV === 'production' ||
       // Additional safeguards
-      (global as any).__NEXT_PREBUILD__ ||
-      (global as any).__NEXT_DATA_COLLECTION__) {
+      isNextBuildTime()) {
     return;
   }
 
@@ -28,10 +35,12 @@ async function initializeTransformers() {
     env = transformers.env;
     transformersInitialized = true;
 
-    // Disable remote models fallback to ensure local-only operation
+    // Allow remote model downloads for blog system functionality
     if (env) {
-      env.allowRemoteModels = false;
+      env.allowRemoteModels = true;
       env.allowLocalModels = true;
+      // Cache models locally for better performance
+      env.cacheDir = './node_modules/@xenova/transformers/models';
     }
 
     // Transformers.js initialized successfully
@@ -237,8 +246,7 @@ export async function initializeEmbedder() {
   // Skip during static generation
   if (process.env.NEXT_PHASE === 'phase-production-build' ||
       process.env.NODE_ENV === 'production' ||
-      (global as any).__NEXT_PREBUILD__ ||
-      (global as any).__NEXT_DATA_COLLECTION__) {
+      isNextBuildTime()) {
     console.warn('Skipping embedding initialization during static generation');
     return null;
   }
@@ -294,8 +302,7 @@ export async function generateEmbedding(text: string, dimensions: number = 768):
   // Skip during static generation - return dummy embedding
   if (process.env.NEXT_PHASE === 'phase-production-build' ||
       process.env.NODE_ENV === 'production' ||
-      (global as any).__NEXT_PREBUILD__ ||
-      (global as any).__NEXT_DATA_COLLECTION__) {
+      isNextBuildTime()) {
     console.warn('Skipping embedding generation during static generation');
     return new Array(dimensions).fill(0);
   }
@@ -670,8 +677,7 @@ export async function generateEnhancedEmbedding(text: string, dimensions: number
   // Skip during static generation - return dummy embedding
   if (process.env.NEXT_PHASE === 'phase-production-build' ||
       process.env.NODE_ENV === 'production' ||
-      (global as any).__NEXT_PREBUILD__ ||
-      (global as any).__NEXT_DATA_COLLECTION__) {
+      isNextBuildTime()) {
     console.warn('Skipping enhanced embedding generation during static generation');
     return new Array(dimensions).fill(0);
   }

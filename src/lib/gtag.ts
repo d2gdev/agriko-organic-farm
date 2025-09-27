@@ -11,13 +11,34 @@ export interface EcommerceItem {
   [key: string]: string | number | boolean | undefined;
 }
 
-export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID ?? '';
+export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID ?? process.env.GOOGLE_ANALYTICS_ID ?? '';
+
+// Helper to check if running on localhost
+const isLocalhost = () => {
+  if (typeof window === 'undefined') return false;
+  return window.location.hostname === 'localhost' ||
+         window.location.hostname === '127.0.0.1' ||
+         window.location.hostname.startsWith('192.168.');
+};
 
 // https://developers.google.com/analytics/devguides/collection/gtagjs/pages
 export const pageview = (url: string) => {
-  if (typeof window !== 'undefined' && window.gtag) {
+  // Skip tracking on localhost
+  if (isLocalhost()) {
+    logger.debug('GA pageview skipped on localhost:', { url });
+    return;
+  }
+
+  if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
+    logger.debug('GA pageview:', { url, trackingId: GA_TRACKING_ID });
     window.gtag('config', GA_TRACKING_ID, {
       page_path: url,
+    });
+  } else {
+    logger.warn('GA pageview failed:', {
+      hasWindow: typeof window !== 'undefined',
+      hasGtag: !!(typeof window !== 'undefined' && window.gtag),
+      hasTrackingId: !!GA_TRACKING_ID
     });
   }
 };
@@ -29,12 +50,26 @@ export interface GtagEventParameters {
 
 // https://developers.google.com/analytics/devguides/collection/gtagjs/events
 export const event = (action: string, parameters: GtagEventParameters) => {
-  if (typeof window !== 'undefined' && window.gtag) {
+  // Skip tracking on localhost
+  if (isLocalhost()) {
+    logger.debug('GA event skipped on localhost:', { action, parameters });
+    return;
+  }
+
+  if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
     try {
+      logger.debug('GA event:', { action, parameters, trackingId: GA_TRACKING_ID });
       window.gtag('event', action, parameters);
     } catch (error) {
       logger.error('Error sending gtag event:', error as Record<string, unknown>);
     }
+  } else {
+    logger.warn('GA event failed:', {
+      action,
+      hasWindow: typeof window !== 'undefined',
+      hasGtag: !!(typeof window !== 'undefined' && window.gtag),
+      hasTrackingId: !!GA_TRACKING_ID
+    });
   }
 };
 

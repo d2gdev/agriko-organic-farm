@@ -28,6 +28,22 @@ export async function GET(request: NextRequest) {
 
     const products = await getAllProducts(cleanParams);
 
+    // Log first product to see the data structure
+    if (products && products.length > 0) {
+      console.log('First product data:', {
+        id: products[0].id,
+        name: products[0].name,
+        price: products[0].price,
+        regular_price: products[0].regular_price,
+        sale_price: products[0].sale_price,
+        price_type: typeof products[0].price,
+        price_value: products[0].price,
+        is_empty_string: products[0].price === '',
+        is_null: products[0].price === null,
+        is_undefined: products[0].price === undefined
+      });
+    }
+
     // Ensure we're returning a valid JSON response
     if (!products || !Array.isArray(products)) {
       logger.warn('Products API returned invalid data format', { products: typeof products });

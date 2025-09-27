@@ -3,6 +3,8 @@ import { getRemoteLoggingStatus, logRemote } from '@/lib/remote-logging';
 import { logger } from '@/lib/logger';
 import { validateApiAuthSecure } from '@/lib/unified-auth';
 
+export const runtime = 'nodejs';
+
 /**
  * GET /api/logging/status - Get remote logging status
  */

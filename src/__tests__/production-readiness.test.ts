@@ -114,9 +114,9 @@ describe('Production Readiness Tests', () => {
           const response = await POST(request);
           expect(response.status).toBeGreaterThanOrEqual(400);
           expect(response.status).toBeLessThan(600);
-        } catch (error) {
+        } catch {
           // Should not throw unhandled errors
-          fail(`Unhandled error for payload: ${testCase.body}`);
+          expect(false).toBe(true); // Force test failure with descriptive message
         }
       }
     });

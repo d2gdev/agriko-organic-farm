@@ -67,7 +67,7 @@ export interface SeasonalBoost {
 }
 
 // User behavior analytics storage (in production, use Redis or database)
-let userProfiles: Map<string, UserProfile> = new Map();
+const userProfiles: Map<string, UserProfile> = new Map();
 let searchEvents: SearchEvent[] = [];
 
 // Health synonyms and query expansion dictionary

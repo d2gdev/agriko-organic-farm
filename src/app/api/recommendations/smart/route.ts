@@ -55,7 +55,7 @@ async function findSimilarProductsByCategory(targetProduct: WCProduct, limit: nu
         ).length || 0;
         
         const categoryScore = sharedCategories / Math.max(categoryIds.length, 1);
-        const priceScore = calculatePriceSimilarity(targetProduct.price as string | number, product.price as string | number);
+        const priceScore = calculatePriceSimilarity((targetProduct.price || 0) as number, (product.price || 0) as number);
         
         return {
           ...product,
@@ -74,7 +74,7 @@ async function findSimilarProductsByCategory(targetProduct: WCProduct, limit: nu
   }
 }
 
-function calculatePriceSimilarity(price1: string | number, price2: string | number): number {
+function calculatePriceSimilarity(price1: number, price2: number): number {
   const p1 = parseFloat(price1.toString());
   const p2 = parseFloat(price2.toString());
   
@@ -214,8 +214,8 @@ export async function GET(request: NextRequest) {
       logger.info('🏷️ Adding price-based recommendations to fill quota...');
       try {
         const priceRange = {
-          min: Math.max(0, parseFloat(sourceProduct.price as string) * 0.7),
-          max: parseFloat(sourceProduct.price as string) * 1.3
+          min: Math.max(0, Number(sourceProduct.price || 0) * 0.7),
+          max: Number(sourceProduct.price || 0) * 1.3
         };
         
         const priceBasedProducts = await getAllProducts({
@@ -227,7 +227,7 @@ export async function GET(request: NextRequest) {
         const filteredPriceProducts = priceBasedProducts
           .filter((product: WCProduct) => !excludeIds.includes(product.id))
           .filter((product: WCProduct) => {
-            const productPrice = parseFloat(product.price as string);
+            const productPrice = Number(product.price || 0);
             return productPrice >= priceRange.min && productPrice <= priceRange.max;
           });
         

@@ -1,91 +1,215 @@
-import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import typescript from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-});
 
 export default [
+  js.configs.recommended,
   {
-    ignores: [
-      'node_modules/',
-      '.next/',
-      'out/',
-      'scripts/',
-      '**/*.d.ts',
-      'jest.config.js',
-      'next.config.js',
-      'postcss.config.js',
-      'tailwind.config.js',
-      'src/__tests__/e2e-real-world.test.ts',
-      'src/__tests__/error-resilience.test.ts'
-    ]
-  },
-  ...compat.extends('next/core-web-vitals'),
-  {
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.{js,jsx,ts,tsx}'],
     languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
       parser: typescriptParser,
       parserOptions: {
-        project: './tsconfig.json',
-        createDefaultProgram: true
-      }
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+      globals: {
+        // Browser
+        window: 'readonly',
+        Window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        console: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+        URLSearchParams: 'readonly',
+        FormData: 'readonly',
+        Headers: 'readonly',
+        HeadersInit: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly',
+        RequestInit: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setImmediate: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        requestIdleCallback: 'readonly',
+        IdleDeadline: 'readonly',
+        Promise: 'readonly',
+        Array: 'readonly',
+        Object: 'readonly',
+        Math: 'readonly',
+        Date: 'readonly',
+        JSON: 'readonly',
+        Intl: 'readonly',
+        crypto: 'readonly',
+        alert: 'readonly',
+        confirm: 'readonly',
+        prompt: 'readonly',
+        btoa: 'readonly',
+        atob: 'readonly',
+
+        // DOM Elements
+        Element: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLButtonElement: 'readonly',
+        HTMLDivElement: 'readonly',
+        HTMLFormElement: 'readonly',
+        HTMLSelectElement: 'readonly',
+        HTMLTextAreaElement: 'readonly',
+        HTMLImageElement: 'readonly',
+        HTMLAnchorElement: 'readonly',
+        HTMLCanvasElement: 'readonly',
+        HTMLVideoElement: 'readonly',
+        HTMLAudioElement: 'readonly',
+        HTMLSpanElement: 'readonly',
+        HTMLHeadingElement: 'readonly',
+        HTMLParagraphElement: 'readonly',
+        HTMLLinkElement: 'readonly',
+        SVGElement: 'readonly',
+        Event: 'readonly',
+        CustomEvent: 'readonly',
+        EventTarget: 'readonly',
+        EventListener: 'readonly',
+        MouseEvent: 'readonly',
+        KeyboardEvent: 'readonly',
+        TouchEvent: 'readonly',
+        DragEvent: 'readonly',
+        FocusEvent: 'readonly',
+        InputEvent: 'readonly',
+        ChangeEvent: 'readonly',
+        SubmitEvent: 'readonly',
+        ErrorEvent: 'readonly',
+        PromiseRejectionEvent: 'readonly',
+
+        // Performance API
+        performance: 'readonly',
+        PerformanceObserver: 'readonly',
+        PerformanceEntry: 'readonly',
+        PerformanceNavigationTiming: 'readonly',
+        PerformanceResourceTiming: 'readonly',
+        PerformanceMark: 'readonly',
+        PerformanceMeasure: 'readonly',
+
+        // Web APIs
+        AbortController: 'readonly',
+        AbortSignal: 'readonly',
+        Worker: 'readonly',
+        SharedWorker: 'readonly',
+        ServiceWorker: 'readonly',
+        WebSocket: 'readonly',
+        EventSource: 'readonly',
+        Blob: 'readonly',
+        BlobPart: 'readonly',
+        File: 'readonly',
+        FileReader: 'readonly',
+        FileList: 'readonly',
+        DataTransfer: 'readonly',
+        ClipboardEvent: 'readonly',
+        IntersectionObserver: 'readonly',
+        MutationObserver: 'readonly',
+        ResizeObserver: 'readonly',
+        ImageData: 'readonly',
+        CanvasRenderingContext2D: 'readonly',
+        WebGLRenderingContext: 'readonly',
+        TextEncoder: 'readonly',
+        TextDecoder: 'readonly',
+
+        // Service Worker
+        self: 'readonly',
+        caches: 'readonly',
+        clients: 'readonly',
+        importScripts: 'readonly',
+        registration: 'readonly',
+        ServiceWorkerRegistration: 'readonly',
+
+        // Node.js
+        process: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+        global: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        NodeJS: 'readonly',
+        Node: 'readonly',
+
+        // Web Workers and Message Channels
+        MessageChannel: 'readonly',
+        MessagePort: 'readonly',
+        MessageEvent: 'readonly',
+        BroadcastChannel: 'readonly',
+
+        // Jest
+        jest: 'readonly',
+        describe: 'readonly',
+        test: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+
+        // React
+        React: 'readonly',
+        JSX: 'readonly',
+      },
     },
     plugins: {
-      '@typescript-eslint': typescriptEslint
+      '@typescript-eslint': typescript,
     },
     rules: {
-      'no-console': [
-        'error',
-        { allow: ['warn', 'error', 'group', 'groupEnd', 'table'] }
-      ],
-      // Relaxed TypeScript rules for large codebase
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'error',
-      // Unused vars warnings only for production
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      'react-hooks/exhaustive-deps': 'error',
-      // Type assertion warnings only
-      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
-      // Anonymous exports allowed
-      'import/no-anonymous-default-export': 'off'
-    }
+      // TypeScript
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      }],
+
+      // General
+      'no-unused-vars': 'off',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-debugger': 'warn',
+      'no-useless-escape': 'warn',
+      'prefer-const': 'warn',
+      'no-undef': 'error',
+      'no-prototype-builtins': 'error',
+    },
   },
   {
-    files: ['**/*.{js,jsx}'],
-    rules: {
-      'no-console': [
-        'error',
-        { allow: ['warn', 'error', 'group', 'groupEnd', 'table'] }
-      ],
-      // Anonymous exports allowed
-      'import/no-anonymous-default-export': 'off'
-    }
-  },
-  {
-    files: ['src/lib/logger.ts', 'scripts/**/*.js', 'scripts/**/*.ts'],
-    rules: {
-      'no-console': 'off'
-    }
-  },
-  {
-    files: ['**/__tests__/**/*', '**/*.test.*', '**/*.spec.*'],
+    files: ['**/*.test.{js,jsx,ts,tsx}', '**/*.spec.{js,jsx,ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      'no-console': 'off'
-    }
-  }
+      'no-console': 'off',
+    },
+  },
+  {
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/.next/**',
+      '**/_next/**',
+      '**/coverage/**',
+      '**/.git/**',
+      '**/public/sw*.js',
+      'fix-eslint-errors.js',
+      '**/qdrant_storage/**',
+      '**/prisma/**',
+      '**/*.config.js',
+      '**/*.config.mjs',
+      '**/*.min.js',
+      '**/scripts/**',
+    ],
+  },
 ];

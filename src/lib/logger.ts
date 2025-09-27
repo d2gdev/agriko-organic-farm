@@ -168,7 +168,8 @@ class Logger {
   }
 
   private async sendToRemote(entry: LogEntry): Promise<void> {
-    if (!this.config.enableRemote) return;
+    // Disable remote logging in development to prevent recursion issues
+    if (!this.config.enableRemote || process.env.NODE_ENV === 'development') return;
 
     try {
       // Import remote logger dynamically to avoid circular dependencies
@@ -214,10 +215,12 @@ class Logger {
     // Write to console
     this.writeToConsole(entry);
     
-    // Send to remote (async, fire-and-forget)
-    this.sendToRemote(entry).catch(() => {
-      // Silently ignore remote logging errors
-    });
+    // Send to remote (async, fire-and-forget) - disabled in development
+    if (process.env.NODE_ENV !== 'development') {
+      this.sendToRemote(entry).catch(() => {
+        // Silently ignore remote logging errors
+      });
+    }
   }
 
   // Public logging methods

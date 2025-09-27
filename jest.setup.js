@@ -210,7 +210,7 @@ jest.mock('next/navigation', () => ({
 
 // Mock Transformers.js to prevent worker crashes
 jest.mock('@xenova/transformers', () => ({
-  pipeline: jest.fn(() => Promise.resolve((text) => Promise.resolve([[0.1, 0.2, 0.3]]))),
+  pipeline: jest.fn(() => Promise.resolve((_text) => Promise.resolve([[0.1, 0.2, 0.3]]))),
   env: {
     allowRemoteModels: false,
     allowLocalModels: false,

@@ -1,0 +1,190 @@
+/**
+ * Scraper Authentication & Security Module
+ * Validates requests to scraping endpoints
+ */
+
+import { NextRequest } from 'next/server';
+import { cookies } from 'next/headers';
+import { verify } from 'jsonwebtoken';
+import { logger } from '@/lib/logger';
+import { handleError } from '@/lib/error-sanitizer';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key';
+
+// Whitelisted domains for scraping
+const ALLOWED_DOMAINS = [
+  'wholefoodsmarket.com',
+  'naturesbasket.co.in',
+  'freshdirect.com',
+  'instacart.com',
+  'walmart.com',
+  'target.com',
+  'kroger.com',
+  'safeway.com',
+  'amazon.com',
+  'costco.com'
+];
+
+// Rate limiting configuration
+const RATE_LIMITS = {
+  requestsPerMinute: 10,
+  requestsPerHour: 100,
+  requestsPerDay: 500
+};
+
+// In-memory rate limiting (should use Redis in production)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+/**
+ * Validate authentication for scraper endpoints
+ */
+export async function validateScraperAuth(_request: NextRequest): Promise<{ // request not used in current implementation
+  success: boolean;
+  userId?: string;
+  error?: string;
+}> {
+  try {
+    // Check for session cookie
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get('session-token');
+
+    if (!sessionToken) {
+      return { success: false, error: 'No authentication token found' };
+    }
+
+    // Verify JWT token
+    try {
+      const decoded = verify(sessionToken.value, JWT_SECRET, {
+        issuer: 'agriko-api',
+        audience: 'agriko-services'
+      }) as any;
+
+      // Check if user has admin or scraper permissions
+      if (!decoded.permissions?.includes('admin') &&
+          !decoded.permissions?.includes('scraper')) {
+        return { success: false, error: 'Insufficient permissions for scraping' };
+      }
+
+      return { success: true, userId: decoded.userId };
+    } catch (error) {
+      logger.error('Token verification failed:', handleError(error, 'scraper-auth-token-verify'));
+      return { success: false, error: 'Invalid authentication token' };
+    }
+  } catch (error) {
+    logger.error('Auth validation error:', handleError(error, 'scraper-auth-validate'));
+    return { success: false, error: 'Authentication failed' };
+  }
+}
+
+/**
+ * Validate URL is allowed for scraping
+ */
+export function validateScrapingUrl(url: string): {
+  valid: boolean;
+  domain?: string;
+  error?: string;
+} {
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.replace('www.', '');
+
+    // Check if domain is whitelisted
+    const isAllowed = ALLOWED_DOMAINS.some(domain =>
+      hostname.includes(domain.replace('www.', ''))
+    );
+
+    if (!isAllowed) {
+      return {
+        valid: false,
+        error: `Domain ${hostname} is not whitelisted for scraping`
+      };
+    }
+
+    // Check protocol (only HTTPS allowed)
+    if (urlObj.protocol !== 'https:') {
+      return {
+        valid: false,
+        error: 'Only HTTPS URLs are allowed'
+      };
+    }
+
+    return { valid: true, domain: hostname };
+  } catch (_error) {
+    return {
+      valid: false,
+      error: 'Invalid URL format'
+    };
+  }
+}
+
+/**
+ * Check rate limiting for user
+ */
+export function checkRateLimit(userId: string): {
+  allowed: boolean;
+  remaining?: number;
+  resetTime?: number;
+  error?: string;
+} {
+  const now = Date.now();
+  const userLimit = rateLimitMap.get(userId);
+
+  // Reset if time window has passed (1 minute)
+  if (!userLimit || userLimit.resetTime < now) {
+    rateLimitMap.set(userId, {
+      count: 1,
+      resetTime: now + 60000 // 1 minute
+    });
+    return { allowed: true, remaining: RATE_LIMITS.requestsPerMinute - 1 };
+  }
+
+  // Check if limit exceeded
+  if (userLimit.count >= RATE_LIMITS.requestsPerMinute) {
+    const waitTime = Math.ceil((userLimit.resetTime - now) / 1000);
+    return {
+      allowed: false,
+      remaining: 0,
+      resetTime: userLimit.resetTime,
+      error: `Rate limit exceeded. Please wait ${waitTime} seconds`
+    };
+  }
+
+  // Increment counter
+  userLimit.count++;
+  rateLimitMap.set(userId, userLimit);
+
+  return {
+    allowed: true,
+    remaining: RATE_LIMITS.requestsPerMinute - userLimit.count
+  };
+}
+
+/**
+ * Clean up old rate limit entries (run periodically)
+ */
+export function cleanupRateLimits() {
+  const now = Date.now();
+  for (const [userId, limit] of rateLimitMap.entries()) {
+    if (limit.resetTime < now - 3600000) { // 1 hour old
+      rateLimitMap.delete(userId);
+    }
+  }
+}
+
+// Store interval ID for cleanup
+let cleanupIntervalId: NodeJS.Timeout | undefined;
+
+// Run cleanup every 30 minutes
+if (typeof setInterval !== 'undefined') {
+  cleanupIntervalId = setInterval(cleanupRateLimits, 1800000);
+}
+
+/**
+ * Cleanup function to clear the interval
+ */
+export function destroy() {
+  if (cleanupIntervalId) {
+    clearInterval(cleanupIntervalId);
+    cleanupIntervalId = undefined;
+  }
+}

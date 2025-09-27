@@ -1,99 +1,114 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateRequest, loginSchema, ValidationError } from '@/lib/validation';
-import { generateApiKey } from '@/lib/secure-auth';
-import { checkEndpointRateLimit, createRateLimitResponse } from '@/lib/rate-limit';
-import { config } from '@/lib/unified-config';
+import { authService } from '@/core/auth/auth.service';
+import { createSessionCookie } from '@/core/middleware/auth.middleware';
 import { logger } from '@/lib/logger';
+import { handleError } from '@/lib/error-sanitizer';
+
+interface LoginRequestBody {
+  username?: string;
+  password?: string;
+  email?: string;
+}
+
+interface AuthResult {
+  success: boolean;
+  token?: string;
+  error?: string;
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+    permissions: string[];
+  };
+}
+
+interface JWTPayload {
+  sessionId?: string;
+  userId?: string;
+  email?: string;
+  iat?: number;
+  exp?: number;
+}
+
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting for login attempts
-    const rateLimitResult = checkEndpointRateLimit(request, 'authentication');
-    if (!rateLimitResult.success) {
-      return createRateLimitResponse(rateLimitResult);
-    }
+    // Parse request body
+    const body = await request.json() as LoginRequestBody;
+    const { username, password, email } = body;
 
-    // Validate request data
-    const body = await request.json() as Record<string, unknown>;
-    const { username, password } = validateRequest(loginSchema, body);
-
-    // Direct authentication for testing
-    const adminUsername = 'agrikoadmin';
-    const adminPassword = 'admin123test';
-
-    // Simple authentication
-    const isValidUsername = username === adminUsername;
-    const isValidPassword = password === adminPassword;
-
-    if (isValidUsername && isValidPassword) {
-      // Generate secure JWT token
-      const token = generateApiKey({
-        userId: `admin-${Date.now()}`,
-        role: 'admin',
-        permissions: ['read', 'write', 'delete', 'admin', 'analytics'],
-        expiresIn: '24h'
-      });
-
-      // Create response with authentication data
-      const response = NextResponse.json({
-        success: true,
-        message: 'Login successful',
-        token, // Include token for API usage
-        expiresIn: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
-        user: {
-          username: adminUsername,
-          role: 'admin',
-          permissions: ['read', 'write', 'delete', 'admin', 'analytics']
-        }
-      });
-
-      // Set secure HTTP-only cookies for web interface
-      response.cookies.set('admin-auth', 'authenticated', {
-        httpOnly: true,
-        secure: config.isProd,
-        sameSite: 'strict',
-        maxAge: 24 * 60 * 60, // 24 hours
-        path: '/'
-      });
-
-      response.cookies.set('admin-session', token, {
-        httpOnly: true,
-        secure: config.isProd,
-        sameSite: 'strict',
-        maxAge: 24 * 60 * 60, // 24 hours
-        path: '/'
-      });
-
-      // Log successful login (without sensitive data)
-      logger.info(`Admin login successful from ${request.headers.get('x-forwarded-for') ?? 'unknown IP'}`, undefined, 'auth');
-
-      return response;
-    } else {
-      // Constant-time delay to prevent timing attacks
-      await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 100));
-      
-      logger.warn(`Failed login attempt for username: ${username} from ${request.headers.get('x-forwarded-for') ?? 'unknown IP'}`, undefined, 'auth');
-      
+    // Basic validation
+    if (!password || (!username && !email)) {
       return NextResponse.json(
-        { success: false, message: 'Invalid credentials' },
-        { status: 401 }
-      );
-    }
-  } catch (error) {
-    // Handle validation errors specifically
-    if (error instanceof ValidationError) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Invalid input data',
-          errors: error.issues
-        },
+        { success: false, message: 'Email and password are required' },
         { status: 400 }
       );
     }
 
-    logger.error('Login API error', error as Record<string, unknown>, 'auth');
-    
+    // Use email or convert username to email format
+    const userEmail = email || `${username}@agriko.com`;
+
+    // DEVELOPMENT ONLY: Hardcoded credentials bypass
+    let result: AuthResult;
+    if (process.env.NODE_ENV === 'development' &&
+        username === 'agrikoadmin' &&
+        password === 'admin123') {
+      // Create mock successful result for development
+      result = {
+        success: true,
+        token: 'dev-token-' + Date.now(),
+        user: {
+          id: 'dev-admin',
+          email: 'agrikoadmin@agriko.com',
+          role: 'admin',
+          permissions: ['view_analytics', 'manage_products', 'manage_users', 'manage_content']
+        }
+      };
+    } else {
+      // Authenticate using the new auth service
+      result = await authService.authenticate(userEmail, password, request);
+    }
+
+    if (result.success && result.token) {
+      // Create response with authentication data and redirect flag
+      const response = NextResponse.json({
+        success: true,
+        message: 'Login successful',
+        token: result.token, // Include JWT token for API usage
+        redirect: '/admin/dashboard', // Add redirect URL
+        expiresIn: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+        user: result.user ? {
+          id: result.user.id,
+          email: result.user.email,
+          role: result.user.role,
+          permissions: result.user.permissions
+        } : undefined
+      });
+
+      // Set secure HTTP-only session cookie
+      response.headers.set('Set-Cookie', createSessionCookie(result.token));
+
+      logger.info('Admin login successful', {
+        userId: result.user?.id || 'unknown',
+        email: result.user?.email || 'unknown'
+      });
+
+      return response;
+    } else {
+      // Small delay to prevent timing attacks
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      logger.warn('Failed login attempt', { email: userEmail });
+
+      return NextResponse.json(
+        { success: false, message: result.error || 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
+  } catch (error) {
+    logger.error('Login API error', handleError(error, 'admin-login-api'));
+
     // Don't expose internal errors
     return NextResponse.json(
       { success: false, message: 'Authentication service temporarily unavailable' },
@@ -102,16 +117,53 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE(_request: NextRequest) {
-  // Logout endpoint
-  const response = NextResponse.json({
-    success: true,
-    message: 'Logged out successfully'
-  });
+export async function DELETE(request: NextRequest) {
+  try {
+    // Get session token from cookie
+    const token = request.cookies.get('session-token')?.value;
 
-  // Clear authentication cookies
-  response.cookies.delete('admin-auth');
-  response.cookies.delete('admin-session');
+    if (token) {
+      // Extract session ID from token and logout
+      const { verify } = await import('jsonwebtoken');
+      const jwtSecret = process.env.JWT_SECRET || 'dev-jwt-secret';
 
-  return response;
+      try {
+        const decoded = verify(token, jwtSecret) as JWTPayload;
+        if (decoded.sessionId) {
+          await authService.logout(decoded.sessionId);
+        }
+      } catch (error) {
+        // Token might be invalid, but still clear cookies
+        logger.debug('Could not decode token during logout', handleError(error, 'logout-token-decode'));
+      }
+    }
+
+    // Create response
+    const response = NextResponse.json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+
+    // Clear authentication cookies
+    response.cookies.delete('session-token');
+    response.cookies.delete('admin-auth');
+    response.cookies.delete('admin-session');
+
+    logger.info('Admin logout successful');
+    return response;
+  } catch (error) {
+    logger.error('Logout error', handleError(error, 'admin-logout'));
+
+    // Even if there's an error, clear cookies for security
+    const response = NextResponse.json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+
+    response.cookies.delete('session-token');
+    response.cookies.delete('admin-auth');
+    response.cookies.delete('admin-session');
+
+    return response;
+  }
 }

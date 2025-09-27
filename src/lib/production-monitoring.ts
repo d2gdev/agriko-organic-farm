@@ -144,41 +144,43 @@ class ProductionMonitoringService {
   }
 
   private async checkDatabaseHealth(): Promise<any> {
-    try {
-      // This would normally check actual database connections
-      // For now, return a mock healthy status
-      return {
-        status: 'ok',
-        connections: 5,
-        responseTime: 25
-      };
-    } catch (error) {
-      return {
-        status: 'error',
-        connections: 0,
-        responseTime: -1,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
+    // This would normally check actual database connections
+    // For now, return a mock healthy status
+    return {
+      status: 'ok',
+      connections: 5,
+      responseTime: 25
+    };
+
+    // TODO: Add real database health check with proper error handling
+    // } catch (error) {
+    //   return {
+    //     status: 'error',
+    //     connections: 0,
+    //     responseTime: -1,
+    //     error: error instanceof Error ? error.message : 'Unknown error'
+    //   };
+    // }
   }
 
   private async checkRedisHealth(): Promise<any> {
-    try {
-      // This would normally check Redis connection
-      // For now, return a mock healthy status
-      return {
-        status: 'ok',
-        connected: true,
-        memory: '10MB'
-      };
-    } catch (error) {
-      return {
-        status: 'error',
-        connected: false,
-        memory: 'unknown',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
+    // This would normally check Redis connection
+    // For now, return a mock healthy status
+    return {
+      status: 'ok',
+      connected: true,
+      memory: '10MB'
+    };
+
+    // TODO: Add real Redis health check with proper error handling
+    // } catch (error) {
+    //   return {
+    //     status: 'error',
+    //     connected: false,
+    //     memory: 'unknown',
+    //     error: error instanceof Error ? error.message : 'Unknown error'
+    //   };
+    // }
   }
 
   private getAPIHealthMetrics(): any {

@@ -19,7 +19,7 @@ export interface ExtendedError extends BaseError {
 }
 
 // Union type for all possible error types
-export type ErrorLike = Error | ExtendedError | BaseError | unknown;
+export type ErrorLike = Error | ExtendedError | BaseError;
 
 // Type guard to check if an object has error-like properties
 function isErrorLike(error: unknown): error is BaseError {
@@ -411,14 +411,16 @@ export function handleApiError(
  * Use this instead of manual error casting
  */
 export function handleError(error: unknown, context: string, details?: Record<string, unknown>): Record<string, unknown> {
-  const sanitized = sanitizeError(error, { includeDetails: process.env.NODE_ENV !== 'production' });
+  // Convert unknown to ErrorLike
+  const errorLike: ErrorLike = error instanceof Error ? error : new Error(String(error));
+  const sanitized = sanitizeError(errorLike, { includeDetails: process.env.NODE_ENV !== 'production' });
 
   // In testing environments, skip logging to prevent memory accumulation in logger buffer
   // but only for specific memory-intensive tests
   const isMemoryTest = process.env.JEST_WORKER_ID && context === 'memoryTest';
 
   if (!isMemoryTest) {
-    logError(error, {
+    logError(errorLike, {
       endpoint: context,
       additionalInfo: {
         ...details,

@@ -16,7 +16,7 @@ export const CLSOptimizedStyles = {
   }),
 
   // Skeleton loader with preserved dimensions
-  skeletonLoader: (width?: string | number, height?: string | number) => ({
+  skeletonLoader: (width?: number, height?: number) => ({
     width: width ?? '100%',
     height: height ?? 'auto',
     backgroundColor: '#e5e7eb', // Gray-200
@@ -81,6 +81,15 @@ export class CLSOptimizer {
       const rect = element.getBoundingClientRect();
       this.observedElements.set(element, { width: rect.width, height: rect.height });
       this.resizeObserver.observe(element);
+    }
+  }
+
+  // Cleanup method to disconnect the ResizeObserver
+  static cleanup() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = undefined;
+      this.observedElements = new WeakMap<Element, { width: number; height: number }>();
     }
   }
 

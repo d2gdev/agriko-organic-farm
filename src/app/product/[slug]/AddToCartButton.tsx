@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { logger } from '@/lib/logger';
 
 import { WCProduct } from '@/types/woocommerce';
@@ -16,19 +16,30 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const { addItem, openCart } = useCart();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const inStock = isProductInStock(product);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleAddToCart = async () => {
     if (!inStock) return;
-    
+
     setIsAdding(true);
     try {
       addItem(product, quantity);
-      
-      // Show success feedback
-      setTimeout(() => {
+
+      // Show success feedback with cleanup
+      timeoutRef.current = setTimeout(() => {
         openCart();
+        timeoutRef.current = null;
       }, 200);
     } catch (error) {
       logger.error('Error adding to cart:', error as Record<string, unknown>);

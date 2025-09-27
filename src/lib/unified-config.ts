@@ -592,8 +592,8 @@ export class UnifiedConfigurationManager {
     return value;
   }
 
-  getValidatedValue(key: string): string | number | boolean | undefined {
-    return (this.config as Record<string, unknown>)[key] as string | number | boolean | undefined;
+  getValidatedValue(key: string): number | boolean | undefined {
+    return (this.config as Record<string, unknown>)[key] as number | boolean | undefined;
   }
 }
 

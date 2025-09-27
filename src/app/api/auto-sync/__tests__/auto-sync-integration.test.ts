@@ -1,5 +1,6 @@
 // Integration tests for the complete auto-sync API workflow
 import { NextRequest } from 'next/server';
+import { Core } from '@/types/TYPE_REGISTRY';
 import { POST, GET } from '../route';
 
 // Mock all dependencies
@@ -326,7 +327,7 @@ describe('Auto-Sync API Integration Tests', () => {
         productData: {
           id: 123,
           name: 'Test Product',
-          price: '29.99',
+          price: 2999 as Core.Money,
           categories: [{ name: 'Electronics' }]
         }
       }));
@@ -378,7 +379,7 @@ describe('Auto-Sync API Integration Tests', () => {
     });
 
     it('should record API monitoring metrics', async () => {
-      const { monitorAPICall, monitoring } = require('@/lib/monitoring-observability');
+      const { monitorAPICall } = require('@/lib/monitoring-observability');
       const mockFinish = jest.fn();
       monitorAPICall.mockReturnValue({ finish: mockFinish });
 

@@ -1,0 +1,144 @@
+name: Type Governance
+
+on:
+  pull_request:
+    paths:
+      - '**.ts'
+      - '**.tsx'
+      - 'src/types/TYPE_REGISTRY.ts'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - '**.ts'
+      - '**.tsx'
+
+jobs:
+  type-governance:
+    runs-on: ubuntu-latest
+    name: Type Governance Validation
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check TYPE_REGISTRY integrity
+        run: |
+          echo "🔐 Checking TYPE_REGISTRY integrity..."
+          EXPECTED_HASH="${{ secrets.TYPE_REGISTRY_HASH }}"
+          if [ -n "$EXPECTED_HASH" ]; then
+            CURRENT_HASH=$(sha256sum src/types/TYPE_REGISTRY.ts | cut -d' ' -f1)
+            if [ "$CURRENT_HASH" != "$EXPECTED_HASH" ]; then
+              echo "❌ TYPE_REGISTRY has been modified without approval!"
+              echo "   Expected: $EXPECTED_HASH"
+              echo "   Current:  $CURRENT_HASH"
+              echo ""
+              echo "To add new types:"
+              echo "1. Create a Type Addition Request"
+              echo "2. Get approval from technical lead"
+              echo "3. Update TYPE_REGISTRY_HASH secret after merge"
+              exit 1
+            fi
+            echo "✅ TYPE_REGISTRY integrity verified"
+          fi
+
+      - name: Run type governance validation
+        run: |
+          echo "🔍 Validating type usage across codebase..."
+          npm run validate-types || exit 1
+
+      - name: Check for forbidden patterns
+        run: |
+          echo "🚫 Checking for forbidden patterns..."
+
+          # Check for local type definitions
+          if git diff origin/main...HEAD --name-only | xargs grep -l "^interface\s\+\w\+\|^type\s\+\w\+\s*=\|^enum\s\+\w\+" 2>/dev/null | grep -v TYPE_REGISTRY; then
+            echo "❌ Found local type definitions outside TYPE_REGISTRY"
+            exit 1
+          fi
+
+          # Check for index signatures
+          if git diff origin/main...HEAD --name-only | xargs grep -l "\[key:\s*string\]" 2>/dev/null | grep -v TYPE_REGISTRY; then
+            echo "❌ Found forbidden index signatures"
+            exit 1
+          fi
+
+          # Check for 'any' type
+          if git diff origin/main...HEAD --name-only | xargs grep -l ":\s*any\b" 2>/dev/null | grep -v TYPE_REGISTRY; then
+            echo "❌ Found forbidden 'any' type"
+            exit 1
+          fi
+
+          # Check for string prices
+          if git diff origin/main...HEAD --name-only | xargs grep -l "price:\s*string\|total:\s*string\|amount:\s*string" 2>/dev/null | grep -v TYPE_REGISTRY; then
+            echo "❌ Found monetary values typed as string instead of Core.Money"
+            exit 1
+          fi
+
+          echo "✅ No forbidden patterns found"
+
+      - name: Run TypeScript type check
+        run: |
+          echo "📝 Running TypeScript type check..."
+          npm run type-check
+
+      - name: Run ESLint with type governance rules
+        run: |
+          echo "🔧 Running ESLint type governance rules..."
+          npx eslint --config .eslintrc.type-governance.js 'src/**/*.{ts,tsx}' --max-warnings 0
+
+      - name: Generate type usage report
+        if: always()
+        run: |
+          echo "📊 Generating type usage report..."
+          npm run type-usage-report || true
+
+      - name: Comment on PR
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const message = `## ❌ Type Governance Validation Failed
+
+            Your PR violates the type governance rules. Please fix the following:
+
+            ### Common Issues:
+            - **Local type definitions**: All types must be in \`src/types/TYPE_REGISTRY.ts\`
+            - **String prices**: Use \`Core.Money\` for monetary values
+            - **Index signatures**: Replace \`[key: string]: any\` with specific types
+            - **Any type**: Use specific types or \`unknown\` instead
+
+            ### How to Fix:
+            1. Run \`npm run migrate-types\` to identify issues
+            2. Run \`npm run fix-imports\` to fix imports automatically
+            3. Move type definitions to TYPE_REGISTRY.ts
+            4. Import types: \`import { Domain, Core } from '@/types/TYPE_REGISTRY'\`
+
+            See [Type Migration Guide](./TYPE_MIGRATION_GUIDE.md) for details.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+      - name: Upload type governance report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: type-governance-report
+          path: |
+            MIGRATION_PLAN.md
+            TYPE_REGISTRY_ADDITIONS.ts
+            IMPORT_FIX_REPORT.md

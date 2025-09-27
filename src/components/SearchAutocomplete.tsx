@@ -18,6 +18,10 @@ interface AutocompleteItem {
   count?: number;
 }
 
+interface AutocompleteApiResponse {
+  suggestions: AutocompleteItem[];
+}
+
 interface SearchAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
@@ -154,16 +158,22 @@ export default function SearchAutocomplete({
     setLoading(true);
     try {
       const response = await fetch(`/api/search/autocomplete?q=${encodeURIComponent(query)}&limit=${maxSuggestions}`).catch(error => {
-        throw new Error(`Network error: ${error.message}`);
+        if (error instanceof Error) {
+          throw new Error(`Network error: ${error.message}`);
+        }
+        throw new Error(`A network error occurred: ${String(error)}`);
       });
       
       if (!response.ok) {
         throw new Error(`Failed to fetch suggestions: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json().catch(error => {
-        throw new Error(`Invalid JSON response: ${error.message}`);
-      });
+      const data = (await response.json().catch(error => {
+        if (error instanceof Error) {
+          throw new Error(`Invalid JSON response: ${error.message}`);
+        }
+        throw new Error(`An error occurred while parsing JSON: ${String(error)}`);
+      })) as AutocompleteApiResponse;
       const apiSuggestions: AutocompleteItem[] = data.suggestions ?? [];
       
       // Mix API suggestions with predefined ones

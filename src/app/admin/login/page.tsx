@@ -6,15 +6,37 @@ import Button from '@/components/Button';
 import { Lock, User, AlertCircle } from 'lucide-react';
 
 export default function AdminLogin() {
-  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const _router = useRouter(); // Currently unused but may be needed for redirect logic
+  const [credentials, setCredentials] = useState({
+    username: 'agrikoadmin',  // Pre-populated for development
+    password: 'admin123'       // Pre-populated for development
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation();
+
+    // Clear any URL params that might have leaked
+    if (window.location.search) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
     setLoading(true);
     setError('');
+
+    const loginData = {
+      username: credentials.username.trim(),
+      password: credentials.password
+    };
+
+    // Validate inputs
+    if (!loginData.username || !loginData.password) {
+      setError('Please enter both username and password');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/admin/login', {
@@ -23,20 +45,28 @@ export default function AdminLogin() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(credentials),
+        body: JSON.stringify(loginData),
       });
 
-      const data = await response.json();
+      // Remove debug logs in production
 
-      if (data.success) {
-        router.push('/admin');
+      const result = await response.json();
+
+      if (result.success === true || result.success === 'true') {
+        // No need to store token - it's in httpOnly cookies
+
+        // Force a hard navigation with replace
+        window.location.replace('/admin/dashboard');
+
+        // Prevent any further execution
+        return;
       } else {
-        setError(data.message || 'Login failed');
+        setError(result.message || 'Invalid credentials');
+        setLoading(false);
       }
     } catch (err) {
-      setError('Network error. Please try again.');
       console.error('Login error:', err);
-    } finally {
+      setError('Network error. Please check your connection and try again.');
       setLoading(false);
     }
   };
@@ -59,7 +89,7 @@ export default function AdminLogin() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" method="post" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-md p-4">
                 <div className="flex">
@@ -83,6 +113,7 @@ export default function AdminLogin() {
                   id="username"
                   name="username"
                   type="text"
+                  autoComplete="username"
                   required
                   value={credentials.username}
                   onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
@@ -104,6 +135,7 @@ export default function AdminLogin() {
                   id="password"
                   name="password"
                   type="password"
+                  autoComplete="current-password"
                   required
                   value={credentials.password}
                   onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}

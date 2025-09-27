@@ -7,6 +7,8 @@ import {
 import { logger } from '@/lib/logger';
 import { validateApiAuthSecure } from '@/lib/unified-auth';
 
+export const runtime = 'nodejs';
+
 /**
  * GET /api/cache/status - Get global cache status
  */
@@ -57,20 +59,21 @@ export async function POST(request: NextRequest) {
     const { action, aggressive = false } = body;
 
     switch (action) {
-      case 'cleanup':
-        logger.info('Manual cache cleanup initiated', { 
-          aggressive, 
-          initiatedBy: authResult.user?.userId 
+      case 'cleanup': {
+        logger.info('Manual cache cleanup initiated', {
+          aggressive,
+          initiatedBy: authResult.user?.userId
         });
-        
+
         await forceGlobalCacheCleanup(aggressive);
         const statusAfterCleanup = getGlobalCacheStatus();
-        
+
         return NextResponse.json({
           success: true,
           message: `Cache cleanup completed (${aggressive ? 'aggressive' : 'gentle'})`,
           status: statusAfterCleanup
         });
+      }
 
       default:
         return NextResponse.json({

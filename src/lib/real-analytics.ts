@@ -328,7 +328,7 @@ export class RealAnalyticsCollector {
         break;
       case 'purchase':
         metrics.purchases++;
-        metrics.revenue += Number(data.revenue) ?? 0;
+        metrics.revenue += Number(data.revenue || 0);
         break;
     }
 
@@ -348,7 +348,7 @@ export class RealAnalyticsCollector {
     
     const revenue = recentEvents
       .filter(e => e.type === 'purchase')
-      .reduce((sum, e) => sum + (Number(e.data.revenue) ?? 0), 0);
+      .reduce((sum, e) => sum + (Number(e.data.revenue || 0)), 0);
 
     const activeSessions = sessions.filter(s => s.lastActivity > lastHour).length;
     const conversions = sessions.reduce((sum, s) => sum + s.conversions, 0);

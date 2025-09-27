@@ -1,15 +1,17 @@
 'use client';
 
+import { Core } from '@/types/TYPE_REGISTRY';
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { WCProduct } from '@/types/woocommerce';
 import { formatPrice, getProductMainImage, stripHtml, isProductInStock } from '@/lib/utils';
 import { useSafeCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 import { ecommerceEvent, funnelEvent } from '@/lib/gtag';
 import toast from 'react-hot-toast';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { calculateDiscountPercentage } from '@/lib/price-validation';
+import { Money } from '@/lib/money';
 
 // Removed APP_CONSTANTS import due to dependency issues
 
@@ -29,6 +31,7 @@ function ProductCard({
   fetchPriority = 'auto'
 }: ProductCardProps) {
   const cart = useSafeCart();
+  const wishlist = useWishlist();
   const [isLoading, setIsLoading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [_imageError, setImageError] = useState(false);
@@ -36,13 +39,14 @@ function ProductCard({
   const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
   const isUnmountedRef = useRef(false);
   const hasTrackedViewRef = useRef(false);
+  const isInWishlist = wishlist.isInWishlist(product.id);
 
   // Track product view when component mounts and is visible
   useEffect(() => {
     if (!hasTrackedViewRef.current) {
       hasTrackedViewRef.current = true;
       const category = product.categories?.[0]?.name ?? 'Uncategorized';
-      const price = parseFloat(product.price as string) || 0;
+      const price = (product.price || 0) || 0;
 
       // Track with Google Analytics
       ecommerceEvent.viewItem(
@@ -82,12 +86,17 @@ function ProductCard({
   const handleAddToCart = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
+    if (!product) {
+      toast.error('Product data is not available');
+      return;
+    }
+
     if (!cart) {
       toast.error('Cart is not available. Please refresh the page.');
       return;
     }
-    
+
     if (isUnmountedRef.current) return;
     
     setIsLoading(true);
@@ -95,13 +104,13 @@ function ProductCard({
     try {
       const delayTimeout = setTimeout(() => {
         if (isUnmountedRef.current) return;
-        
-        if (cart) {
+
+        if (cart && product) {
           cart.addItem(product);
 
           // Track add to cart with Google Analytics
           const category = product.categories?.[0]?.name ?? 'Uncategorized';
-          const price = parseFloat(product.price as string) || 0;
+          const price = (product.price || 0) || 0;
 
           ecommerceEvent.addToCart(
             product.id.toString(),
@@ -208,12 +217,20 @@ function ProductCard({
   const discountPercentage = useMemo(() => {
     return product.on_sale && product.regular_price !== product.price
       ? (() => {
-          const discountResult = calculateDiscountPercentage(
-            product.regular_price || '0',
-            product.price || '0',
-            `ProductCard ${product.name}`
-          );
-          return discountResult.success ? Math.round(discountResult.value) : null;
+          try {
+            const regularPrice = Money.parse(String(product.regular_price || '0'));
+            const salePrice = Money.parse(String(product.price || '0'));
+
+            if (salePrice.greaterThan(regularPrice) || regularPrice.isZero) {
+              return null;
+            }
+
+            const discount = regularPrice.subtract(salePrice);
+            const percentage = (discount.pesos / regularPrice.pesos) * 100;
+            return Math.round(percentage);
+          } catch {
+            return null;
+          }
         })()
       : null;
   }, [product.on_sale, product.regular_price, product.price, product.name]);
@@ -229,12 +246,12 @@ function ProductCard({
       />
       
       <article className={`group relative ${className} animate-fadeInUp w-full`} role="article" aria-labelledby={`product-${product.id}-name`}>
-        {/* Card Container */}
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 hover:shadow-xl hover:border-primary-200 transition-all duration-500 ease-out overflow-hidden hover:-translate-y-2 h-full flex flex-col relative min-h-[480px]">
+        {/* Card Container with Enhanced Hover */}
+        <div className="bg-white rounded-2xl shadow-md border border-neutral-100 hover:shadow-2xl hover:border-primary-300 transition-all duration-500 ease-out overflow-hidden hover:-translate-y-1 hover:scale-[1.02] h-full flex flex-col relative min-h-[480px]">
 
 
           <Link href={`/product/${product.slug}`} className="block relative">
-              <div className="relative h-80 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden rounded-xl group-hover:shadow-2xl transition-all duration-500 flex items-center justify-center">
+              <div className="relative h-64 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden rounded-t-xl group-hover:shadow-inner transition-all duration-500 flex items-center justify-center">
 
                 {/* Premium/Bestseller Badges Overlay on Image - Always render container */}
                 <div className="absolute top-8 left-8 z-20 flex flex-col gap-2">
@@ -264,13 +281,13 @@ function ProductCard({
                   <div className="absolute inset-0 bg-neutral-200 animate-pulse transition-opacity duration-300" />
                 )}
 
-                {/* Inner container for perfect centering and consistent sizing */}
-                <div className="relative w-full h-full max-w-[240px] max-h-[240px] flex items-center justify-center p-6 z-0">
+                {/* Fixed height container for consistent image sizing */}
+                <div className="relative w-full h-full flex items-center justify-center p-4 z-0">
                   <Image
                     src={mainImage}
                     alt={product.name}
                     fill
-                    className="object-contain transition-all duration-700 ease-out opacity-100 group-hover:scale-110"
+                    className="object-contain transition-all duration-700 ease-out opacity-100 group-hover:scale-115 group-hover:rotate-1"
                     sizes="(max-width: 768px) 200px, (max-width: 1200px) 240px, 240px"
                     priority={priority}
                     fetchPriority={fetchPriority}
@@ -314,11 +331,25 @@ function ProductCard({
 
               {/* Heart/Wishlist Icon */}
               <button
-                className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-lg hover:bg-red-50 transition-all duration-300 transform hover:scale-110 pointer-events-auto"
-                aria-label={`Add ${product.name} to wishlist`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (isInWishlist) {
+                    wishlist.removeItem(product.id);
+                  } else {
+                    wishlist.addItem(product);
+                  }
+                }}
+                className={`absolute top-4 right-4 ${isInWishlist ? 'bg-red-50' : 'bg-white/90'} backdrop-blur-sm p-2.5 rounded-full shadow-lg hover:bg-red-50 transition-all duration-300 transform hover:scale-110 pointer-events-auto`}
+                aria-label={isInWishlist ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
                 aria-describedby={`product-${product.id}-name`}
               >
-                <svg className="w-5 h-5 text-gray-600 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className={`w-5 h-5 ${isInWishlist ? 'text-red-500' : 'text-gray-600 hover:text-red-500'} transition-colors`}
+                  fill={isInWishlist ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </button>
@@ -370,9 +401,9 @@ function ProductCard({
               </h3>
             </Link>
 
-            {/* Rating Stars - Always show stars, default to 5 if no ratings */}
+            {/* Enhanced Rating Stars with Animation */}
             <div className="mb-2 h-5 flex items-center space-x-2">
-              <div className="flex items-center" suppressHydrationWarning>
+              <div className="flex items-center group-hover:scale-110 transition-transform duration-300" suppressHydrationWarning>
                 {[1, 2, 3, 4, 5].map((starIndex) => {
                   const rating = (product.rating_count || 0) > 0
                     ? parseFloat(product.average_rating || '0')
@@ -381,7 +412,8 @@ function ProductCard({
                   return (
                     <svg
                       key={starIndex}
-                      className={`w-4 h-4 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300 fill-current'}`}
+                      className={`w-4 h-4 ${isFilled ? 'text-yellow-400 fill-current drop-shadow-sm' : 'text-gray-300 fill-current'} transition-all duration-300`}
+                      style={{ animationDelay: `${starIndex * 50}ms` }}
                       viewBox="0 0 20 20"
                     >
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -389,8 +421,10 @@ function ProductCard({
                   );
                 })}
               </div>
-              {(product.rating_count || 0) > 0 && (
-                <span className="text-xs text-gray-500">({product.rating_count})</span>
+              {(product.rating_count || 0) > 0 ? (
+                <span className="text-xs text-gray-500 font-medium">({product.rating_count} reviews)</span>
+              ) : (
+                <span className="text-xs text-green-600 font-medium">★ Trusted Quality</span>
               )}
             </div>
 
@@ -413,15 +447,15 @@ function ProductCard({
                   {product.on_sale && product.regular_price !== product.price ? (
                     <>
                       <span className="text-xl font-bold text-primary-700">
-                        {formatPrice(product.price || '0')}
+                        {formatPrice(product.price || (0 as Core.Money))}
                       </span>
                       <span className="text-sm text-neutral-500 line-through">
-                        {formatPrice(product.regular_price || product.price || '0')}
+                        {formatPrice(product.regular_price || product.price || (0 as Core.Money))}
                       </span>
                     </>
                   ) : (
                     <span className="text-xl font-bold text-neutral-900">
-                      {formatPrice(product.price || '0')}
+                      {formatPrice(product.price || (0 as Core.Money))}
                     </span>
                   )}
                 </div>

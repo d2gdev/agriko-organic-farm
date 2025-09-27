@@ -227,13 +227,13 @@ export async function improvedSearch(
   });
 
   // Score and filter products
-  let results: SearchResult[] = allProducts
+  const results: SearchResult[] = allProducts
     .filter(product => {
       // Apply filters
       if (inStock !== undefined && (product.stock_status === 'instock') !== inStock) return false;
       if (category && !product.categories?.some(c => c.slug === category)) return false;
-      if (minPrice && product.price && parseFloat(product.price) < minPrice) return false;
-      if (maxPrice && product.price && parseFloat(product.price) > maxPrice) return false;
+      if (minPrice && product.price && (typeof product.price === 'number' ? product.price : parseFloat(String(product.price))) < minPrice) return false;
+      if (maxPrice && product.price && (typeof product.price === 'number' ? product.price : parseFloat(String(product.price))) > maxPrice) return false;
       return true;
     })
     .map(product => {
@@ -255,10 +255,10 @@ export async function improvedSearch(
   // Sort results
   switch (sortBy) {
     case 'price_asc':
-      results.sort((a, b) => parseFloat(a.product.price || '0') - parseFloat(b.product.price || '0'));
+      results.sort((a, b) => (a.product.price || 0) - (b.product.price || 0));
       break;
     case 'price_desc':
-      results.sort((a, b) => parseFloat(b.product.price || '0') - parseFloat(a.product.price || '0'));
+      results.sort((a, b) => (b.product.price || 0) - (a.product.price || 0));
       break;
     case 'name':
       results.sort((a, b) => a.product.name.localeCompare(b.product.name));
