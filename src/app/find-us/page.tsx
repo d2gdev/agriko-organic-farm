@@ -321,15 +321,33 @@ export default function FindUsPage() {
         }}
       />
       
-      {/* Enhanced Hero Section with Overlay */}
+      {/* Enhanced Hero Section with Better Readability */}
       <div className="relative">
         <HeroSection
           title="Agriko"
           subtitle="Find Agriko Near You"
           description="Discover our premium organic products at 50+ supermarkets and groceries nationwide! Fresh organic wellness, just around the corner."
           showButtons={false}
+          videoSrc="/videos/Hero-Find-Us.mp4"
+          pauseAtEnd={true}
+          pauseDuration={5000}
+          playbackSpeed={0.5}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none" />
+        {/* Enhanced dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60 pointer-events-none" />
+        {/* Additional text shadow enhancement */}
+        <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <style jsx>{`
+              .enhanced-text-shadow {
+                text-shadow:
+                  0 2px 4px rgba(0,0,0,0.9),
+                  0 4px 8px rgba(0,0,0,0.7),
+                  0 8px 16px rgba(0,0,0,0.5);
+              }
+            `}</style>
+          </div>
+        </div>
       </div>
 
       {/* Partners Section with Filter */}
@@ -340,18 +358,24 @@ export default function FindUsPage() {
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Retail Partners</h2>
             <p className="text-xl text-gray-600 mb-8">Available in 50+ stores nationwide</p>
 
-            {/* Search/Filter Bar */}
+            {/* Enhanced Search/Filter Bar with Visual Grouping */}
             <div className="max-w-4xl mx-auto">
-              <div className="bg-white rounded-lg shadow-md p-6 border-2 border-gray-100">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Search Input */}
-                  <div className="space-y-2">
-                    <label htmlFor="store-search" className="block text-sm font-medium text-gray-700">
+              <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200 hover:shadow-2xl transition-shadow duration-300">
+                {/* Filter Header */}
+                <div className="text-center mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Find Stores Near You</h3>
+                  <div className="w-16 h-0.5 bg-gradient-to-r from-green-500 to-green-600 mx-auto"></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {/* Enhanced Search Input with Better Styling */}
+                  <div className="space-y-3">
+                    <label htmlFor="store-search" className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <span className="text-lg">🔍</span>
                       Search Stores
                     </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg className="w-5 h-5 text-gray-400 group-focus-within:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                       </div>
@@ -359,94 +383,198 @@ export default function FindUsPage() {
                         id="store-search"
                         name="store-search"
                         type="text"
-                        placeholder="Search by city or store..."
+                        placeholder="e.g., Cebu City, Metro Ayala..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white"
                         aria-label="Search stores by city or store name"
                       />
                     </div>
                   </div>
 
-                  {/* Region Filter */}
-                  <div className="space-y-2">
-                    <label htmlFor="region-filter" className="block text-sm font-medium text-gray-700">
+                  {/* Enhanced Region Filter */}
+                  <div className="space-y-3">
+                    <label htmlFor="region-filter" className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <span className="text-lg">🌏</span>
                       Filter by Region
                     </label>
-                    <select
-                      id="region-filter"
-                      name="region-filter"
-                      value={regionFilter}
-                      onChange={(e) => setRegionFilter(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      aria-label="Filter stores by region"
-                    >
-                      <option value="all">All Regions</option>
-                      <option value="luzon">Luzon</option>
-                      <option value="visayas">Visayas</option>
-                      <option value="mindanao">Mindanao</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        id="region-filter"
+                        name="region-filter"
+                        value={regionFilter}
+                        onChange={(e) => setRegionFilter(e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white appearance-none cursor-pointer"
+                        aria-label="Filter stores by region"
+                      >
+                        <option value="all">🇵🇭 All Regions</option>
+                        <option value="luzon">🏙️ Luzon</option>
+                        <option value="visayas">🏝️ Visayas</option>
+                        <option value="mindanao">⛰️ Mindanao</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Chain Filter */}
-                  <div className="space-y-2">
-                    <label htmlFor="chain-filter" className="block text-sm font-medium text-gray-700">
+                  {/* Enhanced Chain Filter */}
+                  <div className="space-y-3">
+                    <label htmlFor="chain-filter" className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <span className="text-lg">🏬</span>
                       Filter by Store Chain
                     </label>
-                    <select
-                      id="chain-filter"
-                      name="chain-filter"
-                      value={chainFilter}
-                      onChange={(e) => setChainFilter(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      aria-label="Filter stores by chain"
-                    >
-                      <option value="all">All Stores</option>
-                      <option value="metro">Metro Supermarket</option>
-                      <option value="gaisano">Gaisano Grand</option>
-                      <option value="puregold">PureGold</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        id="chain-filter"
+                        name="chain-filter"
+                        value={chainFilter}
+                        onChange={(e) => setChainFilter(e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white appearance-none cursor-pointer"
+                        aria-label="Filter stores by chain"
+                      >
+                        <option value="all">🛒 All Store Chains</option>
+                        <option value="metro">🏬 Metro Supermarket</option>
+                        <option value="gaisano">🛍️ Gaisano Grand</option>
+                        <option value="puregold">🌟 PureGold</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Clear Filters */}
+                {/* Enhanced Active Filters Display and Clear Button */}
                 {(regionFilter !== 'all' || chainFilter !== 'all' || searchQuery) && (
-                  <div className="mt-4 text-center">
-                    <button
-                      onClick={() => {
-                        setRegionFilter('all');
-                        setChainFilter('all');
-                        setSearchQuery('');
-                      }}
-                      className="text-sm text-gray-600 hover:text-gray-800 underline"
-                    >
-                      Clear all filters
-                    </button>
+                  <div className="mt-6 space-y-3">
+                    {/* Active filters chips */}
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {regionFilter !== 'all' && (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                          Region: {regionFilter}
+                          <button
+                            onClick={() => setRegionFilter('all')}
+                            className="ml-2 text-green-600 hover:text-green-800"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )}
+                      {chainFilter !== 'all' && (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                          Chain: {chainFilter}
+                          <button
+                            onClick={() => setChainFilter('all')}
+                            className="ml-2 text-blue-600 hover:text-blue-800"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )}
+                      {searchQuery && (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
+                          Search: &quot;{searchQuery}&quot;
+                          <button
+                            onClick={() => setSearchQuery('')}
+                            className="ml-2 text-orange-600 hover:text-orange-800"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                    {/* Clear all button */}
+                    <div className="text-center">
+                      <button
+                        onClick={() => {
+                          setRegionFilter('all');
+                          setChainFilter('all');
+                          setSearchQuery('');
+                        }}
+                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all duration-200 border border-gray-200 hover:border-gray-300"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Clear all filters
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {/* Mobile-optimized partner cards grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-16 auto-rows-fr">
+            {/* Mobile swipe indicator */}
+            <div className="lg:hidden text-center mb-4 col-span-full">
+              <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
+                <span>👈</span>
+                <span>Swipe to explore all partners</span>
+                <span>👉</span>
+              </p>
+            </div>
+            <style jsx>{`
+              @keyframes gentle-bounce {
+                0%, 20%, 50%, 80%, 100% {
+                  transform: translateY(0);
+                }
+                40% {
+                  transform: translateY(-4px);
+                }
+                60% {
+                  transform: translateY(-2px);
+                }
+              }
+              .hover-lift:hover {
+                animation: gentle-bounce 0.6s ease-in-out;
+              }
+
+              @keyframes slide-down {
+                from {
+                  opacity: 0;
+                  transform: translateY(-10px);
+                }
+                to {
+                  opacity: 1;
+                  transform: translateY(0);
+                }
+              }
+              .animate-fade-in {
+                animation: slide-down 0.3s ease-out;
+              }
+            `}</style>
             
-            {/* Metro Supermarkets */}
+            {/* Metro Supermarkets - Enhanced */}
             {shouldShowStore('metro', ['luzon', 'visayas']) && (
-            <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
-              {/* Logo Container */}
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-8 flex items-center justify-center h-48">
-                <div className="text-center">
-                  <span className="text-2xl mb-2">🏬</span>
-                  <div className="text-4xl font-bold text-blue-600 mb-1">METRO</div>
-                  <div className="text-sm text-gray-600">SUPERMARKET</div>
-                  <div className="mt-3 text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full inline-block">
-                    25+ Locations
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 border border-gray-100 hover:border-blue-200 group hover-lift relative flex flex-col h-full">
+              {/* Subtle gradient border on hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              {/* Enhanced Logo Container */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-8 flex items-center justify-center h-52 group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300 relative overflow-hidden">
+                {/* Animated background element */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+                <div className="text-center relative z-10">
+                  <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🏬</div>
+                  <div className="text-4xl font-bold text-blue-600 mb-2 group-hover:text-blue-700 transition-colors">METRO</div>
+                  <div className="text-sm text-gray-600 font-medium">SUPERMARKET</div>
+                  <div className="mt-4 inline-flex items-center gap-2">
+                    <div className="text-xs bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-semibold border border-blue-200 group-hover:bg-blue-200 group-hover:scale-105 transition-all duration-300">
+                      <span className="text-blue-500 mr-1">📍</span>
+                      25+ Locations
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Collapsible Content */}
-              <div className="p-6">
+              <div className="p-6 flex-1 flex flex-col">
                 {/* Luzon Section */}
                 <div className="mb-4">
                   <button
@@ -536,10 +664,11 @@ export default function FindUsPage() {
                     </p>
                     <Link
                       href="/products"
-                      className="inline-flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg"
+                      className="group inline-flex items-center justify-center w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-0.5 border-2 border-blue-600 hover:border-blue-700"
                     >
+                      <span className="mr-2 text-lg group-hover:animate-bounce">🚚</span>
                       Order Online - Free Delivery
-                      <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
                     </Link>
@@ -552,28 +681,35 @@ export default function FindUsPage() {
             </div>
             )}
 
-            {/* Gaisano Grand Supermarket */}
+            {/* Gaisano Grand Supermarket - Enhanced */}
             {shouldShowStore('gaisano', ['visayas', 'mindanao']) && (
-            <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
-              {/* Logo Container */}
-              <div className="bg-gradient-to-br from-green-50 to-green-100 p-8 flex items-center justify-center h-48">
-                <div className="text-center">
-                  <span className="text-2xl mb-2">🛒</span>
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 border border-gray-100 hover:border-green-200 group hover-lift relative flex flex-col h-full">
+              {/* Subtle gradient border on hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-green-600/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              {/* Enhanced Logo Container */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100 p-8 flex items-center justify-center h-52 group-hover:from-green-100 group-hover:to-green-200 transition-all duration-300 relative overflow-hidden">
+                {/* Animated background element */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+                <div className="text-center relative z-10">
+                  <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🛒</div>
                   <Image
                     src="/images/gaisano-grand-mall-partner-logo.png"
                     alt="Gaisano Grand Mall"
                     width={160}
                     height={80}
-                    className="object-contain max-h-20 mb-2"
+                    className="object-contain max-h-20 mb-3 group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="mt-3 text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full inline-block">
-                    27+ Locations
+                  <div className="mt-4 inline-flex items-center gap-2">
+                    <div className="text-xs bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold border border-green-200 group-hover:bg-green-200 group-hover:scale-105 transition-all duration-300">
+                      <span className="text-green-500 mr-1">📍</span>
+                      27+ Locations
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Collapsible Content */}
-              <div className="p-6">
+              <div className="p-6 flex-1 flex flex-col">
                 {/* Visayas Section */}
                 <div className="mb-4">
                   <button
@@ -661,10 +797,11 @@ export default function FindUsPage() {
                     </p>
                     <Link
                       href="/products"
-                      className="inline-flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-md hover:shadow-lg"
+                      className="group inline-flex items-center justify-center w-full px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-0.5 border-2 border-green-600 hover:border-green-700"
                     >
+                      <span className="mr-2 text-lg group-hover:animate-bounce">🛍️</span>
                       Order Online Now
-                      <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
                     </Link>
@@ -677,28 +814,35 @@ export default function FindUsPage() {
             </div>
             )}
 
-            {/* PureGold Supermarket */}
+            {/* PureGold Supermarket - Enhanced */}
             {shouldShowStore('puregold', ['visayas']) && (
-            <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
-              {/* Logo Container */}
-              <div className="bg-gradient-to-br from-orange-50 to-yellow-100 p-8 flex items-center justify-center h-48">
-                <div className="text-center">
-                  <span className="text-2xl mb-2">🌐</span>
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 border border-gray-100 hover:border-orange-200 group hover-lift relative flex flex-col h-full">
+              {/* Subtle gradient border on hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-yellow-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              {/* Enhanced Logo Container */}
+              <div className="bg-gradient-to-br from-orange-50 to-yellow-100 p-8 flex items-center justify-center h-52 group-hover:from-orange-100 group-hover:to-yellow-200 transition-all duration-300 relative overflow-hidden">
+                {/* Animated background element */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+                <div className="text-center relative z-10">
+                  <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🌐</div>
                   <Image
                     src="/images/puregold-supermarket-partner-logo.png"
                     alt="PureGold Supermarket"
                     width={160}
                     height={80}
-                    className="object-contain max-h-20 mb-2"
+                    className="object-contain max-h-20 mb-3 group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="mt-3 text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full inline-block">
-                    5 Locations
+                  <div className="mt-4 inline-flex items-center gap-2">
+                    <div className="text-xs bg-orange-100 text-orange-700 px-4 py-2 rounded-full font-semibold border border-orange-200 group-hover:bg-orange-200 group-hover:scale-105 transition-all duration-300">
+                      <span className="text-orange-500 mr-1">📍</span>
+                      5 Locations
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Collapsible Content */}
-              <div className="p-6">
+              <div className="p-6 flex-1 flex flex-col">
                 <button
                   onClick={() => toggleSection('puregold-visayas')}
                   className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
@@ -735,10 +879,11 @@ export default function FindUsPage() {
                     </p>
                     <Link
                       href="/products"
-                      className="inline-flex items-center justify-center w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-300 shadow-md hover:shadow-lg"
+                      className="group inline-flex items-center justify-center w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-yellow-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-0.5 border-2 border-orange-500 hover:border-orange-600"
                     >
+                      <span className="mr-2 text-lg group-hover:animate-bounce">⚡</span>
                       Order Online Today
-                      <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
                     </Link>
@@ -777,64 +922,64 @@ export default function FindUsPage() {
                 </p>
               </div>
 
-              {/* 3-Column Layout */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                {/* Contact Info Column */}
-                <div className="bg-white/12 backdrop-blur-md rounded-2xl p-7 shadow-xl hover:bg-white/18 transition-all duration-300 hover:shadow-2xl border border-white/25 hover:border-white/40 relative overflow-hidden">
+              {/* Mobile-responsive 3-Column Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+                {/* Contact Info Column - Mobile Optimized */}
+                <div className="bg-white/12 backdrop-blur-md rounded-2xl p-6 lg:p-7 shadow-xl hover:bg-white/18 transition-all duration-300 hover:shadow-2xl border border-white/25 hover:border-white/40 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
                   <div className="relative z-10">
-                  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                    <span className="text-3xl">💬</span>
+                  <h3 className="text-lg lg:text-xl font-bold text-white mb-4 lg:mb-6 flex items-center gap-3">
+                    <span className="text-2xl lg:text-3xl">💬</span>
                     <span>Contact Info</span>
                   </h3>
 
-                  <div className="space-y-5">
+                  <div className="space-y-4 lg:space-y-5">
                     <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg border border-white/30">
-                        <span className="text-2xl">📞</span>
+                      <div className="w-12 h-12 lg:w-14 lg:h-14 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg border border-white/30">
+                        <span className="text-xl lg:text-2xl">📞</span>
                       </div>
                       <div className="flex-1">
                         <p className="text-white/60 text-xs uppercase tracking-wider font-light">Phone</p>
-                        <p className="text-white text-base font-medium mt-1">Contact via email</p>
+                        <p className="text-white text-sm lg:text-base font-medium mt-1">Contact via email</p>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg border border-white/30">
-                        <span className="text-2xl">✉️</span>
+                      <div className="w-12 h-12 lg:w-14 lg:h-14 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg border border-white/30">
+                        <span className="text-xl lg:text-2xl">✉️</span>
                       </div>
                       <div className="flex-1">
                         <p className="text-white/60 text-xs uppercase tracking-wider font-light">Email</p>
-                        <p className="text-white text-base font-medium mt-1 break-all">jc.paglinawan@agrikoph.com</p>
+                        <p className="text-white text-sm lg:text-base font-medium mt-1 break-words">jc.paglinawan@agrikoph.com</p>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg border border-white/30">
-                        <span className="text-2xl">🌐</span>
+                      <div className="w-12 h-12 lg:w-14 lg:h-14 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg border border-white/30">
+                        <span className="text-xl lg:text-2xl">🌐</span>
                       </div>
                       <div className="flex-1">
                         <p className="text-white/60 text-xs uppercase tracking-wider font-light">Website</p>
-                        <p className="text-white text-base font-medium mt-1">agrikoph.com</p>
+                        <p className="text-white text-sm lg:text-base font-medium mt-1">agrikoph.com</p>
                       </div>
                     </div>
                   </div>
                   </div>
                 </div>
 
-                {/* Visayas Office Column */}
-                <div className="bg-white/12 backdrop-blur-md rounded-2xl p-7 shadow-xl hover:bg-white/18 transition-all duration-300 hover:shadow-2xl border border-white/25 hover:border-white/40 relative overflow-hidden">
+                {/* Visayas Office Column - Mobile Optimized */}
+                <div className="bg-white/12 backdrop-blur-md rounded-2xl p-6 lg:p-7 shadow-xl hover:bg-white/18 transition-all duration-300 hover:shadow-2xl border border-white/25 hover:border-white/40 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
                   <div className="relative z-10">
-                  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                    <span className="text-3xl">📍</span>
+                  <h3 className="text-lg lg:text-xl font-bold text-white mb-4 lg:mb-6 flex items-center gap-3">
+                    <span className="text-2xl lg:text-3xl">📍</span>
                     <span>Visayas Office</span>
                   </h3>
 
-                  <div className="space-y-5">
+                  <div className="space-y-4 lg:space-y-5">
                     <div className="bg-white/10 rounded-xl p-4 border border-white/10">
                       <p className="text-white/60 text-xs uppercase tracking-wider font-light mb-2">Address</p>
-                      <p className="text-white text-base leading-relaxed">
+                      <p className="text-white text-sm lg:text-base leading-relaxed">
                         GF G&A Arcade,<br />
                         Wilson St., Lahug,<br />
                         Cebu City 6000
@@ -843,7 +988,7 @@ export default function FindUsPage() {
 
                     <div className="bg-white/10 rounded-xl p-4 border border-white/10">
                       <p className="text-white/60 text-xs uppercase tracking-wider font-light mb-2">Business Hours</p>
-                      <p className="text-white text-base">
+                      <p className="text-white text-sm lg:text-base">
                         Mon-Fri: 9AM - 6PM<br />
                         Saturday: 9AM - 1PM
                       </p>
@@ -852,19 +997,19 @@ export default function FindUsPage() {
                   </div>
                 </div>
 
-                {/* Farm Location Column */}
-                <div className="bg-white/12 backdrop-blur-md rounded-2xl p-7 shadow-xl hover:bg-white/18 transition-all duration-300 hover:shadow-2xl border border-white/25 hover:border-white/40 relative overflow-hidden">
+                {/* Farm Location Column - Mobile Optimized */}
+                <div className="bg-white/12 backdrop-blur-md rounded-2xl p-6 lg:p-7 shadow-xl hover:bg-white/18 transition-all duration-300 hover:shadow-2xl border border-white/25 hover:border-white/40 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
                   <div className="relative z-10">
-                  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                    <span className="text-3xl">🚜</span>
+                  <h3 className="text-lg lg:text-xl font-bold text-white mb-4 lg:mb-6 flex items-center gap-3">
+                    <span className="text-2xl lg:text-3xl">🚜</span>
                     <span>Visit Our Farm</span>
                   </h3>
 
-                  <div className="space-y-5">
+                  <div className="space-y-4 lg:space-y-5">
                     <div className="bg-white/10 rounded-xl p-4 border border-white/10">
                       <p className="text-white/60 text-xs uppercase tracking-wider font-light mb-2">Mindanao Location</p>
-                      <p className="text-white text-base leading-relaxed">
+                      <p className="text-white text-sm lg:text-base leading-relaxed">
                         Paglinawan Organic Eco Farm,<br />
                         Purok 6, Libertad,<br />
                         Dumingag, Zamboanga Del Sur
@@ -874,7 +1019,7 @@ export default function FindUsPage() {
                     <Link
                       href="https://maps.google.com"
                       target="_blank"
-                      className="inline-flex items-center justify-center w-full bg-white text-green-700 px-6 py-4 rounded-xl font-bold hover:bg-gradient-to-r hover:from-white hover:to-yellow-50 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl group"
+                      className="inline-flex items-center justify-center w-full bg-white text-green-700 px-4 lg:px-6 py-3 lg:py-4 text-sm lg:text-base rounded-xl font-bold hover:bg-gradient-to-r hover:from-white hover:to-yellow-50 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl group"
                     >
                       <svg className="w-5 h-5 mr-2 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

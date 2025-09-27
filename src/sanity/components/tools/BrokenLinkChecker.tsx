@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Card, Stack, Text, Button, Badge, Flex, Box, Spinner } from '@sanity/ui'
+import { Card, Stack, Text, Button, Badge, Box, Spinner, Flex as SanityFlex } from '@sanity/ui'
 import { ErrorOutlineIcon, CheckmarkCircleIcon, WarningOutlineIcon, RefreshIcon } from '@sanity/icons'
 
 interface BrokenLinkCheckerProps {
@@ -56,7 +56,7 @@ export function BrokenLinkChecker({ document }: BrokenLinkCheckerProps) {
     findUrlsInObject(document)
 
     // Remove duplicates
-    return [...new Set(foundLinks)]
+    return Array.from(new Set(foundLinks))
   }
 
   const checkLink = async (url: string, location: string): Promise<LinkCheckResult> => {
@@ -149,11 +149,11 @@ export function BrokenLinkChecker({ document }: BrokenLinkCheckerProps) {
   return (
     <Card padding={4} radius={2} shadow={1}>
       <Stack space={4}>
-        <Flex align="center" justify="space-between">
-          <Flex align="center" gap={2}>
+        <SanityFlex align="center" justify="space-between">
+          <SanityFlex align="center" gap={2}>
             <ErrorOutlineIcon />
             <Text size={2} weight="semibold">Broken Link Checker</Text>
-          </Flex>
+          </SanityFlex>
           <Button
             fontSize={1}
             icon={RefreshIcon}
@@ -162,34 +162,34 @@ export function BrokenLinkChecker({ document }: BrokenLinkCheckerProps) {
             loading={isChecking}
             text="Check Links"
           />
-        </Flex>
+        </SanityFlex>
 
         {/* Summary Stats */}
-        <Flex gap={3}>
+        <SanityFlex gap={3}>
           <Card padding={2} tone="positive" border>
-            <Stack space={1} align="center">
-              <Text size={3} weight="semibold">{okCount}</Text>
-              <Text size={1}>Working</Text>
+            <Stack space={1}>
+              <Text size={3} weight="semibold" style={{textAlign: 'center'}}>{okCount}</Text>
+              <Text size={1} style={{textAlign: 'center'}}>Working</Text>
             </Stack>
           </Card>
           <Card padding={2} tone="critical" border>
-            <Stack space={1} align="center">
-              <Text size={3} weight="semibold">{brokenCount}</Text>
-              <Text size={1}>Broken</Text>
+            <Stack space={1}>
+              <Text size={3} weight="semibold" style={{textAlign: 'center'}}>{brokenCount}</Text>
+              <Text size={1} style={{textAlign: 'center'}}>Broken</Text>
             </Stack>
           </Card>
           <Card padding={2} tone="caution" border>
-            <Stack space={1} align="center">
-              <Text size={3} weight="semibold">{warningCount}</Text>
-              <Text size={1}>Warnings</Text>
+            <Stack space={1}>
+              <Text size={3} weight="semibold" style={{textAlign: 'center'}}>{warningCount}</Text>
+              <Text size={1} style={{textAlign: 'center'}}>Warnings</Text>
             </Stack>
           </Card>
-        </Flex>
+        </SanityFlex>
 
         {/* Link List */}
         {links.length === 0 ? (
           <Card padding={3} tone="transparent" border>
-            <Text size={1} muted align="center">
+            <Text size={1} muted style={{textAlign: 'center'}}>
               No links found in document
             </Text>
           </Card>
@@ -197,13 +197,13 @@ export function BrokenLinkChecker({ document }: BrokenLinkCheckerProps) {
           <Stack space={2}>
             {links.map((link, index) => (
               <Card key={index} padding={3} radius={2} tone="default" border>
-                <Flex align="center" gap={3}>
+                <SanityFlex align="center" gap={3}>
                   {getStatusIcon(link.status)}
                   <Stack space={1} flex={1}>
                     <Text size={1} style={{ wordBreak: 'break-all' }}>
                       {link.url}
                     </Text>
-                    <Flex align="center" gap={2}>
+                    <SanityFlex align="center" gap={2}>
                       <Badge tone={getStatusTone(link.status)} fontSize={0}>
                         {link.statusCode || link.status}
                       </Badge>
@@ -213,19 +213,19 @@ export function BrokenLinkChecker({ document }: BrokenLinkCheckerProps) {
                       <Text size={1} muted>
                         • {link.location}
                       </Text>
-                    </Flex>
+                    </SanityFlex>
                   </Stack>
                   {link.status === 'broken' && (
                     <Button fontSize={1} mode="ghost" text="Fix" tone="critical" />
                   )}
-                </Flex>
+                </SanityFlex>
               </Card>
             ))}
           </Stack>
         )}
 
         {lastChecked && (
-          <Text size={1} muted align="center">
+          <Text size={1} muted style={{textAlign: 'center'}}>
             Last checked: {lastChecked.toLocaleTimeString()}
           </Text>
         )}
@@ -247,18 +247,3 @@ export function BrokenLinkChecker({ document }: BrokenLinkCheckerProps) {
   )
 }
 
-function Flex({ children, align, justify, gap, direction, flex, style }: any) {
-  return (
-    <div style={{
-      display: 'flex',
-      alignItems: align,
-      justifyContent: justify,
-      gap: gap ? `${gap * 4}px` : undefined,
-      flexDirection: direction || 'row',
-      flex: flex,
-      ...style
-    }}>
-      {children}
-    </div>
-  )
-}

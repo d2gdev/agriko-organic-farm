@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, Stack, Text, Flex, Box, Label } from '@sanity/ui'
+import { Card, Stack, Text, Box, Label, Flex as SanityFlex } from '@sanity/ui'
 import { ShareIcon } from '@sanity/icons'
 
 interface SocialMediaPreviewProps {
@@ -16,10 +16,10 @@ export function SocialMediaPreview({ document }: SocialMediaPreviewProps) {
   return (
     <Card padding={4} radius={2} shadow={1}>
       <Stack space={4}>
-        <Flex align="center" gap={2}>
+        <SanityFlex align="center" gap={2}>
           <ShareIcon />
           <Text size={2} weight="semibold">Social Media Preview</Text>
-        </Flex>
+        </SanityFlex>
 
         {/* Facebook Preview */}
         <Stack space={2}>
@@ -35,9 +35,9 @@ export function SocialMediaPreview({ document }: SocialMediaPreviewProps) {
               backgroundPosition: 'center'
             }}>
               {!imageUrl && (
-                <Flex align="center" justify="center" style={{ height: '100%' }}>
+                <SanityFlex align="center" justify="center" style={{ height: '100%' }}>
                   <Text size={1} muted>No image set</Text>
-                </Flex>
+                </SanityFlex>
               )}
             </div>
             {/* Content */}
@@ -59,7 +59,7 @@ export function SocialMediaPreview({ document }: SocialMediaPreviewProps) {
         <Stack space={2}>
           <Label size={1}>Twitter/X</Label>
           <Card padding={0} radius={2} tone="default" border style={{ overflow: 'hidden' }}>
-            <Flex>
+            <SanityFlex>
               {/* Image */}
               <div style={{
                 width: '120px',
@@ -71,9 +71,9 @@ export function SocialMediaPreview({ document }: SocialMediaPreviewProps) {
                 backgroundPosition: 'center'
               }}>
                 {!imageUrl && (
-                  <Flex align="center" justify="center" style={{ height: '100%' }}>
+                  <SanityFlex align="center" justify="center" style={{ height: '100%' }}>
                     <Text size={1} muted>No image</Text>
-                  </Flex>
+                  </SanityFlex>
                 )}
               </div>
               {/* Content */}
@@ -88,7 +88,7 @@ export function SocialMediaPreview({ document }: SocialMediaPreviewProps) {
                   agrikoph.com
                 </Text>
               </Box>
-            </Flex>
+            </SanityFlex>
           </Card>
         </Stack>
 
@@ -106,9 +106,9 @@ export function SocialMediaPreview({ document }: SocialMediaPreviewProps) {
               backgroundPosition: 'center'
             }}>
               {!imageUrl && (
-                <Flex align="center" justify="center" style={{ height: '100%' }}>
+                <SanityFlex align="center" justify="center" style={{ height: '100%' }}>
                   <Text size={1} muted>No image set</Text>
-                </Flex>
+                </SanityFlex>
               )}
             </div>
             {/* Content */}
@@ -127,17 +127,3 @@ export function SocialMediaPreview({ document }: SocialMediaPreviewProps) {
   )
 }
 
-function Flex({ children, align, justify, gap, direction, style }: any) {
-  return (
-    <div style={{
-      display: 'flex',
-      alignItems: align,
-      justifyContent: justify,
-      gap: gap ? `${gap * 4}px` : undefined,
-      flexDirection: direction || 'row',
-      ...style
-    }}>
-      {children}
-    </div>
-  )
-}

@@ -7,6 +7,7 @@ import React from 'react';
 import { Core } from '@/types/TYPE_REGISTRY';
 import { render, act, waitFor } from '@testing-library/react';
 import { CartProvider, useCart } from '../CartContext';
+import { Money } from '@/lib/money';
 
 // Minimal mocks
 jest.mock('@/lib/logger', () => ({
@@ -47,13 +48,7 @@ jest.mock('@/lib/cart-validation', () => ({
   }),
 }));
 
-jest.mock('@/lib/php-currency', () => ({
-  PHPCurrency: {
-    multiply: jest.fn((price, quantity) => price * quantity),
-    add: jest.fn((a, b) => a + b),
-    format: jest.fn((price) => `₱${(price / 100).toFixed(2)}`),
-  }
-}));
+// No need to mock @/lib/php-currency since we're using Money class directly
 
 // Test component
 const TestCart = () => {
@@ -65,7 +60,7 @@ const TestCart = () => {
 
   return (
     <div>
-      <div data-testid="total">{cart.state.total}</div>
+      <div data-testid="total">{cart.state.total.toNumber()}</div>
       <div data-testid="count">{cart.state.itemCount}</div>
       <div data-testid="items">{cart.state.items.length}</div>
     </div>
@@ -90,7 +85,7 @@ describe('Simple Cart Test', () => {
       id: 1,
       name: 'Test Product',
       slug: 'test',
-      price: 10000 as Core.Money, // ₱100.00 in centavos
+      price: Money.pesos(100), // ₱100.00
       categories: [],
       images: [],
     };
@@ -107,7 +102,7 @@ describe('Simple Cart Test', () => {
 
     // Wait for state update
     await waitFor(() => {
-      expect(getByTestId('total').textContent).toBe('10000');
+      expect(getByTestId('total').textContent).toBe('100');
       expect(getByTestId('count').textContent).toBe('1');
       expect(getByTestId('items').textContent).toBe('1');
     });

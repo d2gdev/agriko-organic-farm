@@ -56,6 +56,14 @@ export class Money {
   }
 
   /**
+   * Alias for centavos() to support legacy code
+   * @deprecated Use Money.centavos() instead
+   */
+  static from(centavos: number): Money {
+    return Money.centavos(centavos);
+  }
+
+  /**
    * Parse Money from string or number
    * Handles WooCommerce price strings and numeric inputs
    */
@@ -227,6 +235,20 @@ export class Money {
    */
   toNumber(): number {
     return this.pesos;
+  }
+
+  /**
+   * Convert to pesos (alias for backward compatibility)
+   */
+  toPesos(): number {
+    return this.pesos;
+  }
+
+  /**
+   * Convert to centavos (for legacy compatibility)
+   */
+  toCentavos(): number {
+    return this.centavos;
   }
 
   /**

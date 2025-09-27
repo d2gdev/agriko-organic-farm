@@ -1,0 +1,307 @@
+src/__tests__/e2e-real-world.test.tsx(8,44): error TS2307: Cannot find module '@testing-library/dom' or its corresponding type declarations.
+src/__tests__/e2e-real-world.test.tsx(498,32): error TS7006: Parameter 'button' implicitly has an 'any' type.
+src/__tests__/e2e-real-world.test.tsx(504,31): error TS7006: Parameter 'element' implicitly has an 'any' type.
+src/__tests__/E2E.integration.test.tsx(5,33): error TS2307: Cannot find module '@testing-library/dom' or its corresponding type declarations.
+src/__tests__/E2E.integration.test.tsx(209,16): error TS2345: Argument of type '(prevState: CartState) => { items: { quantity: any; product: WCProduct; variation: any; }[]; total: Money; }' is not assignable to parameter of type 'CartState | ((prev: CartState) => CartState)'.
+  Type '(prevState: CartState) => { items: { quantity: any; product: WCProduct; variation: any; }[]; total: Money; }' is not assignable to type '(prev: CartState) => CartState'.
+    Call signature return types '{ items: { quantity: any; product: WCProduct; variation: any; }[]; total: Money; }' and 'CartState' are incompatible.
+      The types of 'total' are incompatible between these types.
+        Type 'Money' is not assignable to type 'number'.
+src/__tests__/E2E.integration.test.tsx(241,16): error TS2345: Argument of type '(prevState: CartState) => { items: CartItem[]; total: Money; }' is not assignable to parameter of type 'CartState | ((prev: CartState) => CartState)'.
+  Type '(prevState: CartState) => { items: CartItem[]; total: Money; }' is not assignable to type '(prev: CartState) => CartState'.
+    Call signature return types '{ items: CartItem[]; total: Money; }' and 'CartState' are incompatible.
+      The types of 'total' are incompatible between these types.
+        Type 'Money' is not assignable to type 'number'.
+src/__tests__/E2E.integration.test.tsx(260,16): error TS2345: Argument of type '(prevState: CartState) => { items: CartItem[]; total: Money; }' is not assignable to parameter of type 'CartState | ((prev: CartState) => CartState)'.
+  Type '(prevState: CartState) => { items: CartItem[]; total: Money; }' is not assignable to type '(prev: CartState) => CartState'.
+    Call signature return types '{ items: CartItem[]; total: Money; }' and 'CartState' are incompatible.
+      The types of 'total' are incompatible between these types.
+        Type 'Money' is not assignable to type 'number'.
+src/__tests__/E2E.integration.test.tsx(716,25): error TS7006: Parameter 'result' implicitly has an 'any' type.
+src/__tests__/error-resilience.test.tsx(8,44): error TS2307: Cannot find module '@testing-library/dom' or its corresponding type declarations.
+src/app/api/products/route.ts(43,28): error TS2367: This comparison appears to be unintentional because the types 'Money | undefined' and 'string' have no overlap.
+src/app/product/[slug]/page.tsx(350,42): error TS2352: Conversion of type 'Money | undefined' to type 'number' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Money' is not comparable to type 'number'.
+src/app/test-search.bak/page.tsx(129,24): error TS2322: Type 'Money' is not assignable to type 'string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<...> | null | undefined'.
+src/app/wishlist/page.tsx(103,30): error TS2345: Argument of type 'Money | undefined' is not assignable to parameter of type 'string | number | Money'.
+  Type 'undefined' is not assignable to type 'string | number | Money'.
+src/components/__tests__/AutoTrackingProvider.test.tsx(5,33): error TS2307: Cannot find module '@testing-library/dom' or its corresponding type declarations.
+src/components/__tests__/AutoTrackingProvider.test.tsx(59,11): error TS2322: Type 'Money' is not assignable to type 'number'.
+src/components/__tests__/AutoTrackingProvider.test.tsx(59,18): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/AutoTrackingProvider.test.tsx(324,16): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/AutoTrackingProviderIntegration.test.tsx(6,44): error TS2307: Cannot find module '@testing-library/dom' or its corresponding type declarations.
+src/components/__tests__/AutoTrackingProviderIntegration.test.tsx(66,7): error TS2322: Type 'Money' is not assignable to type 'number'.
+src/components/__tests__/AutoTrackingProviderIntegration.test.tsx(66,14): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/AutoTrackingProviderIntegration.test.tsx(181,16): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/CheckoutFlow.integration.test.tsx(3,18): error TS2305: Module '"@testing-library/react"' has no exported member 'screen'.
+src/components/__tests__/CheckoutFlow.integration.test.tsx(3,26): error TS2305: Module '"@testing-library/react"' has no exported member 'fireEvent'.
+src/components/__tests__/CheckoutFlow.integration.test.tsx(3,37): error TS2305: Module '"@testing-library/react"' has no exported member 'waitFor'.
+src/components/__tests__/CheckoutFlow.integration.test.tsx(3,46): error TS2305: Module '"@testing-library/react"' has no exported member 'within'.
+src/components/__tests__/CheckoutFlow.integration.test.tsx(48,10): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/CheckoutFlow.integration.test.tsx(49,18): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/CheckoutFlow.integration.test.tsx(90,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/CheckoutFlow.integration.test.tsx(90,53): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/components/__tests__/CheckoutFlow.integration.test.tsx(390,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/Integration.simple.test.tsx(3,18): error TS2305: Module '"@testing-library/react"' has no exported member 'screen'.
+src/components/__tests__/Integration.simple.test.tsx(3,26): error TS2305: Module '"@testing-library/react"' has no exported member 'waitFor'.
+src/components/__tests__/Integration.simple.test.tsx(238,63): error TS2322: Type 'Money' is not assignable to type 'number'.
+src/components/__tests__/Integration.simple.test.tsx(238,70): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/Integration.simple.test.tsx(243,64): error TS2322: Type 'Money' is not assignable to type 'number'.
+src/components/__tests__/Integration.simple.test.tsx(243,71): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductCard.test.tsx(3,18): error TS2305: Module '"@testing-library/react"' has no exported member 'screen'.
+src/components/__tests__/ProductCard.test.tsx(3,26): error TS2305: Module '"@testing-library/react"' has no exported member 'fireEvent'.
+src/components/__tests__/ProductCard.test.tsx(64,10): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductCard.test.tsx(65,18): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductCard.test.tsx(66,15): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductListing.integration.test.tsx(3,18): error TS2305: Module '"@testing-library/react"' has no exported member 'screen'.
+src/components/__tests__/ProductListing.integration.test.tsx(3,26): error TS2305: Module '"@testing-library/react"' has no exported member 'waitFor'.
+src/components/__tests__/ProductListing.integration.test.tsx(181,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductListing.integration.test.tsx(182,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductListing.integration.test.tsx(230,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductListing.integration.test.tsx(231,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductListing.integration.test.tsx(232,17): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductListing.integration.test.tsx(286,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductListing.integration.test.tsx(287,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductListing.integration.test.tsx(335,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/ProductListing.integration.test.tsx(336,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(3,18): error TS2305: Module '"@testing-library/react"' has no exported member 'screen'.
+src/components/__tests__/SearchModal.integration.test.tsx(3,26): error TS2305: Module '"@testing-library/react"' has no exported member 'fireEvent'.
+src/components/__tests__/SearchModal.integration.test.tsx(3,37): error TS2305: Module '"@testing-library/react"' has no exported member 'waitFor'.
+src/components/__tests__/SearchModal.integration.test.tsx(157,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(158,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(198,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(199,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(200,17): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(239,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(240,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(280,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(281,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(322,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(323,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(345,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(346,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(368,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(369,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(391,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(392,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(414,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(415,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(437,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(438,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(460,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(461,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(483,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(484,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(506,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(507,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(529,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(530,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(552,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(553,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(575,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(576,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(598,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(599,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(621,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/__tests__/SearchModal.integration.test.tsx(622,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/ABTestVariant.tsx(171,54): error TS2322: Type 'Money | undefined' is not assignable to type 'string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<...> | null | undefined'.
+  Type 'Money' is not assignable to type 'string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<...> | null | undefined'.
+src/components/ABTestVariant.tsx(347,58): error TS2322: Type 'Money' is not assignable to type 'string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<...> | null | undefined'.
+src/components/content-tools/LinkChecker.tsx(27,16): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/content-tools/SEOAnalyzer.tsx(23,7): error TS18048: 'content.keywords' is possibly 'undefined'.
+src/components/content-tools/SEOAnalyzer.tsx(25,18): error TS18048: 'content.keywords' is possibly 'undefined'.
+src/components/EnhancedProductCard.tsx(72,20): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/components/EnhancedProductCard.tsx(72,44): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/components/EnhancedProductCard.tsx(72,61): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/components/EnhancedProductCard.tsx(177,54): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/EnhancedProductCard.tsx(180,79): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/EnhancedProductCard.tsx(185,52): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/ProductAnalytics.tsx(21,7): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/components/ProductCard.tsx(56,9): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/components/ProductCard.tsx(119,13): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/components/ProductCard.tsx(124,70): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/components/ProductCard.tsx(450,56): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/ProductCard.tsx(453,81): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/ProductCard.tsx(458,54): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/ProductCardSimple.tsx(95,30): error TS2345: Argument of type 'Money' is not assignable to parameter of type 'number'.
+src/components/ProductCardSimple.tsx(98,30): error TS2345: Argument of type 'Money' is not assignable to parameter of type 'number'.
+src/components/SearchFilters.tsx(101,73): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/components/SearchFilters.tsx(104,53): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/components/SearchFilters.tsx(105,53): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/components/SearchFilters.tsx(140,21): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/components/SearchFilters.tsx(140,31): error TS2365: Operator '<' cannot be applied to types 'number | Money' and 'number'.
+src/components/SearchFilters.tsx(145,21): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/components/SearchFilters.tsx(145,31): error TS2365: Operator '>' cannot be applied to types 'number | Money' and 'number'.
+src/components/SemanticSearchModal.tsx(301,32): error TS2322: Type 'Money' is not assignable to type 'string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<...> | null | undefined'.
+src/context/__tests__/CartContext.php-currency.test.tsx(7,23): error TS2305: Module '"@testing-library/react"' has no exported member 'waitFor'.
+src/context/__tests__/CartContext.php-currency.test.tsx(62,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/__tests__/CartContext.php-currency.test.tsx(63,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/__tests__/CartContext.php-currency.test.tsx(64,17): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/__tests__/CartContext.php-currency.test.tsx(74,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/__tests__/CartContext.php-currency.test.tsx(75,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/__tests__/CartContext.php-currency.test.tsx(84,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/__tests__/CartContext.php-currency.test.tsx(85,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/__tests__/CartContext.php-currency.test.tsx(94,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/__tests__/CartContext.php-currency.test.tsx(95,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/__tests__/CartContext.php-currency.test.tsx(277,16): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/__tests__/CartContext.simple.test.tsx(8,23): error TS2305: Module '"@testing-library/react"' has no exported member 'waitFor'.
+src/context/__tests__/CartContext.simple.test.tsx(68,32): error TS2322: Type 'Money' is not assignable to type 'ReactI18NextChildren | Iterable<ReactI18NextChildren>'.
+src/context/__tests__/CartContext.simple.test.tsx(93,14): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/CartContext.tsx(18,27): error TS2322: Type 'Money' is not assignable to type 'number'.
+src/context/CartContext.tsx(23,41): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/CartContext.tsx(27,37): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/CartContext.tsx(60,10): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/CartContext.tsx(69,42): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/CartContext.tsx(84,6): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/CartContext.tsx(173,16): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/context/CartContext.tsx(283,45): error TS2345: Argument of type 'Money' is not assignable to parameter of type 'number'.
+src/context/CartContext.tsx(331,7): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/context/CartContext.tsx(377,45): error TS2345: Argument of type 'Money' is not assignable to parameter of type 'number'.
+src/context/CartContext.tsx(385,43): error TS2345: Argument of type 'Money' is not assignable to parameter of type 'number'.
+src/core/auth/auth.service.ts(102,36): error TS2345: Argument of type 'User' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'User'.
+src/core/auth/auth.service.ts(224,36): error TS2345: Argument of type 'Session' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'Session'.
+src/core/auth/auth.service.ts(236,38): error TS2345: Argument of type 'Session' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'Session'.
+src/core/auth/auth.service.ts(276,34): error TS2345: Argument of type 'Session' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'Session'.
+src/hooks/__tests__/useAutoTracking.test.ts(132,51): error TS2345: Argument of type '{ id: number; name: string; price: Money; category: string; quantity: number; }' is not assignable to parameter of type '{ id: number; name: string; price: number; category: string; quantity?: number | undefined; variantId?: number | undefined; }'.
+  Types of property 'price' are incompatible.
+    Type 'Money' is not assignable to type 'number'.
+src/hooks/__tests__/useAutoTracking.test.ts(162,58): error TS2345: Argument of type '{ id: number; name: string; price: Money; category: string; }' is not assignable to parameter of type '{ id: number; name: string; price: number; category: string; quantity?: number | undefined; variantId?: number | undefined; }'.
+  Types of property 'price' are incompatible.
+    Type 'Money' is not assignable to type 'number'.
+src/hooks/__tests__/useAutoTracking.test.ts(187,63): error TS2345: Argument of type '{ id: number; name: string; price: Money; category: string; }' is not assignable to parameter of type '{ id: number; name: string; price: number; category: string; quantity?: number | undefined; variantId?: number | undefined; }'.
+  Types of property 'price' are incompatible.
+    Type 'Money' is not assignable to type 'number'.
+src/hooks/__tests__/useAutoTracking.test.ts(209,55): error TS2345: Argument of type '{ id: number; name: string; price: Money; category: string; }' is not assignable to parameter of type '{ id: number; name: string; price: number; category: string; quantity?: number | undefined; variantId?: number | undefined; }'.
+  Types of property 'price' are incompatible.
+    Type 'Money' is not assignable to type 'number'.
+src/hooks/__tests__/useAutoTracking.test.ts(392,11): error TS2322: Type 'Money' is not assignable to type 'number'.
+src/hooks/__tests__/useAutoTracking.test.ts(412,11): error TS2322: Type 'Money' is not assignable to type 'number'.
+src/hooks/__tests__/useAutoTracking.test.ts(433,11): error TS2322: Type 'Money' is not assignable to type 'number'.
+src/hooks/__tests__/useAutoTracking.test.ts(455,11): error TS2322: Type 'Money' is not assignable to type 'number'.
+src/hooks/__tests__/useAutoTracking.test.ts(483,11): error TS2322: Type 'Money' is not assignable to type 'number'.
+src/hooks/useProductFilters.ts(50,23): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/hooks/useProductFilters.ts(50,33): error TS2365: Operator '>=' cannot be applied to types 'number | Money' and 'number'.
+src/hooks/useProductFilters.ts(57,23): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/hooks/useProductFilters.ts(57,33): error TS2365: Operator '<=' cannot be applied to types 'number | Money' and 'number'.
+src/hooks/useProductFilters.ts(77,20): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/hooks/useProductFilters.ts(77,37): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/hooks/useProductFilters.ts(80,20): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/hooks/useProductFilters.ts(80,37): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/hooks/useProductFilters.ts(116,73): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/hooks/useProductFilters.ts(118,21): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/hooks/useProductFilters.ts(119,21): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/hooks/useProductFilters.ts(176,23): error TS2345: Argument of type 'Money | 0' is not assignable to parameter of type 'number'.
+  Type 'Money' is not assignable to type 'number'.
+src/hooks/useProductFilters.ts(176,33): error TS2365: Operator '>=' cannot be applied to types 'number | Money' and 'number'.
+src/hooks/useProductFilters.ts(176,49): error TS2365: Operator '<=' cannot be applied to types 'number | Money' and 'number'.
+src/lib/cart-validation.ts(87,16): error TS2352: Conversion of type '{ permalink: string; description: string; short_description: string; regular_price: string | number; sale_price: string | number; on_sale: boolean; status: "draft" | "publish" | "private" | "pending"; ... 21 more ...; price?: string | ... 1 more ... | undefined; }' to type 'WCProduct' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'regular_price' are incompatible.
+    Type 'string | number' is not comparable to type 'Money | undefined'.
+      Type 'number' is not comparable to type 'Money'.
+src/lib/cart-validation.ts(198,23): error TS2339: Property 'expected' does not exist on type 'ZodIssue'.
+  Property 'expected' does not exist on type 'ZodUnrecognizedKeysIssue & { fatal?: boolean | undefined; message: string; }'.
+src/lib/cart-validation.ts(199,23): error TS2339: Property 'received' does not exist on type 'ZodIssue'.
+  Property 'received' does not exist on type 'ZodUnrecognizedKeysIssue & { fatal?: boolean | undefined; message: string; }'.
+src/lib/cart-validation.ts(200,20): error TS2339: Property 'input' does not exist on type 'ZodIssue'.
+  Property 'input' does not exist on type 'ZodInvalidTypeIssue & { fatal?: boolean | undefined; message: string; }'.
+src/lib/contextual-search.ts(243,9): error TS2345: Argument of type '{ id: number; name: string; description: string | undefined; categories: WCCategory[] | undefined; price: Money; score: number; }[]' is not assignable to parameter of type '{ id: number; name: string; description?: string | undefined; categories?: { name: string; }[] | undefined; price?: number | undefined; brand?: string | undefined; healthBenefits?: string[] | undefined; score: number; }[]'.
+  Type '{ id: number; name: string; description: string | undefined; categories: WCCategory[] | undefined; price: Money; score: number; }' is not assignable to type '{ id: number; name: string; description?: string | undefined; categories?: { name: string; }[] | undefined; price?: number | undefined; brand?: string | undefined; healthBenefits?: string[] | undefined; score: number; }'.
+    Types of property 'price' are incompatible.
+      Type 'Money' is not assignable to type 'number'.
+src/lib/contextual-search.ts(248,38): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/improved-search.ts(258,30): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/lib/improved-search.ts(258,55): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/lib/improved-search.ts(261,30): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/lib/improved-search.ts(261,55): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/lib/keyword-search.ts(164,34): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/keyword-search.ts(248,40): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/memgraph.ts(736,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/memgraph.ts(755,5): error TS2322: Type '(GraphProduct | { id: number; name: string; slug: string; price: Money; categories: never[]; description: string; inStock: boolean; featured: boolean; })[]' is not assignable to type 'GraphProduct[]'.
+  Type 'GraphProduct | { id: number; name: string; slug: string; price: Money; categories: never[]; description: string; inStock: boolean; featured: boolean; }' is not assignable to type 'GraphProduct'.
+    Type '{ id: number; name: string; slug: string; price: Core.Money; categories: never[]; description: string; inStock: boolean; featured: boolean; }' is not assignable to type 'GraphProduct'.
+      Types of property 'price' are incompatible.
+        Type 'Money' is not assignable to type 'number'.
+src/lib/money-migration.ts(80,24): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | number | null | undefined'.
+src/lib/money-migration.ts(96,24): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | number | null | undefined'.
+src/lib/qdrant-auto-sync.ts(33,70): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/qdrant.ts(262,70): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/qdrant.ts(514,17): error TS2341: Property 'baseUrl' is private and only accessible within class 'QdrantClient'.
+src/lib/qdrant.ts(515,25): error TS2341: Property 'headers' is private and only accessible within class 'QdrantClient'.
+src/lib/qdrant.ts(519,49): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown> | undefined'.
+src/lib/vectorization.ts(58,32): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce-adapter.ts(68,25): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/lib/woocommerce-adapter.ts(71,33): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/lib/woocommerce-adapter.ts(74,30): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/lib/woocommerce-adapter.ts(120,9): error TS2740: Type '{ total: Money | undefined; total_tax: Money | undefined; shipping_total: Money | undefined; discount_total: Money | undefined; id: number; status: string; ... 7 more ...; date_modified?: string | undefined; }' is missing the following properties from type 'WCOrder': parent_id, version, prices_include_tax, discount_tax, and 28 more.
+src/lib/woocommerce-adapter.ts(122,5): error TS2322: Type 'Money | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/lib/woocommerce-adapter.ts(123,5): error TS2322: Type 'Money | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/lib/woocommerce-adapter.ts(124,5): error TS2322: Type 'Money | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/lib/woocommerce-adapter.ts(125,5): error TS2322: Type 'Money | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/lib/woocommerce-adapter.ts(130,5): error TS2322: Type '{ total: Money | undefined; subtotal: Money | undefined; total_tax: Money | undefined; price: Money | undefined; id: number; name: string; product_id: number; quantity: number; }[]' is not assignable to type 'WCOrderLineItem[]'.
+  Type '{ total: Money | undefined; subtotal: Money | undefined; total_tax: Money | undefined; price: Money | undefined; id: number; name: string; product_id: number; quantity: number; }' is missing the following properties from type 'WCOrderLineItem': variation_id, tax_class, subtotal_tax, taxes, and 4 more.
+src/lib/woocommerce-adapter.ts(150,34): error TS2339: Property 'toPesos' does not exist on type 'string'.
+src/lib/woocommerce-adapter.ts(153,42): error TS2339: Property 'toPesos' does not exist on type 'string'.
+src/lib/woocommerce-adapter.ts(156,52): error TS2339: Property 'toPesos' does not exist on type 'string'.
+src/lib/woocommerce-adapter.ts(159,52): error TS2339: Property 'toPesos' does not exist on type 'string'.
+src/lib/woocommerce-adapter.ts(223,17): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce-adapter.ts(226,15): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce-adapter.ts(227,10): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce-adapter.ts(260,3): error TS2322: Type 'number' is not assignable to type 'Money'.
+src/lib/woocommerce-adapter.ts(278,38): error TS2365: Operator '<' cannot be applied to types 'Money' and 'number'.
+src/lib/woocommerce-mappers.ts(202,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce-mappers.ts(203,20): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce-mappers.ts(204,38): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce.ts(30,14): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce.ts(31,22): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce.ts(61,14): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce.ts(62,22): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce.ts(92,14): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce.ts(93,22): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce.ts(94,19): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/lib/woocommerce.ts(228,9): error TS2322: Type 'Money' is not assignable to type 'number'.
+src/lib/woocommerce.ts(228,16): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/sanity/components/content/RelatedContentSuggestions.tsx(2,44): error TS2440: Import declaration conflicts with local declaration of 'Flex'.
+src/sanity/components/insights/ContentScoring.tsx(115,18): error TS2322: Type 'string' is not assignable to type '"default" | "positive" | "primary" | "neutral" | "suggest" | "caution" | "critical" | undefined'.
+src/sanity/components/preview/SocialMediaPreview.tsx(2,29): error TS2440: Import declaration conflicts with local declaration of 'Flex'.
+src/sanity/components/seo/SEOPreview.tsx(84,36): error TS2322: Type '{ children: string; size: number; muted: true; tone: string; }' is not assignable to type 'IntrinsicAttributes & Omit<TextProps & Omit<HTMLProps<HTMLDivElement>, "size" | "as">, "ref"> & RefAttributes<...>'.
+  Property 'tone' does not exist on type 'IntrinsicAttributes & Omit<TextProps & Omit<HTMLProps<HTMLDivElement>, "size" | "as">, "ref"> & RefAttributes<...>'.
+src/sanity/components/tools/BrokenLinkChecker.tsx(2,44): error TS2440: Import declaration conflicts with local declaration of 'Flex'.
+src/sanity/components/tools/BrokenLinkChecker.tsx(170,30): error TS2322: Type '{ children: Element[]; space: number; align: string; }' is not assignable to type 'IntrinsicAttributes & StackProps & Omit<HTMLProps<HTMLDivElement>, "ref" | "as"> & RefAttributes<HTMLDivElement>'.
+  Property 'align' does not exist on type 'IntrinsicAttributes & StackProps & Omit<HTMLProps<HTMLDivElement>, "ref" | "as"> & RefAttributes<HTMLDivElement>'.
+src/sanity/components/tools/BrokenLinkChecker.tsx(176,30): error TS2322: Type '{ children: Element[]; space: number; align: string; }' is not assignable to type 'IntrinsicAttributes & StackProps & Omit<HTMLProps<HTMLDivElement>, "ref" | "as"> & RefAttributes<HTMLDivElement>'.
+  Property 'align' does not exist on type 'IntrinsicAttributes & StackProps & Omit<HTMLProps<HTMLDivElement>, "ref" | "as"> & RefAttributes<HTMLDivElement>'.
+src/sanity/components/tools/BrokenLinkChecker.tsx(182,30): error TS2322: Type '{ children: Element[]; space: number; align: string; }' is not assignable to type 'IntrinsicAttributes & StackProps & Omit<HTMLProps<HTMLDivElement>, "ref" | "as"> & RefAttributes<HTMLDivElement>'.
+  Property 'align' does not exist on type 'IntrinsicAttributes & StackProps & Omit<HTMLProps<HTMLDivElement>, "ref" | "as"> & RefAttributes<HTMLDivElement>'.
+src/sanity/components/tools/ImageOptimizer.tsx(2,44): error TS2440: Import declaration conflicts with local declaration of 'Flex'.
+src/sanity/components/tools/ImageOptimizer.tsx(80,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/sanity/components/tools/ImageOptimizer.tsx(229,30): error TS2322: Type '{ children: Element[]; space: number; align: string; }' is not assignable to type 'IntrinsicAttributes & StackProps & Omit<HTMLProps<HTMLDivElement>, "ref" | "as"> & RefAttributes<HTMLDivElement>'.
+  Property 'align' does not exist on type 'IntrinsicAttributes & StackProps & Omit<HTMLProps<HTMLDivElement>, "ref" | "as"> & RefAttributes<HTMLDivElement>'.
+src/sanity/plugins/contentEnhancementsPlugin.tsx(16,31): error TS2339: Property 'document' does not exist on type 'DocumentInspectorContext'.
+src/sanity/plugins/contentEnhancementsPlugin.tsx(52,77): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/types/woocommerce-mappers.ts(76,12): error TS2352: Conversion of type 'number' to type 'Money' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.

@@ -11,6 +11,7 @@ import {
   MonitoringFrequency,
   CompetitorStatus
 } from '@/lib/business-intelligence/types/competitor';
+import { competitorDB } from '@/lib/business-intelligence/competitor-database';
 
 interface RouteParams {
   params: Promise<{
@@ -25,23 +26,22 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     logger.debug('Fetching competitor details', { competitorId: id });
 
-    // TODO: Implement actual database query
-    // For now, return a mock response
-    const mockResponse: CompetitorDetailsResponse = {
-      id,
-      name: 'Mock Competitor',
-      domain: 'example.com',
-      industry: 'Technology',
-      size: CompanySize.MEDIUM,
-      category: CompetitorCategory.DIRECT,
-      monitoringScope: MonitoringScope.FULL_MONITORING,
-      monitoringFrequency: MonitoringFrequency.DAILY,
-      status: CompetitorStatus.ACTIVE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      products: [],
-      channels: [],
-      campaigns: [],
+    // Get competitor from database
+    const competitor = await competitorDB.getCompetitorById(id);
+
+    if (!competitor) {
+      return NextResponse.json(
+        { error: 'Competitor not found' },
+        { status: 404 }
+      );
+    }
+
+    // Build detailed response (in real implementation, would fetch related data)
+    const detailsResponse: CompetitorDetailsResponse = {
+      ...competitor,
+      products: [], // Would fetch from product monitoring database
+      channels: [], // Would fetch from channel monitoring database
+      campaigns: [], // Would fetch from campaign tracking database
       monitoringStats: {
         totalProducts: 0,
         totalChannels: 0,
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
     };
 
-    return NextResponse.json(mockResponse);
+    return NextResponse.json(detailsResponse);
   } catch (error) {
     logger.error('Error fetching competitor details:', error as Record<string, unknown>);
     return NextResponse.json(
@@ -68,11 +68,19 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     logger.debug('Updating competitor', { competitorId: id, updates: Object.keys(body) });
 
-    // TODO: Implement actual competitor update logic
+    // Update competitor in database
+    const updatedCompetitor = await competitorDB.updateCompetitor(id, body);
+
+    if (!updatedCompetitor) {
+      return NextResponse.json(
+        { error: 'Competitor not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       message: 'Competitor updated successfully',
-      competitorId: id
+      competitor: updatedCompetitor
     });
   } catch (error) {
     logger.error('Error updating competitor:', error as Record<string, unknown>);
@@ -90,7 +98,15 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     logger.debug('Deleting competitor', { competitorId: id });
 
-    // TODO: Implement actual competitor deletion logic
+    // Delete competitor from database
+    const deleted = await competitorDB.deleteCompetitor(id);
+
+    if (!deleted) {
+      return NextResponse.json(
+        { error: 'Competitor not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       message: 'Competitor deleted successfully',

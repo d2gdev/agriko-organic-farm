@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { getAllProductsWithPagination } from '@/lib/woocommerce';
+import { getAllProductsWithPaginationForClient } from '@/lib/woocommerce';
 import ProductsWithFilters from '@/components/ProductsWithFilters';
 import HeroSection from '@/components/HeroSection';
 import CategoryCards from '@/components/CategoryCards';
@@ -133,7 +133,7 @@ async function ProductsContent({ searchParams }: { searchParams: Record<string, 
         break;
     }
 
-    const result = await getAllProductsWithPagination({
+    const result = await getAllProductsWithPaginationForClient({
       per_page: perPage,
       page: page,
       orderby,
@@ -144,6 +144,16 @@ async function ProductsContent({ searchParams }: { searchParams: Record<string, 
       ...(minPrice && { min_price: minPrice }),
       ...(maxPrice && { max_price: maxPrice })
     });
+
+    // Debug logging to verify serialization
+    if (result.products.length > 0) {
+      const firstProduct = result.products[0];
+      if (firstProduct) {
+        console.log('First product price type:', typeof firstProduct.price, firstProduct.price);
+        console.log('First product regular_price type:', typeof firstProduct.regular_price, firstProduct.regular_price);
+        console.log('Has toJSON method:', firstProduct.price && typeof firstProduct.price === 'object' && 'toJSON' in firstProduct.price);
+      }
+    }
 
     if (!result.products || result.products.length === 0) {
       return (
@@ -198,6 +208,7 @@ export default async function ProductsPage({
         description="Pure Organic Rice & Herbal Blends — Sustainably grown, carefully harvested, and lovingly packaged for your family's wellness."
         secondaryButtonText="Our Story"
         secondaryButtonHref="/about"
+        videoSrc="/videos/Hero-Shop.mp4"
       />
 
       {/* Category Cards */}

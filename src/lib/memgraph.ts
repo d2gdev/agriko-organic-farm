@@ -1,4 +1,5 @@
 import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
 import neo4j, { Driver, Session } from 'neo4j-driver';
 
 import { logger } from '@/lib/logger';
@@ -733,7 +734,7 @@ export async function getFrequentlyBoughtTogether(productId: number, limit: numb
             id: 0,
             name: 'Unknown',
             slug: '',
-            price: 0 as Core.Money,
+            price: 0,
             categories: [],
             description: '',
             inStock: false,

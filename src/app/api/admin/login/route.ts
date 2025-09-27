@@ -49,26 +49,8 @@ export async function POST(request: NextRequest) {
     // Use email or convert username to email format
     const userEmail = email || `${username}@agriko.com`;
 
-    // DEVELOPMENT ONLY: Hardcoded credentials bypass
-    let result: AuthResult;
-    if (process.env.NODE_ENV === 'development' &&
-        username === 'agrikoadmin' &&
-        password === 'admin123') {
-      // Create mock successful result for development
-      result = {
-        success: true,
-        token: 'dev-token-' + Date.now(),
-        user: {
-          id: 'dev-admin',
-          email: 'agrikoadmin@agriko.com',
-          role: 'admin',
-          permissions: ['view_analytics', 'manage_products', 'manage_users', 'manage_content']
-        }
-      };
-    } else {
-      // Authenticate using the new auth service
-      result = await authService.authenticate(userEmail, password, request);
-    }
+    // Authenticate using the auth service - no hardcoded credentials
+    const result: AuthResult = await authService.authenticate(userEmail, password, request);
 
     if (result.success && result.token) {
       // Create response with authentication data and redirect flag

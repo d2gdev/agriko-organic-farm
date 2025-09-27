@@ -2,9 +2,21 @@ import React, { useState, useEffect } from 'react'
 import { Card, Stack, Text, Button, Flex } from '@sanity/ui'
 import { EyeOpenIcon, RefreshIcon } from '@sanity/icons'
 
+interface DocumentWithSlug {
+  slug?: {
+    current?: string
+  }
+  [key: string]: unknown
+}
+
+interface SchemaType {
+  name: string
+  [key: string]: unknown
+}
+
 interface LivePreviewProps {
-  document: any
-  schemaType: any
+  document: DocumentWithSlug
+  schemaType: SchemaType
 }
 
 export function LivePreview({ document, schemaType }: LivePreviewProps) {
@@ -34,10 +46,13 @@ export function LivePreview({ document, schemaType }: LivePreviewProps) {
 
   const handleRefresh = () => {
     setIsLoading(true)
-    // Force iframe refresh
-    const iframe = document.getElementById('preview-iframe') as HTMLIFrameElement
-    if (iframe) {
-      iframe.src = iframe.src
+    // Force iframe refresh by reloading its content
+    const iframeElement = typeof window !== 'undefined' ? window.document.getElementById('preview-iframe') : null
+    if (iframeElement && 'contentWindow' in iframeElement) {
+      const iframe = iframeElement as { contentWindow: Window | null }
+      if (iframe.contentWindow) {
+        iframe.contentWindow.location.reload()
+      }
     }
     setTimeout(() => setIsLoading(false), 1000)
   }

@@ -1,6 +1,6 @@
 // Integration tests for the complete auto-sync API workflow
 import { NextRequest } from 'next/server';
-import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
 import { POST, GET } from '../route';
 
 // Mock all dependencies
@@ -327,7 +327,7 @@ describe('Auto-Sync API Integration Tests', () => {
         productData: {
           id: 123,
           name: 'Test Product',
-          price: 2999 as Core.Money,
+          price: Money.centavos(299900),
           categories: [{ name: 'Electronics' }]
         }
       }));

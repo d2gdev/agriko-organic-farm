@@ -8,22 +8,26 @@ import { Money } from '@/lib/money';
 
 /**
  * Format centavos to Philippine Peso display string
- * @param centavos - Amount in centavos (e.g., 129900 for ₱1,299.00)
+ * @param money - Money object or centavos number (for backward compatibility)
  * @returns Formatted string with ₱ symbol and thousand separators
- * @example formatPrice(129900) // "₱1,299.00"
+ * @example formatPrice(Money.centavos(129900)) // "₱1,299.00"
  */
-export function formatPrice(money: Core.Money): string {
+export function formatPrice(money: Core.Money | number): string {
+  // Handle legacy number input
+  if (typeof money === 'number') {
+    return Money.centavos(money).format();
+  }
   return money.format();
 }
 
 /**
  * Convert pesos to centavos for storage and calculation
  * @param pesos - Amount in pesos (e.g., 1299.50)
- * @returns Amount in centavos as Core.Money
+ * @returns Amount in centavos as number (for backward compatibility)
  * @example toCentavos(1299.50) // 129950
  */
-export function toCentavos(pesos: number): Core.Money {
-  return Math.round(pesos * 100) as Core.Money;
+export function toCentavos(pesos: number): number {
+  return Math.round(pesos * 100);
 }
 
 /**
@@ -42,44 +46,55 @@ export function parseWooPrice(price: string | number): Core.Money {
 /**
  * Calculate cart total from items
  * @param items - Array of cart items with price and quantity
- * @returns Total in centavos
+ * @returns Total as Money object
  */
 export function calculateCartTotal(
-  items: Array<{ price: Core.Money; quantity: number }>
+  items: Array<{ price: Core.Money | number; quantity: number }>
 ): Core.Money {
-  const total = items.reduce((sum, item) => {
-    return sum + (item.price * item.quantity);
-  }, 0);
+  let totalMoney = Money.ZERO;
 
-  return total as Core.Money;
+  for (const item of items) {
+    const itemMoney = typeof item.price === 'number'
+      ? Money.centavos(item.price)
+      : item.price;
+    totalMoney = totalMoney.add(itemMoney.multiply(item.quantity));
+  }
+
+  return totalMoney;
 }
 
 /**
  * Calculate discount amount
- * @param original - Original price in centavos
+ * @param original - Original price as Money or centavos number
  * @param discountPercent - Discount percentage (0-100)
- * @returns Discount amount in centavos
+ * @returns Discount amount as Money object
  */
 export function calculateDiscount(
-  original: Core.Money,
-  discountPercent: Core.Percentage
+  original: Core.Money | number,
+  discountPercent: Core.Percentage | number
 ): Core.Money {
-  const discount = Math.round((original * discountPercent) / 100);
-  return discount as Core.Money;
+  const money = typeof original === 'number'
+    ? Money.centavos(original)
+    : original;
+  const percent = discountPercent as number;
+  return money.percentage(percent);
 }
 
 /**
  * Apply discount to price
- * @param price - Original price in centavos
+ * @param price - Original price as Money or centavos number
  * @param discountPercent - Discount percentage (0-100)
  * @returns Final price after discount
  */
 export function applyDiscount(
-  price: Core.Money,
-  discountPercent: Core.Percentage
+  price: Core.Money | number,
+  discountPercent: Core.Percentage | number
 ): Core.Money {
-  const discount = calculateDiscount(price, discountPercent);
-  return (price - discount) as Core.Money;
+  const money = typeof price === 'number'
+    ? Money.centavos(price)
+    : price;
+  const discount = calculateDiscount(money, discountPercent);
+  return money.subtract(discount);
 }
 
 /**
@@ -88,6 +103,10 @@ export function applyDiscount(
  * @returns True if valid money amount
  */
 export function isValidMoney(value: unknown): value is Core.Money {
+  if (value instanceof Money) {
+    return true;
+  }
+  // Check if it's a valid number that can be converted to Money
   return (
     typeof value === 'number' &&
     Number.isInteger(value) &&
@@ -98,59 +117,58 @@ export function isValidMoney(value: unknown): value is Core.Money {
 
 /**
  * Safe money addition with overflow protection
- * @param a - First amount in centavos
- * @param b - Second amount in centavos
- * @returns Sum in centavos
+ * @param a - First amount as Money or centavos number
+ * @param b - Second amount as Money or centavos number
+ * @returns Sum as Money object
  */
-export function addMoney(a: Core.Money, b: Core.Money): Core.Money {
-  const sum = a + b;
+export function addMoney(a: Core.Money | number, b: Core.Money | number): Core.Money {
+  const moneyA = typeof a === 'number' ? Money.centavos(a) : a;
+  const moneyB = typeof b === 'number' ? Money.centavos(b) : b;
 
-  if (sum > Number.MAX_SAFE_INTEGER) {
-    throw new Error('Money overflow: sum exceeds maximum safe integer');
-  }
-
-  return sum as Core.Money;
+  // Money class already has overflow protection
+  return moneyA.add(moneyB);
 }
 
 /**
  * Safe money multiplication (for quantity)
- * @param money - Amount in centavos
+ * @param money - Amount as Money or centavos number
  * @param quantity - Quantity to multiply by
- * @returns Total in centavos
+ * @returns Total as Money object
  */
-export function multiplyMoney(money: Core.Money, quantity: number): Core.Money {
-  const result = money * quantity;
+export function multiplyMoney(money: Core.Money | number, quantity: number): Core.Money {
+  const moneyObj = typeof money === 'number' ? Money.centavos(money) : money;
 
-  if (result > Number.MAX_SAFE_INTEGER) {
-    throw new Error('Money overflow: result exceeds maximum safe integer');
-  }
-
-  return Math.round(result) as Core.Money;
+  // Money class already has overflow protection
+  return moneyObj.multiply(quantity);
 }
 
 /**
  * Compare two money amounts
- * @param a - First amount
- * @param b - Second amount
+ * @param a - First amount as Money or centavos number
+ * @param b - Second amount as Money or centavos number
  * @returns -1 if a < b, 0 if equal, 1 if a > b
  */
-export function compareMoney(a: Core.Money, b: Core.Money): -1 | 0 | 1 {
-  if (a < b) return -1;
-  if (a > b) return 1;
+export function compareMoney(a: Core.Money | number, b: Core.Money | number): -1 | 0 | 1 {
+  const moneyA = typeof a === 'number' ? Money.centavos(a) : a;
+  const moneyB = typeof b === 'number' ? Money.centavos(b) : b;
+
+  if (moneyA.lessThan(moneyB)) return -1;
+  if (moneyA.greaterThan(moneyB)) return 1;
   return 0;
 }
 
 /**
  * Format money for API/database storage
- * @param centavos - Amount in centavos
+ * @param money - Money object or centavos number
  * @returns Object with amount and currency
  */
-export function serializeMoney(centavos: Core.Money): {
+export function serializeMoney(money: Core.Money | number): {
   amount: number;
   currency: Core.Currency;
 } {
+  const moneyObj = typeof money === 'number' ? Money.centavos(money) : money;
   return {
-    amount: centavos,
+    amount: moneyObj.cents,
     currency: 'PHP'
   };
 }
@@ -172,7 +190,7 @@ export function deserializeMoney(data: {
     return parseWooPrice(data.amount);
   }
 
-  return data.amount as Core.Money;
+  return Money.centavos(data.amount);
 }
 
 /**
@@ -182,14 +200,15 @@ export function deserializeMoney(data: {
  * @returns Formatted display string
  */
 export function displayMoney(
-  centavos: Core.Money,
+  money: Core.Money | number,
   showCurrency: boolean = true
 ): string {
   if (showCurrency) {
-    return formatPrice(centavos);
+    return formatPrice(money);
   }
 
-  const pesos = centavos / 100;
+  const moneyObj = typeof money === 'number' ? Money.centavos(money) : money;
+  const pesos = moneyObj.pesos;
   return pesos.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
@@ -213,7 +232,7 @@ export function parseMoneyInput(input: string): Core.Money | null {
     return null;
   }
 
-  return toCentavos(pesos);
+  return Money.pesos(pesos);
 }
 
 // Export all functions as a namespace for convenience

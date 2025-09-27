@@ -2,8 +2,9 @@
 // Tests the system's ability to gracefully handle errors and recover from failures
 
 import React from 'react';
-import { Core } from '@/types/TYPE_REGISTRY';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { Money } from '@/lib/money';
+import { render } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/dom';
 import { NextRequest } from 'next/server';
 import { POST } from '@/app/api/auto-sync/route';
 import { AutoTrackingProvider } from '@/components/AutoTrackingProvider';
@@ -61,7 +62,7 @@ describe('Error Handling and System Resilience', () => {
           productData: {
             id: 123,
             name: 'Test Product',
-            price: 2999 as Core.Money,
+            price: Money.centavos(299900),
             description: 'A test product'
           }
         })
@@ -155,7 +156,7 @@ describe('Error Handling and System Resilience', () => {
 
         React.useEffect(() => {
           try {
-            trackProduct('view', { id: 1, name: 'Test', price: 10 as Core.Money, category: 'Test' });
+            trackProduct('view', { id: 1, name: 'Test', price: Money.centavos(1000), category: 'Test' });
           } catch (error) {
             console.error('Tracking error:', error);
           }
@@ -200,7 +201,7 @@ describe('Error Handling and System Resilience', () => {
           addToCart({
             id: 1,
             name: 'Test Product',
-            price: 2999 as Core.Money,
+            price: Money.centavos(299900),
             image: 'test.jpg',
             quantity: 1
           });

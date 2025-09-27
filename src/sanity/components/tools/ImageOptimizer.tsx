@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Card, Stack, Text, Button, Badge, Flex, Box, Grid } from '@sanity/ui'
+import { Card, Stack, Text, Button, Badge, Box, Grid, Flex as SanityFlex } from '@sanity/ui'
 import { ImageIcon, DownloadIcon, WarningOutlineIcon } from '@sanity/icons'
 
 interface ImageOptimizerProps {
@@ -77,7 +77,7 @@ export function ImageOptimizer({ document }: ImageOptimizerProps) {
             originalSize: Math.random() * 3000000 + 500000,
             optimizedSize: Math.random() * 500000 + 100000,
             savings: Math.floor(Math.random() * 40 + 60),
-            format: ['JPEG', 'PNG', 'GIF'][Math.floor(Math.random() * 3)],
+            format: (['JPEG', 'PNG', 'GIF'] as const)[Math.floor(Math.random() * 3)]!,
             dimensions: {
               width: Math.floor(Math.random() * 1000 + 1000),
               height: Math.floor(Math.random() * 1000 + 800)
@@ -113,11 +113,11 @@ export function ImageOptimizer({ document }: ImageOptimizerProps) {
   return (
     <Card padding={4} radius={2} shadow={1}>
       <Stack space={4}>
-        <Flex align="center" justify="space-between">
-          <Flex align="center" gap={2}>
+        <SanityFlex align="center" justify="space-between">
+          <SanityFlex align="center" gap={2}>
             <ImageIcon />
             <Text size={2} weight="semibold">Image Optimizer</Text>
-          </Flex>
+          </SanityFlex>
           <Button
             fontSize={1}
             icon={ImageIcon}
@@ -126,7 +126,7 @@ export function ImageOptimizer({ document }: ImageOptimizerProps) {
             loading={isAnalyzing}
             text="Analyze Images"
           />
-        </Flex>
+        </SanityFlex>
 
         {images.length > 0 && (
           <>
@@ -162,12 +162,12 @@ export function ImageOptimizer({ document }: ImageOptimizerProps) {
               {images.map((image, index) => (
                 <Card key={index} padding={3} radius={2} tone="default" border>
                   <Stack space={3}>
-                    <Flex align="center" justify="space-between">
+                    <SanityFlex align="center" justify="space-between">
                       <Text size={1} weight="semibold">{image.field}</Text>
                       <Badge tone={image.savings > 70 ? 'critical' : image.savings > 40 ? 'caution' : 'positive'}>
                         {image.savings}% reduction possible
                       </Badge>
-                    </Flex>
+                    </SanityFlex>
 
                     <Grid columns={[1, 1, 3, 3]} gap={2}>
                       <Stack space={1}>
@@ -191,18 +191,18 @@ export function ImageOptimizer({ document }: ImageOptimizerProps) {
                         <Text size={1} muted weight="semibold">Recommendations:</Text>
                         <Stack space={1} marginTop={2}>
                           {image.recommendations.map((rec, i) => (
-                            <Flex key={i} align="center" gap={2}>
+                            <SanityFlex key={i} align="center" gap={2}>
                               <Text size={1}>• {rec}</Text>
-                            </Flex>
+                            </SanityFlex>
                           ))}
                         </Stack>
                       </Box>
                     )}
 
-                    <Flex gap={2}>
+                    <SanityFlex gap={2}>
                       <Button fontSize={1} text="Optimize" tone="primary" />
                       <Button fontSize={1} text="Download Optimized" mode="ghost" icon={DownloadIcon} />
-                    </Flex>
+                    </SanityFlex>
                   </Stack>
                 </Card>
               ))}
@@ -226,9 +226,11 @@ export function ImageOptimizer({ document }: ImageOptimizerProps) {
 
         {images.length === 0 && !isAnalyzing && (
           <Card padding={3} tone="transparent" border>
-            <Stack space={2} align="center">
-              <WarningOutlineIcon />
-              <Text size={1} muted>
+            <Stack space={2}>
+              <div style={{textAlign: 'center'}}>
+                <WarningOutlineIcon />
+              </div>
+              <Text size={1} muted style={{textAlign: 'center'}}>
                 Click "Analyze Images" to scan document for optimization opportunities
               </Text>
             </Stack>
@@ -239,17 +241,3 @@ export function ImageOptimizer({ document }: ImageOptimizerProps) {
   )
 }
 
-function Flex({ children, align, justify, gap, direction, style }: any) {
-  return (
-    <div style={{
-      display: 'flex',
-      alignItems: align,
-      justifyContent: justify,
-      gap: gap ? `${gap * 4}px` : undefined,
-      flexDirection: direction || 'row',
-      ...style
-    }}>
-      {children}
-    </div>
-  )
-}

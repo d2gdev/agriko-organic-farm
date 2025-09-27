@@ -5,7 +5,7 @@ import { NextRequest } from 'next/server';
 import { POST } from '@/app/api/auto-sync/route';
 import { rateLimiter } from '@/lib/redis-rate-limiter';
 import { monitoring } from '@/lib/monitoring-observability';
-import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
 
 // Performance testing configuration
 const PERFORMANCE_THRESHOLDS = {
@@ -41,7 +41,7 @@ describe('Performance Testing', () => {
         productData: {
           id: 1,
           name: 'Performance Test Product',
-          price: 2999 as Core.Money
+          price: Money.centavos(299900)
         }
       };
 
@@ -115,7 +115,7 @@ describe('Performance Testing', () => {
         productData: {
           id: i + 1,
           name: `Batch Product ${i + 1}`,
-          price: 2999 as Core.Money
+          price: Money.centavos(299900)
         }
       }));
 
@@ -160,7 +160,7 @@ describe('Performance Testing', () => {
               productData: {
                 id: i + 1,
                 name: `Concurrent Product ${i + 1}`,
-                price: 2999 as Core.Money
+                price: Money.centavos(299900)
               }
             })
           });
@@ -209,7 +209,7 @@ describe('Performance Testing', () => {
               productData: {
                 id: batch * 20 + i + 1,
                 name: `Memory Test Product ${batch * 20 + i + 1}`,
-                price: 2999 as Core.Money
+                price: Money.centavos(299900)
               }
             })
           });
@@ -299,7 +299,7 @@ describe('Performance Testing', () => {
         body: JSON.stringify({
           productId: 1,
           eventType: 'product.created',
-          productData: { id: 1, name: 'Slow DB Test', price: 2999 as Core.Money }
+          productData: { id: 1, name: 'Slow DB Test', price: Money.centavos(299900) }
         })
       });
 

@@ -2,9 +2,9 @@
 // Tests the complete flow from WooCommerce webhook to database persistence
 
 import React from 'react';
-import { Core } from '@/types/TYPE_REGISTRY';
 import { Money } from '@/lib/money';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/dom';
 import { AutoTrackingProvider } from '@/components/AutoTrackingProvider';
 import { CartProvider } from '@/context/CartContext';
 import { NextRequest } from 'next/server';
@@ -69,6 +69,8 @@ describe('End-to-End Real-World Integration', () => {
                   id: 1,
                   name: 'Test Product',
                   price: Money.centavos(2999),
+                  regular_price: Money.centavos(2999),
+                  sale_price: null,
                   slug: 'test-product',
                   images: [{ id: 1, name: 'Test', src: 'https://example.com/image.jpg', alt: 'Test' }]
                 }}
@@ -147,6 +149,8 @@ describe('End-to-End Real-World Integration', () => {
                 id: 1,
                 name: 'Test Product',
                 price: Money.centavos(2999),
+                regular_price: Money.centavos(2999),
+                sale_price: null,
                 slug: 'test-product',
                 images: [{ id: 1, name: 'Test', src: 'https://example.com/image.jpg', alt: 'Test' }]
               }}
@@ -186,7 +190,7 @@ describe('End-to-End Real-World Integration', () => {
         sku: 'NEW-PROD-123',
         price: Money.centavos(4999),
         regular_price: Money.centavos(4999),
-        sale_price: undefined,
+        sale_price: null,
         on_sale: false,
         weight: '1.5',
         categories: [
@@ -478,6 +482,8 @@ describe('End-to-End Real-World Integration', () => {
                     id: i + 1,
                     name: `Product ${i + 1}`,
                     price: Money.centavos(2999),
+                    regular_price: Money.centavos(2999),
+                    sale_price: null,
                     slug: `product-${i + 1}`,
                     images: [{ id: 1, name: 'Test', src: 'https://example.com/image.jpg', alt: 'Test' }]
                   }}

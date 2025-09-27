@@ -416,6 +416,71 @@ export class ReviewDatabase {
     const allKeys = await productCacheSafe.getAllKeys();
     return allKeys.filter(key => key.startsWith('product_reviews_'));
   }
+
+  /**
+   * Get all reviews for admin dashboard
+   * Returns all reviews across all products with optional filtering
+   */
+  async getAllReviews(filters?: {
+    status?: ReviewStatus;
+    minRating?: number;
+    maxRating?: number;
+    verified?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<Review[]> {
+    try {
+      // Get all review cache keys
+      const allKeys = await this.getAllReviewCacheKeys();
+      const allReviews: Review[] = [];
+
+      // Load all reviews from cache
+      for (const key of allKeys) {
+        const cachedData = await productCacheSafe.get(key);
+        if (cachedData && Array.isArray(cachedData)) {
+          allReviews.push(...cachedData as Review[]);
+        }
+      }
+
+      // Apply filters
+      let filteredReviews = allReviews;
+
+      if (filters) {
+        if (filters.status !== undefined) {
+          filteredReviews = filteredReviews.filter(r => r.status === filters.status);
+        }
+        if (filters.minRating !== undefined) {
+          filteredReviews = filteredReviews.filter(r => r.rating >= filters.minRating!);
+        }
+        if (filters.maxRating !== undefined) {
+          filteredReviews = filteredReviews.filter(r => r.rating <= filters.maxRating!);
+        }
+        if (filters.verified !== undefined) {
+          filteredReviews = filteredReviews.filter(r => r.verified === filters.verified);
+        }
+      }
+
+      // Sort by creation date (newest first)
+      filteredReviews.sort((a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      // Apply pagination
+      if (filters?.offset !== undefined || filters?.limit !== undefined) {
+        const offset = filters.offset || 0;
+        const limit = filters.limit || 50;
+        filteredReviews = filteredReviews.slice(offset, offset + limit);
+      }
+
+      logger.info(`Retrieved ${filteredReviews.length} reviews for admin`,
+        { totalFound: allReviews.length, filters }, 'review-database');
+
+      return filteredReviews;
+    } catch (error) {
+      logger.error('Failed to get all reviews', { error }, 'review-database');
+      return [];
+    }
+  }
 }
 
 // Singleton instance

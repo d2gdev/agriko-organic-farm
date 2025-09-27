@@ -35,20 +35,20 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   trace: 4,
 };
 
-// Default configuration based on environment
+// Simplified configuration to prevent issues
 const DEFAULT_CONFIG: LoggerConfig = {
-  level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
+  level: process.env.NODE_ENV === 'production' ? 'error' : 'warn', // Less verbose logging
   enableConsole: process.env.NODE_ENV !== 'production',
   enableFile: false,
-  enableRemote: process.env.NODE_ENV === 'production',
-  maxLogSize: 1000, // Max characters per log entry
-  enabledContexts: process.env.LOG_CONTEXTS?.split(',') ?? ['*'],
+  enableRemote: false, // Disabled due to circular dependency issues
+  maxLogSize: 500, // Smaller max size for better performance
+  enabledContexts: ['*'], // Simplified context filtering
 };
 
 class Logger {
   private config: LoggerConfig;
   private buffer: LogEntry[] = [];
-  private maxBufferSize = 100;
+  private maxBufferSize = 20; // Reduced buffer size for better performance
 
   constructor(config: Partial<LoggerConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -93,10 +93,16 @@ class Logger {
     context?: string,
     requestId?: string
   ): LogEntry {
+    // Format message directly without recursion
+    let formattedMessage = message;
+    if (formattedMessage.length > this.config.maxLogSize) {
+      formattedMessage = formattedMessage.substring(0, this.config.maxLogSize - 3) + '...';
+    }
+
     return {
       timestamp: new Date().toISOString(),
       level,
-      message: this.formatMessage({ timestamp: '', level, message }),
+      message: formattedMessage,
       data,
       context,
       requestId,
@@ -168,32 +174,10 @@ class Logger {
   }
 
   private async sendToRemote(entry: LogEntry): Promise<void> {
-    // Disable remote logging in development to prevent recursion issues
-    if (!this.config.enableRemote || process.env.NODE_ENV === 'development') return;
-
-    try {
-      // Import remote logger dynamically to avoid circular dependencies
-      const { remoteLogger } = await import('./remote-logging');
-      
-      // Send to remote logging service
-      await remoteLogger.log(
-        entry.level === 'trace' ? 'debug' : entry.level,
-        entry.message,
-        entry.data,
-        entry.context,
-        {
-          requestId: entry.requestId,
-          userId: entry.userId,
-          sessionId: entry.sessionId,
-          tags: entry.tags
-        }
-      );
-    } catch (error) {
-      // Fail silently to prevent logging loops
-      if (this.config.enableConsole && process.env.NODE_ENV !== 'production') {
-        console.error('Failed to send log to remote service:', error);
-      }
-    }
+    // DISABLED: Remote logging causes circular dependencies and performance issues
+    // TODO: Implement proper remote logging without circular dependencies
+    void entry; // Mark parameter as used
+    return;
   }
 
   private log(
@@ -214,13 +198,9 @@ class Logger {
     
     // Write to console
     this.writeToConsole(entry);
-    
-    // Send to remote (async, fire-and-forget) - disabled in development
-    if (process.env.NODE_ENV !== 'development') {
-      this.sendToRemote(entry).catch(() => {
-        // Silently ignore remote logging errors
-      });
-    }
+
+    // Remote logging disabled due to circular dependency issues
+    // TODO: Implement proper remote logging architecture
   }
 
   // Public logging methods

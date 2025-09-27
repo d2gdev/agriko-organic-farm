@@ -277,24 +277,37 @@ jest.mock('redis', () => ({
   })),
 }));
 
-// Prevent setInterval/setTimeout in tests
-jest.useFakeTimers();
+// Use real timers for async operations
+jest.useRealTimers();
+
+// Mock setImmediate for Node.js compatibility
+if (!global.setImmediate) {
+  global.setImmediate = (callback, ...args) => {
+    return setTimeout(callback, 0, ...args);
+  };
+}
+
+// Global cleanup after each test
+afterEach(async () => {
+  // Clear all timers
+  jest.clearAllTimers();
+
+  // Wait for any pending promises
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  // Clean up any open handles
+  if (global.gc) {
+    global.gc();
+  }
+});
 
 // Global error handler to prevent test crashes
 process.on('uncaughtException', (err) => {
-  if (err.message.includes('worker') || err.message.includes('Jest')) {
-    // Suppress worker-related errors during tests
-    return;
-  }
-  throw err;
+  console.error('Uncaught exception in test:', err);
+  // Don't suppress errors, let them fail the test properly
 });
 
 process.on('unhandledRejection', (reason) => {
-  if (reason && typeof reason === 'object' && 'message' in reason) {
-    if (reason.message.includes('worker') || reason.message.includes('Jest')) {
-      // Suppress worker-related rejections during tests
-      return;
-    }
-  }
-  throw reason;
+  console.error('Unhandled rejection in test:', reason);
+  // Don't suppress errors, let them fail the test properly
 });

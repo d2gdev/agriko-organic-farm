@@ -89,8 +89,9 @@ export function validateCartData(cartData: unknown): CartItem[] | null {
         permalink: item.product.permalink ?? '',
         description: item.product.description ?? '',
         short_description: item.product.short_description ?? '',
-        regular_price: item.product.regular_price ?? item.product.price ?? 0,
-        sale_price: item.product.sale_price ?? 0,
+        price: item.product.price ? (typeof item.product.price === 'string' ? Money.fromWooCommerce(item.product.price) : item.product.price) : Money.ZERO,
+        regular_price: item.product.regular_price ? (typeof item.product.regular_price === 'string' ? Money.fromWooCommerce(item.product.regular_price) : item.product.regular_price) : (item.product.price ? (typeof item.product.price === 'string' ? Money.fromWooCommerce(item.product.price) : item.product.price) : Money.ZERO),
+        sale_price: item.product.sale_price ? (typeof item.product.sale_price === 'string' ? Money.fromWooCommerce(item.product.sale_price) : item.product.sale_price) : Money.ZERO,
         on_sale: item.product.on_sale ?? false,
         status: item.product.status ?? 'publish',
         featured: item.product.featured ?? false,
@@ -195,9 +196,10 @@ export function validateCartItem(
           path: e.path.join('.'),
           message: e.message,
           code: e.code,
-          expected: e.expected,
-          received: e.received,
-          input: e.input
+          // Note: not all ZodIssue types have these properties
+          ...(('expected' in e) && { expected: e.expected }),
+          ...(('received' in e) && { received: e.received }),
+          ...(('input' in e) && { input: e.input })
         })),
         product: {
           id: product?.id,

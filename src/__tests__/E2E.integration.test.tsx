@@ -1,7 +1,7 @@
 import React from 'react';
-import { Core } from '@/types/TYPE_REGISTRY';
 import { Money } from '@/lib/money';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 // import { CartProvider } from '@/context/CartContext'; // Mock provided below
@@ -71,7 +71,7 @@ jest.mock('@/lib/woocommerce', () => ({
 
 // Mock utility functions
 jest.mock('@/lib/utils', () => ({
-  formatPrice: (price: Core.Money) => `$${parseFloat(price.toString()).toFixed(2)}`,
+  formatPrice: (price: Money) => `$${price.toPesos().toFixed(2)}`,
   getProductMainImage: (product: WCProduct) => `/images/${product.slug || 'placeholder'}.jpg`,
   stripHtml: (str: string) => str.replace(/<[^>]*>/g, ''),
   isProductInStock: (product: WCProduct) => product.stock_status === 'instock',
@@ -93,7 +93,7 @@ const mockProducts: WCProduct[] = [
     slug: 'organic-brown-rice',
     price: Money.centavos(1599),
     regular_price: Money.centavos(1599),
-    sale_price: undefined,
+    sale_price: null,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic brown rice from our farm',
@@ -142,7 +142,7 @@ const mockProducts: WCProduct[] = [
     slug: 'organic-honey',
     price: Money.centavos(2550),
     regular_price: Money.centavos(2550),
-    sale_price: undefined,
+    sale_price: null,
     on_sale: false,
     stock_status: 'instock',
     description: 'Pure organic honey from local hives',
@@ -196,11 +196,11 @@ interface CartItem {
 
 interface CartState {
   items: CartItem[];
-  total: number;
+  total: Money;
 }
 
 // Helper to create a full cart context provider
-const createCartProvider = (initialState: CartState = { items: [], total: 0 }) => {
+const createCartProvider = (initialState: CartState = { items: [], total: Money.ZERO }) => {
   return function TestCartProvider({ children }: { children: React.ReactNode }) {
     const [state, setState] = React.useState(initialState);
 
@@ -216,13 +216,21 @@ const createCartProvider = (initialState: CartState = { items: [], total: 0 }) =
           );
           return {
             items: updatedItems,
-            total: updatedItems.reduce((sum, item) => sum + ((item.product.price || 0) * item.quantity), 0),
+            total: updatedItems.reduce((sum, item) => {
+              const price = item.product.price || Money.ZERO;
+              const itemTotal = price instanceof Money ? price.multiply(item.quantity) : Money.centavos(0);
+              return sum instanceof Money ? sum.add(itemTotal) : itemTotal;
+            }, Money.ZERO),
           };
         } else {
           const newItems = [...prevState.items, { product, quantity, variation: null }];
           return {
             items: newItems,
-            total: newItems.reduce((sum, item) => sum + ((item.product.price || 0) * item.quantity), 0),
+            total: newItems.reduce((sum, item) => {
+              const price = item.product.price || Money.ZERO;
+              const itemTotal = price instanceof Money ? price.multiply(item.quantity) : Money.centavos(0);
+              return sum instanceof Money ? sum.add(itemTotal) : itemTotal;
+            }, Money.ZERO),
           };
         }
       });
@@ -238,7 +246,11 @@ const createCartProvider = (initialState: CartState = { items: [], total: 0 }) =
 
         return {
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + ((item.product.price || 0) * item.quantity), 0),
+          total: updatedItems.reduce((sum, item) => {
+            const price = item.product.price || Money.ZERO;
+            const itemTotal = price instanceof Money ? price.multiply(item.quantity) : Money.centavos(0);
+            return sum instanceof Money ? sum.add(itemTotal) : itemTotal;
+          }, Money.ZERO),
         };
       });
     });
@@ -248,13 +260,17 @@ const createCartProvider = (initialState: CartState = { items: [], total: 0 }) =
         const updatedItems = prevState.items.filter(item => item.product.id !== productId);
         return {
           items: updatedItems,
-          total: updatedItems.reduce((sum, item) => sum + ((item.product.price || 0) * item.quantity), 0),
+          total: updatedItems.reduce((sum, item) => {
+            const price = item.product.price || Money.ZERO;
+            const itemTotal = price instanceof Money ? price.multiply(item.quantity) : Money.centavos(0);
+            return sum instanceof Money ? sum.add(itemTotal) : itemTotal;
+          }, Money.ZERO),
         };
       });
     });
 
     const clearCart = jest.fn(() => {
-      setState({ items: [], total: 0 });
+      setState({ items: [], total: Money.ZERO });
     });
 
     const contextValue = {
@@ -393,7 +409,7 @@ describe('E2E Integration Tests', () => {
             variation: null,
           },
         ],
-        total: 51.00, // 25.50 * 2
+        total: Money.pesos(51.00), // 25.50 * 2
       };
 
       const CartProvider = createCartProvider(initialCartState);
@@ -520,7 +536,7 @@ describe('E2E Integration Tests', () => {
             variation: null,
           },
         ],
-        total: 15.99,
+        total: Money.pesos(15.99),
       });
 
       // Mock API error

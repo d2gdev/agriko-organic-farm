@@ -68,6 +68,8 @@ class EmbeddingManager {
   private retryCount = 0;
   private readonly MAX_RETRIES = 3;
   private readonly RETRY_DELAY = 5000; // 5 seconds
+  private retryTimeoutId?: NodeJS.Timeout;
+  private loadTimeoutId?: NodeJS.Timeout;
 
   constructor() {
     // Only initialize on server-side and when pipeline is available
@@ -149,12 +151,19 @@ class EmbeddingManager {
       this.retryCount++;
       
       if (this.retryCount < this.MAX_RETRIES) {
-        logger.warn(`Embedding model initialization failed, retrying in ${this.RETRY_DELAY}ms (attempt ${this.retryCount}/${this.MAX_RETRIES})`, 
+        logger.warn(`Embedding model initialization failed, retrying in ${this.RETRY_DELAY}ms (attempt ${this.retryCount}/${this.MAX_RETRIES})`,
           error as Record<string, unknown>, 'embeddings');
-        
-        // Retry after delay
-        setTimeout(() => {
-          this.initializeEmbedder().catch(() => {});
+
+        // Clear any existing retry timer
+        if (this.retryTimeoutId) {
+          clearTimeout(this.retryTimeoutId);
+        }
+
+        // Retry after delay with stored timer reference
+        this.retryTimeoutId = setTimeout(() => {
+          this.initializeEmbedder().catch((retryError) => {
+            logger.error('Embedding retry failed', { error: retryError });
+          });
         }, this.RETRY_DELAY);
       } else {
         logger.error('Embedding model initialization failed permanently after all retries', 
@@ -177,14 +186,31 @@ class EmbeddingManager {
       // Set a reasonable timeout for model loading
       // Using all-mpnet-base-v2 for better quality embeddings (768 dimensions)
       const modelLoadPromise = pipeline('feature-extraction', 'Xenova/all-mpnet-base-v2') as Promise<XenovaEmbedder>;
+
+      // Create timeout promise with stored timer reference
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Model loading timeout after 90 seconds')), 90000);
+        this.loadTimeoutId = setTimeout(() => reject(new Error('Model loading timeout after 90 seconds')), 90000);
       });
-      
-      const embedder = await Promise.race([modelLoadPromise, timeoutPromise]);
-      
-      logger.info('Local embedding model loaded successfully', undefined, 'embeddings');
-      return embedder;
+
+      try {
+        const embedder = await Promise.race([modelLoadPromise, timeoutPromise]);
+
+        // Clear the timeout if model loads successfully
+        if (this.loadTimeoutId) {
+          clearTimeout(this.loadTimeoutId);
+          this.loadTimeoutId = undefined;
+        }
+
+        logger.info('Local embedding model loaded successfully', undefined, 'embeddings');
+        return embedder;
+      } catch (error) {
+        // Clear timeout on error as well
+        if (this.loadTimeoutId) {
+          clearTimeout(this.loadTimeoutId);
+          this.loadTimeoutId = undefined;
+        }
+        throw error;
+      }
     } finally {
       this.isInitializing = false;
     }
@@ -229,8 +255,22 @@ class EmbeddingManager {
     this.initializationPromise = null;
     this.initializationError = null;
     this.retryCount = 0;
-    
+
     return this.initializeEmbedder();
+  }
+
+  /**
+   * Clean up timers and resources
+   */
+  cleanup(): void {
+    if (this.retryTimeoutId) {
+      clearTimeout(this.retryTimeoutId);
+      this.retryTimeoutId = undefined;
+    }
+    if (this.loadTimeoutId) {
+      clearTimeout(this.loadTimeoutId);
+      this.loadTimeoutId = undefined;
+    }
   }
 }
 

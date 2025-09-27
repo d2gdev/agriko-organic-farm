@@ -55,7 +55,7 @@ async function findSimilarProductsByCategory(targetProduct: WCProduct, limit: nu
         ).length || 0;
         
         const categoryScore = sharedCategories / Math.max(categoryIds.length, 1);
-        const priceScore = calculatePriceSimilarity((targetProduct.price || 0) as number, (product.price || 0) as number);
+        const priceScore = calculatePriceSimilarity(targetProduct.price.toNumber(), product.price.toNumber());
         
         return {
           ...product,

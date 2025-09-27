@@ -1,5 +1,6 @@
 import { CompetitorDAO } from '../competitors';
 import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
 import { query, CacheManager } from '../../database';
 import { Competitor } from '../types';
 
@@ -295,7 +296,7 @@ describe('CompetitorDAO', () => {
         domain: 'test.com',
         industry: 'Technology',
         product_count: 10,
-        avg_price: 99.99 as Core.Money,
+        avg_price: Money.pesos(99.99),
         last_updated: new Date()
       };
 

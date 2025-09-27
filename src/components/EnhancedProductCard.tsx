@@ -1,25 +1,77 @@
 'use client';
 
-import { Core } from '@/types/TYPE_REGISTRY';
 import Link from 'next/link';
 import Image from 'next/image';
 import { WCProduct } from '@/types/woocommerce';
 import { formatPrice, getProductMainImage, stripHtml, isProductInStock } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
+import { Money } from '@/lib/money';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { SerializedWCProduct, deserializeProduct } from '@/lib/product-serializer';
+
+// Define interfaces for type-safe price handling
+interface MoneyLike {
+  toNumber(): number;
+  isZero: boolean;
+  equals(other: MoneyLike): boolean;
+}
+
+interface SerializedMoney {
+  pesos: number;
+  centavos: number;
+}
+
+// Utility function to safely extract price number from various price formats
+function safePriceToNumber(price: unknown): number {
+  try {
+    if (!price) return 0;
+
+    if (typeof price === 'object' && price !== null) {
+      if ('toNumber' in price && typeof (price as MoneyLike).toNumber === 'function') {
+        // It's a Money object
+        return (price as MoneyLike).toNumber();
+      } else if ('pesos' in price && typeof (price as SerializedMoney).pesos === 'number') {
+        // It's a serialized Money object
+        return (price as SerializedMoney).pesos;
+      }
+    }
+
+    if (typeof price === 'number') {
+      return price;
+    }
+
+    if (typeof price === 'string') {
+      const parsed = parseFloat(price);
+      return !isNaN(parsed) ? parsed : 0;
+    }
+
+    return 0;
+  } catch {
+    return 0;
+  }
+}
 
 interface EnhancedProductCardProps {
-  product: WCProduct;
+  product: WCProduct | SerializedWCProduct;
   className?: string;
   priority?: boolean;
 }
 
-export default function EnhancedProductCard({ 
-  product, 
-  className = '', 
-  priority = false 
+export default function EnhancedProductCard({
+  product: rawProduct,
+  className = '',
+  priority = false
 }: EnhancedProductCardProps) {
+  // Ensure we have a proper WCProduct with Money objects
+  const product: WCProduct = useMemo(() => {
+    // Check if the product has serialized money objects and deserialize if needed
+    if (rawProduct.price && typeof rawProduct.price === 'object' && 'pesos' in rawProduct.price) {
+      return deserializeProduct(rawProduct as SerializedWCProduct);
+    }
+    return rawProduct as WCProduct;
+  }, [rawProduct]);
+
   const { addItem, toggleCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -68,9 +120,20 @@ export default function EnhancedProductCard({
   const inStock = isProductInStock(product);
   const mainImage = getProductMainImage(product);
   const shortDescription = product.short_description ? stripHtml(product.short_description) : '';
-  const discountPercentage = product.on_sale && product.regular_price && product.price && product.regular_price !== product.price
-    ? Math.round(((product.regular_price - product.price) / product.regular_price) * 100)
-    : null;
+  const discountPercentage = (() => {
+    if (!product.on_sale || !product.regular_price || !product.price) return null;
+
+    try {
+      const regularPrice = safePriceToNumber(product.regular_price);
+      const salePrice = safePriceToNumber(product.price);
+
+      if (regularPrice <= 0 || salePrice >= regularPrice) return null;
+
+      return Math.round(((regularPrice - salePrice) / regularPrice) * 100);
+    } catch {
+      return null;
+    }
+  })();
 
   return (
     <div className={`group relative ${className}`}>
@@ -171,18 +234,18 @@ export default function EnhancedProductCard({
           <div className="mt-auto">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
-                {product.on_sale && product.regular_price !== product.price ? (
+                {product.on_sale && safePriceToNumber(product.regular_price) > safePriceToNumber(product.price) ? (
                   <>
                     <span className="text-xl font-bold text-primary-700">
-                      {formatPrice(product.price || (0 as Core.Money))}
+                      {formatPrice(product.price || Money.ZERO)}
                     </span>
                     <span className="text-sm text-neutral-500 line-through">
-                      {formatPrice(product.regular_price || product.price || (0 as Core.Money))}
+                      {formatPrice(product.regular_price || product.price || Money.ZERO)}
                     </span>
                   </>
                 ) : (
                   <span className="text-xl font-bold text-neutral-900">
-                    {formatPrice(product.price || (0 as Core.Money))}
+                    {formatPrice(product.price || Money.ZERO)}
                   </span>
                 )}
               </div>

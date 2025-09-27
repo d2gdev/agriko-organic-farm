@@ -8,23 +8,24 @@ import { Core } from '@/types/TYPE_REGISTRY';
 import { WCProduct } from '@/types/woocommerce';
 import { ecommerceEvent, funnelEvent } from '@/lib/gtag';
 import { parseCartData, compareVariations, validateCartItem } from '@/lib/cart-validation';
-import { PHPCurrency } from '@/lib/php-currency';
+import { Money } from '@/lib/money';
 
 // Safe price parsing helpers
 const parsePrice = (price: Core.Money | undefined, context: string): { success: boolean; value: number } => {
   if (price === undefined || price === null) {
     return { success: false, value: 0 };
   }
-  return { success: true, value: price };
+  return { success: true, value: price.toNumber() };
 };
 
 const safePriceMultiply = (price: number, quantity: number, context: string): { success: boolean; value: Core.Money } => {
   try {
-    const result = PHPCurrency.multiply(price as Core.Money, quantity);
+    const priceAsMoney = Money.pesos(price);
+    const result = priceAsMoney.multiply(quantity);
     return { success: true, value: result };
   } catch (error) {
     logger.error(`Price multiplication failed in ${context}`, { error, price, quantity });
-    return { success: false, value: 0 as Core.Money };
+    return { success: false, value: Money.ZERO };
   }
 };
 
@@ -57,21 +58,20 @@ type CartAction =
 const initialState: CartState = {
   items: [],
   isOpen: false,
-  total: 0 as Core.Money,
+  total: Money.ZERO,
   itemCount: 0,
 };
 
 const calculateTotals = (items: CartItem[]): { total: Core.Money; itemCount: number } => {
-  const MAX_SAFE_CURRENCY = 999999999; // Max safe currency value
   const MAX_SAFE_QUANTITY = 9999; // Max reasonable quantity
-  
+
   const total = items.reduce((sum, item) => {
-    const price = item.product.price || (0 as Core.Money);
+    const price = item.product.price || Money.ZERO;
     const quantity = Math.min(item.quantity, MAX_SAFE_QUANTITY);
 
     try {
-      const itemTotal = PHPCurrency.multiply(price, quantity);
-      return PHPCurrency.add(sum, itemTotal);
+      const itemTotal = price.multiply(quantity);
+      return sum.add(itemTotal);
     } catch (error) {
       logger.error('Cart item calculation failed', {
         error,
@@ -81,7 +81,7 @@ const calculateTotals = (items: CartItem[]): { total: Core.Money; itemCount: num
       });
       return sum; // Skip this item to prevent errors
     }
-  }, 0 as Core.Money);
+  }, Money.ZERO);
 
   const itemCount = items.reduce((sum, item) => {
     const quantity = Math.min(item.quantity, MAX_SAFE_QUANTITY);
@@ -170,7 +170,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return {
         ...state,
         items: [],
-        total: 0 as Core.Money,
+        total: Money.ZERO,
         itemCount: 0,
       };
 
@@ -280,7 +280,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   // Track cart view in funnel when cart is opened
   useEffect(() => {
     if (state.isOpen) {
-      funnelEvent.viewCart(state.itemCount, state.total);
+      funnelEvent.viewCart(state.itemCount, state.total.toNumber());
     }
   }, [state.isOpen, state.itemCount, state.total]);
 
@@ -324,7 +324,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
     // Track funnel progression with safe multiplication
     const totalPriceResult = safePriceMultiply(price, quantity, `funnelEvent ${product.name}`);
-    const totalPrice = totalPriceResult.success ? totalPriceResult.value : 0;
+    const totalPrice = totalPriceResult.success ? totalPriceResult.value.toNumber() : 0;
     funnelEvent.addToCart(
       product.id.toString(),
       product.name,
@@ -374,7 +374,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
     // Track cart view when opened
     if (!state.isOpen) {
-      funnelEvent.viewCart(state.itemCount, state.total);
+      funnelEvent.viewCart(state.itemCount, state.total.toNumber());
     }
   }, [state.isOpen, state.itemCount, state.total]);
 
@@ -382,7 +382,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     dispatch({ type: 'OPEN_CART' });
 
     // Track cart view when opened
-    funnelEvent.viewCart(state.itemCount, state.total);
+    funnelEvent.viewCart(state.itemCount, state.total.toNumber());
   }, [state.itemCount, state.total]);
 
   const closeCart = useCallback(() => {

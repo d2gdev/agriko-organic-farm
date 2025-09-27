@@ -11,8 +11,8 @@ interface TrustBadge {
 const trustBadges: TrustBadge[] = [
   {
     id: 'organic',
-    title: 'Certified Organic',
-    subtitle: 'USDA & Philippine Organic',
+    title: '100% Organic',
+    subtitle: '100% Organic',
     color: 'green',
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">

@@ -168,7 +168,7 @@ export function ProductCardABTest({ product, userId, sessionId }: ProductCardABT
               className={(config.layout as string) === 'detailed' ? 'h-64' : 'h-48'}
             />
             <h3 className="text-lg font-semibold">{product.name}</h3>
-            <p className="text-green-600 font-bold">${product.price}</p>
+            <p className="text-green-600 font-bold">{product.price?.format() || '$0.00'}</p>
             
             {(config.layout as string) === 'detailed' && (
               <p className="text-sm text-gray-600 mt-2">{product.short_description}</p>
@@ -344,7 +344,7 @@ export function RecommendationABTest({
               className="w-full h-32 object-cover rounded"
             />
             <h4 className="text-sm font-medium mt-2">{product.name}</h4>
-            <p className="text-green-600 font-semibold">${product.price}</p>
+            <p className="text-green-600 font-semibold">{product.price?.format() || '$0.00'}</p>
           </div>
         ))}
       </div>

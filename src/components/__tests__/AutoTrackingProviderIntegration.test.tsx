@@ -1,8 +1,9 @@
 // Integration test for AutoTrackingProvider with actual components
 import React from 'react';
-import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
 import { EventType } from '@/lib/client-event-system';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/dom';
 import { AutoTrackingProvider, useTracking } from '../AutoTrackingProvider';
 import { CartProvider } from '@/context/CartContext';
 
@@ -62,7 +63,7 @@ const TestTrackingComponent: React.FC = () => {
     tracking.trackProduct('view', {
       id: 1,
       name: 'Test Product',
-      price: 99.99 as Core.Money,
+      price: 99.99,
       category: 'Test Category'
     });
   };
@@ -177,7 +178,7 @@ describe('AutoTrackingProvider Integration', () => {
       expect(mockTrackProduct).toHaveBeenCalledWith('view', {
         id: 1,
         name: 'Test Product',
-        price: 99.99 as Core.Money,
+        price: 99.99,
         category: 'Test Category'
       });
     });

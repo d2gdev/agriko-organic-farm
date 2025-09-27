@@ -1,6 +1,7 @@
 import React from 'react';
-import { Core } from '@/types/TYPE_REGISTRY';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { Money } from '@/lib/money';
+import { render } from '@testing-library/react';
+import { screen, fireEvent, waitFor, within } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 import CheckoutPage from '@/app/checkout/page';
@@ -45,9 +46,9 @@ const mockProduct: WCProduct = {
   id: 1,
   name: 'Test Organic Rice',
   slug: 'test-organic-rice',
-  price: 1599 as Core.Money,
-  regular_price: 1599 as Core.Money,
-  sale_price: undefined,
+  price: Money.centavos(1599),
+  regular_price: Money.centavos(1599),
+  sale_price: null,
   on_sale: false,
   stock_status: 'instock',
   description: 'Premium organic rice',
@@ -87,7 +88,11 @@ const mockProduct: WCProduct = {
 const renderCheckoutWithCart = (initialItems: Array<{ product: WCProduct; quantity: number; variation: null }> = []) => {
   const mockCartState = {
     items: initialItems,
-    total: initialItems.reduce((sum, item) => sum + (item.product.price || 0) * item.quantity, 0) as Core.Money,
+    total: initialItems.reduce((sum, item) => {
+      const price = item.product.price || Money.ZERO;
+      const itemTotal = price instanceof Money ? price.multiply(item.quantity) : Money.ZERO;
+      return sum instanceof Money ? sum.add(itemTotal) : itemTotal;
+    }, Money.ZERO),
   };
 
   const mockUseCart = {
@@ -387,7 +392,7 @@ describe('Checkout Flow Integration', () => {
             ...mockProduct,
             id: 2,
             name: 'Organic Honey',
-            price: 2550 as Core.Money,
+            price: Money.centavos(2550),
           },
           quantity: 1,
           variation: null,

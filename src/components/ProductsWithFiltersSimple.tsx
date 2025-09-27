@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { WCProduct } from '@/types/woocommerce';
+import { serializeProduct } from '@/lib/product-serializer';
 import ProductCard from '@/components/ProductCard';
 
 interface ProductsWithFiltersSimpleProps {
@@ -86,7 +87,7 @@ export default function ProductsWithFiltersSimple({ products }: ProductsWithFilt
                 {paginatedProducts.map((product, index) => (
                   <div key={product.id} className="animate-fadeInUp" style={{ animationDelay: `${index * 50}ms` }}>
                     <ProductCard
-                      product={product}
+                      product={serializeProduct(product)}
                       priority={index < 4}
                       fetchPriority={index < 4 ? "high" : "auto"}
                     />
@@ -98,7 +99,7 @@ export default function ProductsWithFiltersSimple({ products }: ProductsWithFilt
                 {paginatedProducts.map((product, index) => (
                   <div key={product.id} className="animate-fadeInUp" style={{ animationDelay: `${index * 50}ms` }}>
                     <ProductCard
-                      product={product}
+                      product={serializeProduct(product)}
                       layout="list"
                       priority={index < 4}
                       fetchPriority={index < 4 ? "high" : "auto"}

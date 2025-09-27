@@ -6,7 +6,6 @@ import { useCart } from '@/context/CartContext';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
 import { Money } from '@/lib/money';
 import HeroSection from '@/components/HeroSection';
-import { Core } from '@/types/TYPE_REGISTRY';
 
 export default function CartPage() {
   const { state, updateQuantity, removeItem } = useCart();
@@ -190,7 +189,7 @@ export default function CartPage() {
                         <div className="flex items-center justify-between md:justify-center">
                           <span className="text-sm text-neutral-500 md:hidden">Price:</span>
                           <span className="font-medium text-neutral-900">
-                            {formatPrice((item.product.price || 0) as Core.Money)}
+                            {formatPrice(item.product.price || Money.ZERO)}
                           </span>
                         </div>
                       </div>

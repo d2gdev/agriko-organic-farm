@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { WCProduct } from '@/types/woocommerce';
 import { SearchFilters } from '@/components/SearchFilters';
+import { Money } from '@/lib/money';
 
 interface UseProductFiltersOptions {
   products: WCProduct[];
@@ -46,15 +47,23 @@ export function useProductFilters({
     // Price range filter
     if (filters.minPrice !== undefined) {
       filtered = filtered.filter(product => {
-        const price = (product.price || 0);
-        return !isNaN(price) && price >= (filters.minPrice || 0);
+        try {
+          const productPrice = product.price || Money.ZERO;
+          return filters.minPrice ? (productPrice.greaterThan(filters.minPrice) || productPrice.equals(filters.minPrice)) : true;
+        } catch {
+          return false;
+        }
       });
     }
 
     if (filters.maxPrice !== undefined) {
       filtered = filtered.filter(product => {
-        const price = (product.price || 0);
-        return !isNaN(price) && price <= (filters.maxPrice || Number.MAX_VALUE);
+        try {
+          const productPrice = product.price || Money.ZERO;
+          return filters.maxPrice ? (productPrice.lessThan(filters.maxPrice) || productPrice.equals(filters.maxPrice)) : true;
+        } catch {
+          return false;
+        }
       });
     }
 
@@ -73,11 +82,25 @@ export function useProductFilters({
           case 'name':
             return a.name.localeCompare(b.name);
           
-          case 'price_low':
-            return (a.price || 0) - (b.price || 0);
-          
-          case 'price_high':
-            return (b.price || 0) - (a.price || 0);
+          case 'price_low': {
+            try {
+              const aPrice = a.price || Money.ZERO;
+              const bPrice = b.price || Money.ZERO;
+              return aPrice.lessThan(bPrice) ? -1 : aPrice.greaterThan(bPrice) ? 1 : 0;
+            } catch {
+              return 0;
+            }
+          }
+
+          case 'price_high': {
+            try {
+              const aPrice = a.price || Money.ZERO;
+              const bPrice = b.price || Money.ZERO;
+              return bPrice.lessThan(aPrice) ? -1 : bPrice.greaterThan(aPrice) ? 1 : 0;
+            } catch {
+              return 0;
+            }
+          }
           
           case 'newest':
             return new Date(b.date_created || 0).getTime() - new Date(a.date_created || 0).getTime();
@@ -113,10 +136,17 @@ export function useProductFilters({
     ).sort();
 
     // Get price range
-    const prices = products.map(p => (p.price || 0)).filter(p => !isNaN(p));
-    const priceRange = prices.length > 0 ? {
-      min: Math.min(...prices),
-      max: Math.max(...prices)
+    const moneyPrices = products.map(p => {
+      try {
+        return p.price || Money.ZERO;
+      } catch {
+        return Money.ZERO;
+      }
+    }).filter(price => price && price.isPositive);
+
+    const priceRange = moneyPrices.length > 0 ? {
+      min: Math.min(...moneyPrices.map(p => p.toNumber())),
+      max: Math.max(...moneyPrices.map(p => p.toNumber()))
     } : { min: 0, max: 0 };
 
     // Get stock statistics
@@ -142,7 +172,7 @@ export function useProductFilters({
   };
 
   // Update a specific filter
-  const updateFilter = (key: keyof SearchFilters, value: number | boolean | string[] | undefined) => {
+  const updateFilter = (key: keyof SearchFilters, value: number | boolean | string[] | Money | undefined) => {
     setFilters(prev => ({
       ...prev,
       [key]: value
@@ -172,8 +202,15 @@ export function useProductFilters({
     
     getProductsInPriceRange: (min: number, max: number) =>
       products.filter(p => {
-        const price = (p.price || 0);
-        return !isNaN(price) && price >= min && price <= max;
+        try {
+          const productPrice = p.price || Money.ZERO;
+          const minMoney = Money.pesos(min);
+          const maxMoney = Money.pesos(max);
+          return (productPrice.greaterThan(minMoney) || productPrice.equals(minMoney)) &&
+                 (productPrice.lessThan(maxMoney) || productPrice.equals(maxMoney));
+        } catch {
+          return false;
+        }
       }),
 
     searchProducts: (query: string) => {

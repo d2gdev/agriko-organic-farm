@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { getAllProducts, getFeaturedProducts } from '@/lib/woocommerce';
+import { getAllProductsForClient, getFeaturedProductsForClient } from '@/lib/woocommerce';
 import HeroSection from '@/components/HeroSection';
 import { OrganicProductGridSkeleton } from '@/components/OrganicLoadingStates';
 import { logger } from '@/lib/logger';
@@ -48,18 +48,20 @@ function ProductsGridSkeleton() {
 // Featured Products Section
 async function FeaturedProducts() {
   try {
-    const featuredProducts = await getFeaturedProducts(8);
-    
+    const featuredProducts = await getFeaturedProductsForClient(8);
+
+
     if (featuredProducts.length === 0) {
       // Fallback to latest products if no featured products
     logger.warn('No featured products found, falling back to latest products', undefined, 'home');
-      const latestProducts = await getAllProducts({
+      const latestProducts = await getAllProductsForClient({
         per_page: 8,
         orderby: 'date',
         order: 'desc',
         status: 'publish'
       });
-      
+
+
       if (latestProducts.length === 0) {
         return (
           <div className="text-center py-12">
@@ -84,7 +86,7 @@ async function FeaturedProducts() {
             "image": product.images?.[0]?.src || '',
             "offers": {
               "@type": "Offer",
-              "price": product.price,
+              "price": typeof product.price === 'number' ? product.price : 0,
               "priceCurrency": "PHP"
             }
           }
@@ -130,7 +132,7 @@ async function FeaturedProducts() {
           "image": product.images?.[0]?.src || '',
           "offers": {
             "@type": "Offer",
-            "price": product.price,
+            "price": typeof product.price === 'number' ? product.price : 0,
             "priceCurrency": "PHP"
           }
         }
@@ -161,7 +163,7 @@ async function FeaturedProducts() {
     logger.error('Error loading featured products', error as Record<string, unknown>, 'home');
     // Try to show latest products as a fallback
     try {
-      const latestProducts = await getAllProducts({
+      const latestProducts = await getAllProductsForClient({
         per_page: 8,
         orderby: 'date',
         order: 'desc',
@@ -185,7 +187,7 @@ async function FeaturedProducts() {
               "image": product.images?.[0]?.src || '',
               "offers": {
                 "@type": "Offer",
-                "price": product.price,
+                "price": typeof product.price === 'number' ? product.price : 0,
                 "priceCurrency": "PHP"
               }
             }
@@ -227,7 +229,7 @@ async function FeaturedProducts() {
 // Latest Products Section
 async function LatestProducts() {
   try {
-    const latestProducts = await getAllProducts({
+    const latestProducts = await getAllProductsForClient({
       per_page: 8,
       orderby: 'date',
       order: 'desc',
@@ -259,7 +261,7 @@ async function LatestProducts() {
           "image": product.images?.[0]?.src || '',
           "offers": {
             "@type": "Offer",
-            "price": product.price,
+            "price": typeof product.price === 'number' ? product.price : 0,
             "priceCurrency": "PHP"
           }
         }
@@ -412,7 +414,7 @@ export default function HomePage() {
       "@type": "Country",
       "name": "Philippines"
     },
-    "award": "Certified Organic Producer",
+    "award": "100% Organic Producer",
     "slogan": "From Our Farm, To Your Cup",
     "mission": "To provide premium organic agricultural products while empowering local farmers and promoting sustainable practices for a healthier community."
   };
@@ -885,7 +887,7 @@ export default function HomePage() {
               "@context": URL_CONSTANTS.SCHEMA.BASE,
               "@type": "EducationalOccupationalCredential",
               "@id": `${urlHelpers.getShopUrl()}/#organic-certification`,
-              "name": "Certified Organic Producer",
+              "name": "100% Organic Producer",
               "description": "Official organic farming certification ensuring sustainable agricultural practices",
               "credentialCategory": "Professional Certificate",
               "educationalLevel": "Expert",

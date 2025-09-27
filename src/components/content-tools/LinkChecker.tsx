@@ -14,17 +14,22 @@ export default function LinkChecker({ content }: LinkCheckerProps) {
   const extractLinks = () => {
     const urlRegex = /https?:\/\/[^\s<>"]+/gi;
     const markdownLinkRegex = /\[.*?\]\((https?:\/\/[^)]+)\)/gi;
-    
+
     const urls = new Set<string>();
-    
+    const contentText = content?.content || '';
+
     // Extract plain URLs
-    const plainUrls = content.content.match(urlRegex) || [];
+    const plainUrls = contentText.match(urlRegex) || [];
     plainUrls.forEach(url => urls.add(url));
-    
+
     // Extract markdown links
-    let match;
-    while ((match = markdownLinkRegex.exec(content.content)) !== null) {
-      urls.add(match[1]);
+    if (contentText) {
+      let match;
+      while ((match = markdownLinkRegex.exec(contentText)) !== null) {
+        if (match[1]) {
+          urls.add(match[1]);
+        }
+      }
     }
     
     return Array.from(urls);

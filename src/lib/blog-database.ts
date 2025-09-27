@@ -80,15 +80,19 @@ CREATE TABLE IF NOT EXISTS blog_categories (
 );
 `
 
+// Import cache for persistence (using as database for now)
+import { apiCacheSafe } from '@/lib/thread-safe-cache'
+import { sanityClient } from '@/lib/sanity'
+
 // Database operations for blog posts
 export class BlogPostDatabase {
+  private static readonly CACHE_PREFIX = 'blog_post_'
+  private static readonly ALL_POSTS_KEY = 'all_blog_posts'
+
   // Insert or update blog post from Sanity webhook
   static async upsertBlogPost(blogPostData: Partial<BlogPost>): Promise<BlogPost> {
     return withRetry(
       async () => {
-        // TODO: Integrate with your existing database connection
-        // This is a placeholder that shows the structure
-
         const existingPost = await this.findBySanityId(blogPostData.sanity_id!)
 
         if (existingPost) {
@@ -109,15 +113,14 @@ export class BlogPostDatabase {
 
   // Create new blog post
   static async createBlogPost(blogPostData: Partial<BlogPost>): Promise<BlogPost> {
-    // TODO: Replace with your actual database implementation
     logger.info('Creating blog post:', {
       title: blogPostData.title,
       sanity_id: blogPostData.sanity_id
     })
 
-    // Placeholder implementation
+    // Create blog post with generated ID
     const blogPost: BlogPost = {
-      id: `blog-${Date.now()}`,
+      id: `blog-${Date.now()}-${Math.random().toString(36).substring(7)}`,
       sanity_id: blogPostData.sanity_id!,
       title: blogPostData.title!,
       slug: blogPostData.slug!,
@@ -133,6 +136,16 @@ export class BlogPostDatabase {
       ai_prompt: blogPostData.ai_prompt,
     }
 
+    // Store in cache (simulating database)
+    await apiCacheSafe.set(
+      `${this.CACHE_PREFIX}${blogPost.sanity_id}`,
+      blogPost,
+      86400000 // 24 hours TTL
+    )
+
+    // Update all posts index
+    await this.updateAllPostsIndex(blogPost)
+
     // Generate embeddings for semantic search
     await this.generateAndStoreEmbeddings(blogPost)
 
@@ -144,28 +157,81 @@ export class BlogPostDatabase {
 
   // Update existing blog post
   static async updateBlogPost(id: string, updates: Partial<BlogPost>): Promise<BlogPost> {
-    // TODO: Replace with your actual database implementation
     logger.info('Updating blog post:', { id, updates: Object.keys(updates) })
+
+    // Find existing post
+    const existingPost = await this.findById(id)
+    if (!existingPost) {
+      throw new Error(`Blog post not found: ${id}`)
+    }
+
+    // Merge updates
+    const updatedPost: BlogPost = {
+      ...existingPost,
+      ...updates,
+      updated_at: new Date()
+    }
+
+    // Store updated post
+    await apiCacheSafe.set(
+      `${this.CACHE_PREFIX}${updatedPost.sanity_id}`,
+      updatedPost,
+      86400000 // 24 hours TTL
+    )
+
+    // Update all posts index
+    await this.updateAllPostsIndex(updatedPost)
 
     // If content changed, regenerate embeddings
     if (updates.content) {
-      // TODO: Regenerate embeddings and update Qdrant
+      await this.generateAndStoreEmbeddings(updatedPost)
     }
 
     // Update Memgraph relationships if categories or products changed
     if (updates.categories || updates.related_products) {
-      // TODO: Update Memgraph relationships
+      await this.createMemgraphRelationships(updatedPost)
     }
 
-    // Placeholder return
-    return { id, ...updates } as BlogPost
+    return updatedPost
   }
 
   // Find blog post by Sanity ID
   static async findBySanityId(sanityId: string): Promise<BlogPost | null> {
-    // TODO: Replace with your actual database query
     logger.debug('Finding blog post by Sanity ID:', { sanityId })
-    return null // Placeholder
+
+    const cached = await apiCacheSafe.get(`${this.CACHE_PREFIX}${sanityId}`)
+    if (cached) {
+      return cached as BlogPost
+    }
+
+    // Try to fetch from Sanity if not in cache
+    try {
+      const sanityPost = await sanityClient.fetch(
+        `*[_type == "blogPost" && _id == $sanityId][0]`,
+        { sanityId }
+      )
+
+      if (sanityPost) {
+        // Convert Sanity format to our format
+        const blogPost: Partial<BlogPost> = {
+          sanity_id: sanityPost._id,
+          title: sanityPost.title,
+          slug: sanityPost.slug?.current,
+          content: sanityPost.body || sanityPost.content || '',
+          excerpt: sanityPost.excerpt,
+          published_at: new Date(sanityPost.publishedAt || sanityPost._createdAt),
+          categories: sanityPost.categories?.map((cat: any) => cat.title) || [],
+          ai_generated: sanityPost.ai_generated || false,
+        }
+
+        // Create and cache it
+        return await this.createBlogPost(blogPost)
+      }
+    } catch (error) {
+      logger.error('Failed to fetch from Sanity', { error, sanityId })
+    }
+
+    return null
   }
 
   // Delete blog post
@@ -620,6 +686,32 @@ export class BlogPostDatabase {
       logger.error('Failed to get related blog posts for product:', error as Record<string, unknown>)
       return []
     }
+  }
+
+  // Helper: Find by ID
+  private static async findById(id: string): Promise<BlogPost | null> {
+    const allPosts = await this.getAllPosts()
+    return allPosts.find(p => p.id === id) || null
+  }
+
+  // Helper: Get all posts
+  static async getAllPosts(): Promise<BlogPost[]> {
+    const cached = await apiCacheSafe.get(this.ALL_POSTS_KEY)
+    return (cached as BlogPost[]) || []
+  }
+
+  // Helper: Update all posts index
+  private static async updateAllPostsIndex(blogPost: BlogPost): Promise<void> {
+    const allPosts = await this.getAllPosts()
+    const index = allPosts.findIndex(p => p.id === blogPost.id)
+
+    if (index >= 0) {
+      allPosts[index] = blogPost
+    } else {
+      allPosts.push(blogPost)
+    }
+
+    await apiCacheSafe.set(this.ALL_POSTS_KEY, allPosts, 86400000) // 24 hours
   }
 }
 

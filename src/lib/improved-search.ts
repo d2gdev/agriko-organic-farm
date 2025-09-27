@@ -1,6 +1,7 @@
 // Improved text-based search without vector databases
 import { WCProduct } from '@/types/woocommerce';
 import { getAllProducts } from '@/lib/woocommerce';
+import { Money } from '@/lib/money';
 
 // Agricultural and Filipino food synonyms
 const synonymMap: Record<string, string[]> = {
@@ -190,8 +191,8 @@ export interface ImprovedSearchOptions {
   limit?: number;
   category?: string;
   inStock?: boolean;
-  minPrice?: number;
-  maxPrice?: number;
+  minPrice?: Money;
+  maxPrice?: Money;
   sortBy?: 'relevance' | 'price_asc' | 'price_desc' | 'name';
 }
 
@@ -232,8 +233,25 @@ export async function improvedSearch(
       // Apply filters
       if (inStock !== undefined && (product.stock_status === 'instock') !== inStock) return false;
       if (category && !product.categories?.some(c => c.slug === category)) return false;
-      if (minPrice && product.price && (typeof product.price === 'number' ? product.price : parseFloat(String(product.price))) < minPrice) return false;
-      if (maxPrice && product.price && (typeof product.price === 'number' ? product.price : parseFloat(String(product.price))) > maxPrice) return false;
+
+      if (minPrice && product.price) {
+        try {
+          const productPrice = product.price;
+          if (productPrice.lessThan(minPrice)) return false;
+        } catch {
+          return false;
+        }
+      }
+
+      if (maxPrice && product.price) {
+        try {
+          const productPrice = product.price;
+          if (productPrice.greaterThan(maxPrice)) return false;
+        } catch {
+          return false;
+        }
+      }
+
       return true;
     })
     .map(product => {
@@ -255,10 +273,26 @@ export async function improvedSearch(
   // Sort results
   switch (sortBy) {
     case 'price_asc':
-      results.sort((a, b) => (a.product.price || 0) - (b.product.price || 0));
+      results.sort((a, b) => {
+        try {
+          const aPrice = a.product.price || Money.ZERO;
+          const bPrice = b.product.price || Money.ZERO;
+          return aPrice.lessThan(bPrice) ? -1 : aPrice.greaterThan(bPrice) ? 1 : 0;
+        } catch {
+          return 0;
+        }
+      });
       break;
     case 'price_desc':
-      results.sort((a, b) => (b.product.price || 0) - (a.product.price || 0));
+      results.sort((a, b) => {
+        try {
+          const aPrice = a.product.price || Money.ZERO;
+          const bPrice = b.product.price || Money.ZERO;
+          return bPrice.lessThan(aPrice) ? -1 : bPrice.greaterThan(aPrice) ? 1 : 0;
+        } catch {
+          return 0;
+        }
+      });
       break;
     case 'name':
       results.sort((a, b) => a.product.name.localeCompare(b.product.name));

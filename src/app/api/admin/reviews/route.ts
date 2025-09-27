@@ -1,27 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAdminAuth, AdminAuthResult } from '@/lib/admin-auth';
 import { logger } from '@/lib/logger';
-import type { ReviewData } from '@/types/type-safety';
+import { reviewDB } from '@/lib/review-database';
+import { ReviewStatus } from '@/types/reviews';
 
 // GET /api/admin/reviews - Get all reviews for admin dashboard
 async function handleGetReviews(request: NextRequest, authResult: AdminAuthResult): Promise<Response> {
   try {
-    logger.info(`Admin ${authResult.userId} accessing reviews dashboard`, 
+    logger.info(`Admin ${authResult.userId} accessing reviews dashboard`,
       undefined, 'admin-reviews');
 
-    // Fetch reviews from database - currently returns empty until review system is integrated
-    const reviews: ReviewData[] = [];
+    // Parse query parameters for filtering
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get('status') as ReviewStatus | null;
+    const minRating = searchParams.get('minRating') ? parseInt(searchParams.get('minRating')!) : undefined;
+    const maxRating = searchParams.get('maxRating') ? parseInt(searchParams.get('maxRating')!) : undefined;
+    const verified = searchParams.get('verified') === 'true' ? true :
+                    searchParams.get('verified') === 'false' ? false : undefined;
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50;
+    const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : 0;
 
-    // TODO: Implement actual review database queries:
-    // const reviews = await reviewDatabase.getAllReviews();
+    // Fetch reviews from database with filters
+    const reviews = await reviewDB.getAllReviews({
+      status: status || undefined,
+      minRating,
+      maxRating,
+      verified,
+      limit,
+      offset
+    });
 
     // Calculate stats
+    const allReviews = await reviewDB.getAllReviews(); // Get all for stats
     const stats = {
-      total: reviews.length,
-      pending: 0, // TODO: Add status field to ReviewData when implementing
-      approved: 0,
-      rejected: 0,
-      averageRating: reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0
+      total: allReviews.length,
+      pending: allReviews.filter(r => r.status === ReviewStatus.PENDING).length,
+      approved: allReviews.filter(r => r.status === ReviewStatus.APPROVED).length,
+      rejected: allReviews.filter(r => r.status === ReviewStatus.REJECTED).length,
+      averageRating: allReviews.length > 0
+        ? allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
+        : 0
     };
 
     return NextResponse.json({

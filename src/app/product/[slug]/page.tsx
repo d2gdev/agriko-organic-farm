@@ -344,10 +344,10 @@ async function ProductContent({ slug }: { slug: string }) {
                       <>
                         <div className="text-right">
                           <div className="text-4xl font-bold text-red-600 font-[family-name:var(--font-crimson)]">
-                            {formatPrice((product.price || 0) as number)}
+                            {formatPrice(product.price || 0)}
                           </div>
                           <div className="text-lg text-gray-500 line-through">
-                            {formatPrice((product.regular_price || product.price) as number)}
+                            {formatPrice(product.regular_price || product.price || 0)}
                           </div>
                         </div>
                         <div className="bg-red-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg animate-pulse">
@@ -356,7 +356,7 @@ async function ProductContent({ slug }: { slug: string }) {
                       </>
                     ) : (
                       <div className="text-4xl font-bold text-red-600 font-[family-name:var(--font-crimson)]">
-                        {formatPrice((product.price || 0) as number)}
+                        {formatPrice(product.price || 0)}
                       </div>
                     )}
                   </div>

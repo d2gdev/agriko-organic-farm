@@ -298,7 +298,7 @@ export default function SemanticSearchModal({ isOpen, onClose }: SemanticSearchM
                           </div>
                           <div className="flex items-center justify-between mt-2">
                             <span className="font-semibold text-primary-700 text-lg">
-                              ₱{result.price}
+                              {result.price?.format() || '₱0.00'}
                             </span>
                             <div className="flex items-center gap-2">
                               {result.inStock ? (

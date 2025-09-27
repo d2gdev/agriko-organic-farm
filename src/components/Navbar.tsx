@@ -10,6 +10,7 @@ import { WCProduct } from '@/types/woocommerce';
 import { useTracking } from '@/components/AutoTrackingProvider';
 import { EventType } from '@/lib/client-event-system';
 import { useHydrationSafe } from '@/components/HydrationBoundary';
+import { logger } from '@/lib/logger';
 
 // Safe tracking hook
 const useSafeTracking = () => {
@@ -36,7 +37,7 @@ export default function Navbar({
   setIsSearchOpen: externalSetIsSearchOpen
 }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [_isScrolled, _setIsScrolled] = useState(false); // Prefixed with underscore to indicate it's intentionally unused
+  const [isScrolled, setIsScrolled] = useState(false);
   const [internalIsSearchOpen, setInternalIsSearchOpen] = useState(false);
   const [isSemanticSearchOpen, setIsSemanticSearchOpen] = useState(false);
 
@@ -66,13 +67,13 @@ export default function Navbar({
   };
 
 
-  // Handle scroll effect
+  // Enhanced scroll effect
   useEffect(() => {
     if (!hasMounted) return;
 
     const handleScroll = () => {
       const scrolled = window.scrollY > 20;
-      _setIsScrolled(scrolled);
+      setIsScrolled(scrolled);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -137,11 +138,11 @@ export default function Navbar({
   if (!hasMounted) {
     return (
       <nav
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200"
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-500 bg-white/95 backdrop-blur-md shadow-lg border-b border-neutral-100"
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-[90%] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex-shrink-0 group">
               <Link href="/" className="flex items-center space-x-2">
@@ -174,12 +175,18 @@ export default function Navbar({
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/90 backdrop-blur-sm shadow-sm border-b border-neutral-200"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled
+          ? 'bg-white shadow-xl border-b border-neutral-100'
+          : 'bg-white shadow-lg border-b border-neutral-100'
+      }`}
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="w-[90%] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`flex justify-between items-center transition-all duration-300 ${
+          isScrolled ? 'h-14' : 'h-16'
+        }`}>
 
           {/* Logo */}
           <div className="flex-shrink-0 group">
@@ -207,8 +214,8 @@ export default function Navbar({
 
           {/* Desktop Navigation */}
           <div className="hidden lg:block">
-            <div 
-              className="flex items-center space-x-1"
+            <div
+              className="flex items-center space-x-2"
               role="menubar"
               aria-label="Main menu"
             >
@@ -219,47 +226,51 @@ export default function Navbar({
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative px-3 py-2 rounded-lg transition-all duration-200 hover:bg-primary-50"
+                    className="group relative px-4 py-2.5 rounded-xl transition-all duration-300 hover:bg-primary-50 hover:shadow-md hover:-translate-y-0.5"
                     role="menuitem"
                     aria-label={`${item.name} (opens in new window)`}
                   >
-                    <div className="flex items-center space-x-2 text-neutral-700 group-hover:text-primary-700">
-                      <span className="text-sm">{item.icon}</span>
-                      <span className="font-medium text-sm">{item.name}</span>
+                    <div className="flex items-center space-x-2.5 text-neutral-700 group-hover:text-primary-700">
+                      <span className="text-base group-hover:scale-110 transition-transform duration-200">{item.icon}</span>
+                      <span className="font-semibold text-sm tracking-wide">{item.name}</span>
                       <svg className="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     </div>
                     
-                    {/* Hover line */}
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-primary-600 group-hover:w-3/4 transition-all duration-200"></div>
+                    {/* Enhanced hover line */}
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-1 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full group-hover:w-3/4 transition-all duration-300 shadow-sm"></div>
                   </a>
                 ) : (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`group relative px-3 py-2 rounded-lg transition-all duration-200 ${
+                    className={`group relative px-4 py-2.5 rounded-xl transition-all duration-300 ${
                       isActivePage(item.href)
-                        ? 'bg-primary-100 text-primary-700'
-                        : 'text-neutral-700 hover:bg-primary-50 hover:text-primary-700'
+                        ? 'bg-red-50 text-red-600 shadow-md transform -translate-y-0.5 border-b-2 border-red-500'
+                        : 'text-neutral-700 hover:bg-primary-50 hover:text-primary-700 hover:shadow-md hover:-translate-y-0.5'
                     }`}
                     role="menuitem"
                     aria-current={isActivePage(item.href) ? 'page' : undefined}
                     aria-label={item.name}
                   >
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm">{item.icon}</span>
-                      <span className="font-medium text-sm">{item.name}</span>
+                    <div className="flex items-center space-x-2.5">
+                      <span className={`text-base group-hover:scale-110 transition-transform duration-200 ${
+                        isActivePage(item.href) ? 'text-red-600' : ''
+                      }`}>{item.icon}</span>
+                      <span className={`font-semibold text-sm tracking-wide ${
+                        isActivePage(item.href) ? 'text-red-600' : ''
+                      }`}>{item.name}</span>
                     </div>
                     
-                    {/* Active indicator */}
+                    {/* Enhanced red active indicator */}
                     {isActivePage(item.href) && (
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-0.5 bg-primary-600 rounded-full"></div>
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-red-500 to-red-600 rounded-full shadow-sm"></div>
                     )}
                     
-                    {/* Hover line */}
+                    {/* Enhanced hover line */}
                     {!isActivePage(item.href) && (
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-primary-600 group-hover:w-3/4 transition-all duration-200"></div>
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-1 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full group-hover:w-3/4 transition-all duration-300 shadow-sm"></div>
                     )}
                   </Link>
                 )
@@ -280,7 +291,9 @@ export default function Navbar({
                       searchType: 'regular',
                       context: 'navbar',
                       currentPage: pathname
-                    }).catch(() => {});
+                    }).catch((error) => {
+                      logger.error('Failed to track search open event', { error, context: 'navbar' });
+                    });
                   }
                 }}
                 className="p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hover:scale-110"
@@ -301,7 +314,9 @@ export default function Navbar({
                       searchType: 'semantic',
                       context: 'navbar',
                       currentPage: pathname
-                    }).catch(() => {});
+                    }).catch((error) => {
+                      logger.error('Failed to track semantic search event', { error, context: 'navbar' });
+                    });
                   }
                 }}
                 className="p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 hover:scale-110 relative group"
@@ -338,7 +353,7 @@ export default function Navbar({
               )}
             </Link>
 
-            {/* Enhanced Cart Button */}
+            {/* Enhanced Cart Button with Red Badge */}
             <button
               onClick={() => {
                 toggleCart();
@@ -348,30 +363,32 @@ export default function Navbar({
                     itemCount: state.itemCount,
                     cartTotal: state.total,
                     context: 'navbar'
-                  }).catch(() => {});
+                  }).catch((error) => {
+                    logger.error('Failed to track cart open event', { error, context: 'navbar' });
+                  });
                 }
               }}
-              className="relative p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 group"
+              className="cart-icon relative p-2 text-neutral-500 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-all duration-200 group"
               aria-label={`Shopping cart with ${state.itemCount} items`}
             >
               <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5" />
               </svg>
-              
-              {/* Enhanced Cart Counter - hydration-safe rendering */}
+
+              {/* Dark Red Cart Badge - Enhanced Design */}
               {hasMounted && state.itemCount > 0 && (
-                <div className="absolute -top-1 -right-1">
-                  <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg">
+                <div className="absolute -top-2 -right-2">
+                  <div className="bg-red-800 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-lg border-2 border-white">
                     {state.itemCount > 99 ? '99+' : state.itemCount}
                   </div>
-                  {/* Pulsing ring */}
-                  <div className="absolute inset-0 bg-primary-500 rounded-full animate-ping opacity-20"></div>
+                  {/* Pulsing ring effect */}
+                  <div className="absolute inset-0 bg-red-600 rounded-full animate-ping opacity-30"></div>
                 </div>
               )}
 
-              {/* Hover tooltip - hydration safe with suppressHydrationWarning */}
+              {/* Enhanced hover tooltip */}
               <div suppressHydrationWarning className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-neutral-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                Cart is empty
+                {hasMounted && state.itemCount > 0 ? `${state.itemCount} item${state.itemCount !== 1 ? 's' : ''} in cart` : 'Cart is empty'}
               </div>
             </button>
 
@@ -434,7 +451,7 @@ export default function Navbar({
                   href={item.href}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg mx-2 transition-all duration-200 ${
                     isActivePage(item.href)
-                      ? 'bg-primary-100 text-primary-700 font-semibold'
+                      ? 'bg-red-50 text-red-600 font-semibold border-b-2 border-red-500'
                       : 'text-neutral-700 hover:text-primary-700 hover:bg-primary-50'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
@@ -443,10 +460,14 @@ export default function Navbar({
                   aria-current={isActivePage(item.href) ? 'page' : undefined}
                   aria-label={item.name}
                 >
-                  <span className="text-lg">{item.icon}</span>
-                  <span className="font-medium">{item.name}</span>
+                  <span className={`text-lg ${
+                    isActivePage(item.href) ? 'text-red-600' : ''
+                  }`}>{item.icon}</span>
+                  <span className={`font-medium ${
+                    isActivePage(item.href) ? 'text-red-600' : ''
+                  }`}>{item.name}</span>
                   {isActivePage(item.href) && (
-                    <div className="ml-auto w-2 h-2 bg-primary-600 rounded-full"></div>
+                    <div className="ml-auto w-2 h-2 bg-red-600 rounded-full"></div>
                   )}
                 </Link>
               )

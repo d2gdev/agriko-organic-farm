@@ -1,6 +1,5 @@
 'use client';
 
-import { Core } from '@/types/TYPE_REGISTRY';
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,24 +11,101 @@ import { ecommerceEvent, funnelEvent } from '@/lib/gtag';
 import toast from 'react-hot-toast';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Money } from '@/lib/money';
+import { SerializedWCProduct, deserializeProduct } from '@/lib/product-serializer';
 
 // Removed APP_CONSTANTS import due to dependency issues
 
 interface ProductCardProps {
-  product: WCProduct;
+  product: SerializedWCProduct;
   className?: string;
   priority?: boolean;
   layout?: 'grid' | 'list';
   fetchPriority?: 'high' | 'low' | 'auto';
 }
 
+// Define interfaces for type-safe price handling
+interface MoneyLike {
+  toNumber(): number;
+  isZero: boolean;
+}
+
+interface SerializedMoney {
+  pesos: number;
+  centavos: number;
+}
+
+// Utility function to safely extract price number from various price formats
+function safePriceToNumber(price: unknown): number {
+  try {
+    if (!price) return 0;
+
+    if (typeof price === 'object' && price !== null) {
+      if ('toNumber' in price && typeof (price as MoneyLike).toNumber === 'function') {
+        // It's a Money object
+        return (price as MoneyLike).toNumber();
+      } else if ('pesos' in price && typeof (price as SerializedMoney).pesos === 'number') {
+        // It's a serialized Money object
+        return (price as SerializedMoney).pesos;
+      }
+    }
+
+    if (typeof price === 'number') {
+      return price;
+    }
+
+    if (typeof price === 'string') {
+      const parsed = parseFloat(price);
+      return !isNaN(parsed) ? parsed : 0;
+    }
+
+    return 0;
+  } catch {
+    return 0;
+  }
+}
+
+// Utility function to safely check if price is zero
+function safeIsPriceZero(price: unknown): boolean {
+  try {
+    if (!price) return true;
+
+    if (typeof price === 'object' && price !== null) {
+      if ('isZero' in price && typeof (price as MoneyLike).isZero === 'boolean') {
+        // It's a Money object
+        return (price as MoneyLike).isZero;
+      } else if ('pesos' in price && typeof (price as SerializedMoney).pesos === 'number') {
+        // It's a serialized Money object
+        return (price as SerializedMoney).pesos === 0;
+      }
+    }
+
+    if (typeof price === 'number') {
+      return price === 0;
+    }
+
+    if (typeof price === 'string') {
+      const parsed = parseFloat(price);
+      return isNaN(parsed) || parsed === 0;
+    }
+
+    return true;
+  } catch {
+    return true;
+  }
+}
+
 function ProductCard({
-  product,
+  product: rawProduct,
   className = '',
   priority = false,
-  layout: _layout = 'grid',
+  layout = 'grid',
   fetchPriority = 'auto'
 }: ProductCardProps) {
+  void layout; // Mark as intentionally unused
+
+  // Use the serialized product directly (with plain numbers)
+  const product = rawProduct;
+
   const cart = useSafeCart();
   const wishlist = useWishlist();
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +122,8 @@ function ProductCard({
     if (!hasTrackedViewRef.current) {
       hasTrackedViewRef.current = true;
       const category = product.categories?.[0]?.name ?? 'Uncategorized';
-      const price = (product.price || 0) || 0;
+
+      const price = safePriceToNumber(product.price);
 
       // Track with Google Analytics
       ecommerceEvent.viewItem(
@@ -61,18 +138,9 @@ function ProductCard({
     }
   }, [product]);
 
-  // Cleanup timeouts on unmount and prevent state updates after unmount
+  // Setup component lifecycle and fallback timeout
   useEffect(() => {
     isUnmountedRef.current = false;
-
-    // Fallback timeout to show image if onLoad doesn't fire
-    const fallbackTimeout = setTimeout(() => {
-      if (!isUnmountedRef.current && !imageLoaded) {
-        setImageLoaded(true);
-      }
-    }, 3000); // 3 second fallback
-
-    timeoutsRef.current.push(fallbackTimeout);
 
     return () => {
       isUnmountedRef.current = true;
@@ -81,6 +149,26 @@ function ProductCard({
       timeoutsRef.current = []; // Clear the array first
       timeouts.forEach(timeout => clearTimeout(timeout));
     };
+  }, []);
+
+  // Fallback timeout to show image if onLoad doesn't fire
+  useEffect(() => {
+    if (!imageLoaded) {
+      const fallbackTimeout = setTimeout(() => {
+        if (!isUnmountedRef.current) {
+          setImageLoaded(true);
+        }
+      }, 3000); // 3 second fallback
+
+      timeoutsRef.current.push(fallbackTimeout);
+
+      return () => {
+        clearTimeout(fallbackTimeout);
+      };
+    }
+
+    // Return undefined when no cleanup is needed
+    return undefined;
   }, [imageLoaded]);
 
   const handleAddToCart = useCallback(async (e: React.MouseEvent) => {
@@ -106,11 +194,13 @@ function ProductCard({
         if (isUnmountedRef.current) return;
 
         if (cart && product) {
-          cart.addItem(product);
+          const deserializedProduct = deserializeProduct(product);
+          cart.addItem(deserializedProduct);
 
           // Track add to cart with Google Analytics
           const category = product.categories?.[0]?.name ?? 'Uncategorized';
-          const price = (product.price || 0) || 0;
+
+          const price = safePriceToNumber(product.price);
 
           ecommerceEvent.addToCart(
             product.id.toString(),
@@ -190,7 +280,7 @@ function ProductCard({
     },
     "offers": {
       "@type": "Offer",
-      "price": product.price,
+      "price": safePriceToNumber(product.price),
       "priceCurrency": "PHP",
       "availability": isProductInStock(product) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       "seller": {
@@ -215,25 +305,21 @@ function ProductCard({
   }, [product.short_description, product.description]);
 
   const discountPercentage = useMemo(() => {
-    return product.on_sale && product.regular_price !== product.price
-      ? (() => {
-          try {
-            const regularPrice = Money.parse(String(product.regular_price || '0'));
-            const salePrice = Money.parse(String(product.price || '0'));
+    if (!product.on_sale || !product.regular_price || !product.price || product.regular_price === product.price) {
+      return null;
+    }
 
-            if (salePrice.greaterThan(regularPrice) || regularPrice.isZero) {
-              return null;
-            }
+    const regularPrice = typeof product.regular_price === 'number' ? product.regular_price : 0;
+    const salePrice = typeof product.price === 'number' ? product.price : 0;
 
-            const discount = regularPrice.subtract(salePrice);
-            const percentage = (discount.pesos / regularPrice.pesos) * 100;
-            return Math.round(percentage);
-          } catch {
-            return null;
-          }
-        })()
-      : null;
-  }, [product.on_sale, product.regular_price, product.price, product.name]);
+    if (salePrice >= regularPrice || regularPrice === 0) {
+      return null;
+    }
+
+    const discount = regularPrice - salePrice;
+    const percentage = (discount / regularPrice) * 100;
+    return Math.round(percentage);
+  }, [product.on_sale, product.regular_price, product.price]);
 
   return (
     <>
@@ -337,7 +423,8 @@ function ProductCard({
                   if (isInWishlist) {
                     wishlist.removeItem(product.id);
                   } else {
-                    wishlist.addItem(product);
+                    const deserializedProduct = deserializeProduct(product);
+                    wishlist.addItem(deserializedProduct);
                   }
                 }}
                 className={`absolute top-4 right-4 ${isInWishlist ? 'bg-red-50' : 'bg-white/90'} backdrop-blur-sm p-2.5 rounded-full shadow-lg hover:bg-red-50 transition-all duration-300 transform hover:scale-110 pointer-events-auto`}
@@ -444,18 +531,31 @@ function ProductCard({
             <div className="mt-auto">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-2">
-                  {product.on_sale && product.regular_price !== product.price ? (
+                  {/* Handle zero price products specially */}
+                  {safeIsPriceZero(product.price) ? (
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-neutral-600">
+                        Price on Request
+                      </span>
+                      <Link
+                        href={`/contact?product=${product.slug}`}
+                        className="text-xs text-primary-600 hover:text-primary-700 underline"
+                      >
+                        Contact for pricing
+                      </Link>
+                    </div>
+                  ) : product.on_sale && product.regular_price !== product.price ? (
                     <>
                       <span className="text-xl font-bold text-primary-700">
-                        {formatPrice(product.price || (0 as Core.Money))}
+                        {formatPrice(product.price)}
                       </span>
                       <span className="text-sm text-neutral-500 line-through">
-                        {formatPrice(product.regular_price || product.price || (0 as Core.Money))}
+                        {formatPrice(product.regular_price || product.price)}
                       </span>
                     </>
                   ) : (
                     <span className="text-xl font-bold text-neutral-900">
-                      {formatPrice(product.price || (0 as Core.Money))}
+                      {formatPrice(product.price)}
                     </span>
                   )}
                 </div>
@@ -470,7 +570,7 @@ function ProductCard({
               </div>
 
               {/* Enhanced Add to Cart Button */}
-              {inStock && (
+              {inStock && !safeIsPriceZero(product.price) && (
                 <button
                   onClick={handleAddToCart}
                   disabled={isLoading}

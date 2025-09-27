@@ -169,7 +169,15 @@
       "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/lib/money.ts --max-warnings=0)",
       "Bash(npx sanity init:*)",
       "Bash(attrib:*)",
-      "mcp__github-official__get_me"
+      "mcp__github-official__get_me",
+      "Bash(for file in src/components/__tests__/*.test.tsx)",
+      "Bash(do sed -i \"s/import { render, screen, fireEvent, waitFor } from ''''@testing-library\\/react'''';/import { render } from ''''@testing-library\\/react'''';\\nimport { screen, fireEvent, waitFor } from ''''@testing-library\\/dom'''';/g; s/import { render, screen, waitFor } from ''''@testing-library\\/react'''';/import { render } from ''''@testing-library\\/react'''';\\nimport { screen, waitFor } from ''''@testing-library\\/dom'''';/g; s/import { render, screen } from ''''@testing-library\\/react'''';/import { render } from ''''@testing-library\\/react'''';\\nimport { screen } from ''''@testing-library\\/dom'''';/g\" \"$file\")",
+      "Bash(tee:*)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/sanity/components/preview/LivePreview.tsx --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/app/page.tsx src/components/ProductCard.tsx --max-warnings=0)",
+      "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/components/ProductCard.tsx --max-warnings=0)",
+      "Bash(set)",
+      "Bash(npx sanity dataset:*)"
     ],
     "deny": [],
     "ask": []

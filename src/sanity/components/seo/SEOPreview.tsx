@@ -81,7 +81,7 @@ export function SEOPreview({ document }: SEOPreviewProps) {
                 ✅ {document.seo.metaKeywords.length} keywords defined
               </Text>
             ) : (
-              <Text size={1} muted tone="caution">
+              <Text size={1} muted style={{color: '#ff9800'}}>
                 ⚠️ No keywords defined
               </Text>
             )}

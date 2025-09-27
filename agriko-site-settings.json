@@ -1,0 +1,57 @@
+{
+  "_type": "siteSettings",
+  "title": "Agriko - Premium Organic Products",
+  "description": "Discover premium organic products from the Philippines. From nutritious rice varieties to healing herbs, Agriko brings you the finest natural ingredients for healthy living.",
+
+  "socialMedia": {
+    "facebook": "https://facebook.com/agriko",
+    "instagram": "https://instagram.com/agriko",
+    "twitter": "https://twitter.com/agriko",
+    "youtube": "https://youtube.com/agriko",
+    "tiktok": "https://tiktok.com/@agriko"
+  },
+
+  "contactInfo": {
+    "email": "hello@agriko.com",
+    "phone": "+63 917 123 4567",
+    "address": "Manila, Philippines",
+    "businessHours": "Monday - Friday: 9:00 AM - 6:00 PM\nSaturday: 10:00 AM - 4:00 PM\nSunday: Closed"
+  },
+
+  "homepage": {
+    "heroTitle": "Premium Organic Products from the Philippines",
+    "heroSubtitle": "Discover the finest selection of organic rice, healing herbs, and nutritious superfoods sourced directly from Filipino farms.",
+
+    "featuredProducts": {
+      "title": "Our Best Sellers",
+      "subtitle": "Handpicked premium organic products that our customers love",
+      "showProductIds": [
+        "moringa-powder",
+        "organic-brown-rice",
+        "5-in-1-turmeric-blend",
+        "ginger-powder",
+        "lemongrass-tea",
+        "organic-honey"
+      ]
+    },
+
+    "aboutSection": {
+      "title": "From Farm to Table",
+      "content": "At Agriko, we partner directly with Filipino farmers to bring you the highest quality organic products. Our mission is to promote healthy living while supporting sustainable agriculture and local communities."
+    }
+  },
+
+  "notifications": {
+    "banner": {
+      "enabled": true,
+      "message": "🎉 New customers get 15% off their first order! Use code WELCOME15",
+      "type": "sale",
+      "link": "/products"
+    },
+
+    "maintenance": {
+      "enabled": false,
+      "message": "We are currently updating our system to serve you better. Please check back soon!"
+    }
+  }
+}

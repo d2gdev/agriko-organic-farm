@@ -6,18 +6,24 @@ import ProductCard from '@/components/ProductCard';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
+import { serializeProducts } from '@/lib/product-serializer';
 import { WCProduct } from '@/types/woocommerce';
+import { Money } from '@/lib/money';
 import toast from 'react-hot-toast';
 
 export default function WishlistPage() {
   const wishlist = useWishlist();
   const cart = useSafeCart();
-  const { items } = wishlist.state;
+  const { items: rawItems } = wishlist.state;
+  const items = serializeProducts(rawItems);
 
-  const handleMoveToCart = (product: WCProduct) => {
-    cart?.addItem(product);
-    wishlist.removeItem(product.id);
-    toast.success(`${product.name} moved to cart!`);
+  const handleMoveToCart = (productId: number) => {
+    const originalProduct = rawItems.find(p => p.id === productId);
+    if (originalProduct) {
+      cart?.addItem(originalProduct);
+      wishlist.removeItem(productId);
+      toast.success(`${originalProduct.name} moved to cart!`);
+    }
   };
 
   const handleRemoveFromWishlist = (productId: number) => {
@@ -100,12 +106,12 @@ export default function WishlistPage() {
               </Link>
 
               <p className="text-lg font-bold text-primary-600 mt-1">
-                {formatPrice(product.price)}
+                {formatPrice(product.price || Money.ZERO)}
               </p>
 
               <div className="flex gap-2 mt-3">
                 <button
-                  onClick={() => handleMoveToCart(product)}
+                  onClick={() => handleMoveToCart(product.id)}
                   className="flex-1 px-3 py-2 bg-primary-600 text-white text-sm rounded hover:bg-primary-700 transition-colors"
                 >
                   Add to Cart

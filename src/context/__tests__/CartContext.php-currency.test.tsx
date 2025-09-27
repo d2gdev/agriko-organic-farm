@@ -8,6 +8,7 @@ import { render, act, waitFor } from '@testing-library/react';
 import { CartProvider, useCart } from '../CartContext';
 import { Core } from '@/types/TYPE_REGISTRY';
 import { WCProduct } from '@/types/woocommerce';
+import { Money } from '@/lib/money';
 
 // Mock dependencies
 jest.mock('@/lib/logger', () => ({
@@ -45,23 +46,17 @@ jest.mock('@/lib/cart-validation', () => ({
   validateCartItem: jest.fn(() => true),
 }));
 
-jest.mock('@/lib/php-currency', () => ({
-  PHPCurrency: {
-    multiply: jest.fn((price, quantity) => price * quantity),
-    add: jest.fn((a, b) => a + b),
-    format: jest.fn((price) => `₱${(price / 100).toFixed(2)}`),
-  }
-}));
+// No need to mock @/lib/php-currency since we're using Money class directly
 
-// Create test products with PHP prices in centavos
+// Create test products with Money instances
 const mockProducts: WCProduct[] = [
   {
     id: 1,
     name: 'Rice 25kg',
     slug: 'rice-25kg',
-    price: 129900 as Core.Money, // ₱1,299.00
-    regular_price: 139900 as Core.Money, // ₱1,399.00
-    sale_price: 129900 as Core.Money, // ₱1,299.00
+    price: Money.pesos(1299), // ₱1,299.00
+    regular_price: Money.pesos(1399), // ₱1,399.00
+    sale_price: Money.pesos(1299), // ₱1,299.00
     on_sale: true,
     stock_status: 'instock',
     categories: [],
@@ -71,8 +66,9 @@ const mockProducts: WCProduct[] = [
     id: 2,
     name: 'Cooking Oil 1L',
     slug: 'cooking-oil-1l',
-    price: 8950 as Core.Money, // ₱89.50
-    regular_price: 8950 as Core.Money,
+    price: Money.pesos(89.50), // ₱89.50
+    regular_price: Money.pesos(89.50),
+    sale_price: null,
     stock_status: 'instock',
     categories: [],
     images: [],
@@ -81,8 +77,9 @@ const mockProducts: WCProduct[] = [
     id: 3,
     name: 'Sugar 1kg',
     slug: 'sugar-1kg',
-    price: 6575 as Core.Money, // ₱65.75
-    regular_price: 6575 as Core.Money,
+    price: Money.pesos(65.75), // ₱65.75
+    regular_price: Money.pesos(65.75),
+    sale_price: null,
     stock_status: 'instock',
     categories: [],
     images: [],
@@ -91,8 +88,9 @@ const mockProducts: WCProduct[] = [
     id: 4,
     name: 'Salt 500g',
     slug: 'salt-500g',
-    price: 2550 as Core.Money, // ₱25.50
-    regular_price: 2550 as Core.Money,
+    price: Money.pesos(25.50), // ₱25.50
+    regular_price: Money.pesos(25.50),
+    sale_price: null,
     stock_status: 'instock',
     categories: [],
     images: [],
@@ -135,7 +133,7 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        expect(cartState.state.total).toBe(129900); // Centavos
+        expect(cartState.state.total.pesos).toBe(1299); // Pesos
         expect(cartState.state.itemCount).toBe(1);
       });
     });
@@ -150,8 +148,8 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        // 129900 + 8950 + 6575 = 145425 centavos (₱1,454.25)
-        expect(cartState.state.total).toBe(145425);
+        // 1299 + 89.50 + 65.75 = 1454.25 pesos
+        expect(cartState.state.total.pesos).toBe(1454.25);
         expect(cartState.state.itemCount).toBe(3);
       });
     });
@@ -164,7 +162,7 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        expect(cartState.state.total).toBe(17900); // ₱179.00
+        expect(cartState.state.total.pesos).toBe(179); // ₱179.00
         expect(cartState.state.itemCount).toBe(2);
       });
     });
@@ -177,7 +175,7 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        expect(cartState.state.total).toBe(7650); // ₱76.50
+        expect(cartState.state.total.pesos).toBe(76.5); // ₱76.50
         expect(cartState.state.itemCount).toBe(3);
       });
     });
@@ -194,8 +192,8 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        // 129900 + (8950 * 2) + (6575 * 3) = 129900 + 17900 + 19725 = 167525
-        expect(cartState.state.total).toBe(167525); // ₱1,675.25
+        // 1299 + (89.50 * 2) + (65.75 * 3) = 1299 + 179 + 197.25 = 1675.25
+        expect(cartState.state.total.pesos).toBe(1675.25); // ₱1,675.25
         expect(cartState.state.itemCount).toBe(6);
       });
     });
@@ -208,7 +206,7 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        expect(cartState.state.total).toBe(129900);
+        expect(cartState.state.total.pesos).toBe(1299);
       });
 
       await act(async () => {
@@ -216,7 +214,7 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        expect(cartState.state.total).toBe(259800); // ₱2,598.00
+        expect(cartState.state.total.pesos).toBe(2598); // ₱2,598.00
         expect(cartState.state.itemCount).toBe(2);
       });
     });
@@ -230,7 +228,7 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        expect(cartState.state.total).toBe(138850); // ₱1,388.50
+        expect(cartState.state.total.pesos).toBe(1388.5); // ₱1,388.50
       });
 
       await act(async () => {
@@ -238,7 +236,7 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        expect(cartState.state.total).toBe(129900); // ₱1,299.00
+        expect(cartState.state.total.pesos).toBe(1299); // ₱1,299.00
         expect(cartState.state.itemCount).toBe(1);
       });
     });
@@ -261,7 +259,7 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        expect(cartState.state.total).toBe(0);
+        expect(cartState.state.total.pesos).toBe(0);
         expect(cartState.state.itemCount).toBe(0);
         expect(cartState.state.items).toHaveLength(0);
       });
@@ -274,7 +272,7 @@ describe('CartContext with PHP Currency', () => {
 
       const productWithoutPrice: WCProduct = {
         ...mockProducts[0],
-        price: 0 as Core.Money,
+        price: Money.ZERO,
       } as WCProduct;
 
       await act(async () => {
@@ -282,7 +280,7 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        expect(cartState.state.total).toBe(0);
+        expect(cartState.state.total.pesos).toBe(0);
         expect(cartState.state.itemCount).toBe(1);
       });
     });
@@ -295,8 +293,8 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        // 2550 * 9999 = 25,497,450 centavos (₱254,974.50)
-        expect(cartState.state.total).toBe(25497450);
+        // 25.50 * 9999 = 254,974.50 pesos
+        expect(cartState.state.total.pesos).toBe(254974.5);
         expect(cartState.state.itemCount).toBe(9999);
       });
     });
@@ -309,7 +307,7 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        expect(cartState.state.total).toBe(129900);
+        expect(cartState.state.total.pesos).toBe(1299);
       });
 
       await act(async () => {
@@ -317,7 +315,7 @@ describe('CartContext with PHP Currency', () => {
       });
 
       await waitFor(() => {
-        expect(cartState.state.total).toBe(0);
+        expect(cartState.state.total.pesos).toBe(0);
         expect(cartState.state.items).toHaveLength(0);
       });
     });
@@ -333,15 +331,15 @@ describe('CartContext with PHP Currency', () => {
 
       await waitFor(() => {
         const total = cartState.state.total;
-        expect(total).toBe(129900);
+        expect(total.pesos).toBe(1299);
 
         // Test that the value can be formatted for display
-        const displayPrice = (total / 100).toFixed(2);
+        const displayPrice = total.pesos.toFixed(2);
         expect(displayPrice).toBe('1299.00');
 
-        // With proper formatting
-        const formatted = `₱${(total / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
-        expect(formatted).toBe('₱1,299.00');
+        // With proper formatting using Money's format method
+        const formatted = total.format();
+        expect(formatted).toBe('₱1299.00');
       });
     });
   });

@@ -45,7 +45,7 @@ export function migratePriceArray(prices: (string | number | null | undefined)[]
  * Replaces patterns like: (price * quantity) as Core.Money
  */
 export function migrateCalculationResult(calculation: number): Money {
-  return Money.pesos(calculation);
+  return Money.centavos(calculation);
 }
 
 /**
@@ -58,11 +58,11 @@ export function validateMigration(
 ): void {
   if (typeof original === 'number') {
     const expectedCentavos = Math.round(original * 100);
-    if (converted.cents !== expectedCentavos) {
+    if (converted.toCentavos() !== expectedCentavos) {
       throw new Error(
         `Migration validation failed in ${context}: ` +
         `original ${original} pesos (${expectedCentavos} centavos) != ` +
-        `converted ${converted.cents} centavos`
+        `converted ${converted.toCentavos()} centavos`
       );
     }
   }
@@ -76,7 +76,7 @@ export const MigrationPatterns = {
    * Replace: product.price || (0 as Core.Money)
    * With: Money.parse(product.price)
    */
-  fallbackPrice: (price: unknown): Money => {
+  fallbackPrice: (price: string | number | null | undefined): Money => {
     return Money.parse(price);
   },
 
@@ -92,7 +92,7 @@ export const MigrationPatterns = {
    * Replace: (price * quantity) as Core.Money
    * With: Money.parse(price).multiply(quantity)
    */
-  priceCalculation: (price: unknown, quantity: number): Money => {
+  priceCalculation: (price: string | number | null | undefined, quantity: number): Money => {
     return Money.parse(price).multiply(quantity);
   },
 

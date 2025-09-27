@@ -7,6 +7,7 @@ import { reliableFetch } from '@/lib/reliable-fetch';
 import { useRouter } from 'next/navigation';
 import Navbar from './Navbar';
 import { WCProduct } from '@/types/woocommerce';
+import { SerializedWCProduct, deserializeProduct } from '@/lib/product-serializer';
 import { useCommerceKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useCart } from '@/context/CartContext';
 // Removed direct WooCommerce import - now using API routes
@@ -65,8 +66,11 @@ export default function NavbarWrapper() {
 
         if (!cancelled && response.ok) {
           const data = await response.json();
-          setProducts(Array.isArray(data) ? data : []);
-          logger.info(`Loaded ${Array.isArray(data) ? data.length : 0} products for search`);
+          // Convert serialized products to WCProduct objects for compatibility
+          const serializedProducts: SerializedWCProduct[] = Array.isArray(data) ? data : [];
+          const deserializedProducts: WCProduct[] = serializedProducts.map(deserializeProduct);
+          setProducts(deserializedProducts);
+          logger.info(`Loaded ${serializedProducts.length} products for search (deserialized)`);
           return;
         }
 

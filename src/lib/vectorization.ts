@@ -1,6 +1,7 @@
 import { Core } from '@/types/TYPE_REGISTRY';
 import { WCProduct } from '@/types/woocommerce';
 import { logger } from '@/lib/logger';
+import { Money } from '@/lib/money';
 
 import { getAllProducts, getProductsByIds } from './woocommerce';
 import { generateBatchEmbeddings, prepareTextForEmbedding } from './embeddings';
@@ -55,7 +56,7 @@ export async function vectorizeProducts(products: WCProduct[]): Promise<ProductV
       source: 'agriko',
       productId: product.id,
       slug: product.slug,
-      price: product.price || (0 as Core.Money),
+      price: product.price || Money.ZERO,
       categories: product.categories?.map(cat => cat.name) || [],
       inStock: product.stock_status === 'instock',
       featured: product.featured || false,

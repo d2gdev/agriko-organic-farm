@@ -1,7 +1,8 @@
 // AutoTrackingProvider Tests
 import React from 'react';
-import { Core } from '@/types/TYPE_REGISTRY';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { Money } from '@/lib/money';
+import { render, act } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/dom';
 import { AutoTrackingProvider, useTracking, useTrackingReady, useTrackingMonitoring } from '../AutoTrackingProviderEnhanced';
 
 // Mock all the dependencies
@@ -55,7 +56,7 @@ const TestConsumer: React.FC = () => {
         onClick={() => tracking.trackProduct('view', {
           id: 1,
           name: 'Test Product',
-          price: 10 as Core.Money,
+          price: 10.00,
           category: 'test'
         })}
         data-testid="track-product"
@@ -320,7 +321,7 @@ describe('AutoTrackingProvider', () => {
       expect(mockTrackProduct).toHaveBeenCalledWith('view', {
         id: 1,
         name: 'Test Product',
-        price: 10 as Core.Money,
+        price: 10,
         category: 'test'
       });
     });

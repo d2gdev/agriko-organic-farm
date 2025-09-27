@@ -2,7 +2,7 @@
 // Tests the system's defenses against real-world attack scenarios
 
 import { NextRequest } from 'next/server';
-import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
 import { POST } from '@/app/api/auto-sync/route';
 import crypto from 'crypto';
 
@@ -494,9 +494,9 @@ describe('Security Penetration Testing', () => {
         // Negative prices
         { productData: { id: 123, price: '-99.99', name: 'Negative Price Product' } },
         // Zero prices (might be valid for free products)
-        { productData: { id: 123, price: 0 as Core.Money, name: 'Free Product' } },
+        { productData: { id: 123, price: Money.centavos(0), name: 'Free Product' } },
         // Extremely high prices
-        { productData: { id: 123, price: 99999999999 as Core.Money, name: 'Overpriced Product' } },
+        { productData: { id: 123, price: Money.centavos(99999999999), name: 'Overpriced Product' } },
         // Invalid product IDs
         { productData: { id: -1, name: 'Invalid ID Product' } },
         { productData: { id: 0, name: 'Zero ID Product' } },

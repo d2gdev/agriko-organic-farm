@@ -25,17 +25,19 @@ export default function Footer() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link
                     href="/products"
-                    className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl"
+                    className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-0.5 border-2 border-green-600 hover:border-green-700"
                   >
+                    <span className="mr-2 text-lg group-hover:animate-bounce">🛍️</span>
                     Shop Now
-                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </Link>
                   <Link
                     href="/faq"
-                    className="inline-flex items-center justify-center px-6 py-3 border-2 border-green-600 text-green-700 font-semibold rounded-xl hover:bg-green-50 transition-all duration-300"
+                    className="group inline-flex items-center justify-center px-8 py-4 border-2 border-green-600 text-green-700 font-bold rounded-xl hover:bg-green-50 hover:border-green-700 transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5"
                   >
+                    <span className="mr-2 text-lg group-hover:animate-bounce">📚</span>
                     Learn More
                   </Link>
                 </div>
@@ -63,8 +65,29 @@ export default function Footer() {
       <div className="bg-gradient-to-br from-neutral-50 via-green-50/30 to-yellow-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-            {/* Company Info */}
-            <div className="md:col-span-2 space-y-6">
+            {/* Enhanced visual separators */}
+            <style jsx>{`
+              .footer-section {
+                position: relative;
+              }
+              .footer-section:not(:last-child)::after {
+                content: '';
+                position: absolute;
+                right: -24px;
+                top: 0;
+                bottom: 0;
+                width: 1px;
+                background: linear-gradient(to bottom, transparent, #e5e7eb, transparent);
+                display: none;
+              }
+              @media (min-width: 768px) {
+                .footer-section:not(:last-child)::after {
+                  display: block;
+                }
+              }
+            `}</style>
+            {/* Company Info - Enhanced */}
+            <div className="md:col-span-2 space-y-6 footer-section">
               <h3 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
                 Agriko Organic Farm
               </h3>
@@ -128,9 +151,12 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Quick Links */}
-            <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-neutral-900">Quick Links</h4>
+            {/* Quick Links - Enhanced */}
+            <div className="space-y-6 footer-section">
+              <h4 className="text-lg font-semibold text-neutral-900 flex items-center gap-2">
+                <span className="text-xl">🔗</span>
+                Quick Links
+              </h4>
               <ul className="space-y-3">
                 <li>
                   <Link href="/" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
@@ -166,8 +192,11 @@ export default function Footer() {
             </div>
 
             {/* Customer Service */}
-            <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-neutral-900">Products & Info</h4>
+            <div className="space-y-6 footer-section">
+              <h4 className="text-lg font-semibold text-neutral-900 flex items-center gap-2">
+                <span className="text-xl">🌿</span>
+                Products & Info
+              </h4>
               <ul className="space-y-3">
                 <li>
                   <Link href="/faq" className="text-neutral-600 hover:text-green-600 transition-colors flex items-center group">
@@ -208,24 +237,26 @@ export default function Footer() {
             <div className="bg-gradient-to-r from-green-50 to-yellow-50 rounded-xl p-6 md:p-8">
               <div className="grid md:grid-cols-2 gap-6 items-center">
                 <div>
-                  <h4 className="text-xl font-semibold text-neutral-900 mb-2">
-                    🌱 Stay Connected
+                  <h4 className="text-2xl font-bold text-neutral-900 mb-3 flex items-center gap-2">
+                    <span className="text-2xl">🌱</span>
+                    Stay Connected
                   </h4>
-                  <p className="text-neutral-600">
-                    Get exclusive offers, farming tips, and new product announcements.
+                  <p className="text-neutral-600 text-lg">
+                    Get exclusive offers, farming tips, and new product announcements delivered to your inbox!
                   </p>
                 </div>
-                <form className="flex flex-col sm:flex-row gap-3 w-full">
+                <form className="flex flex-col sm:flex-row gap-4 w-full">
                   <input
                     type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 min-w-0 px-4 py-2 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="Enter your email for exclusive offers..."
+                    className="flex-1 min-w-0 px-5 py-3 bg-white border-2 border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-green-400"
                   />
                   <button
                     type="submit"
-                    className="flex-shrink-0 px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-medium rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-md hover:shadow-lg"
+                    className="group flex-shrink-0 inline-flex items-center px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 hover:-translate-y-0.5"
                   >
-                    Subscribe
+                    <span className="mr-2 text-lg group-hover:animate-bounce">📧</span>
+                    Get Tips & Offers
                   </button>
                 </form>
               </div>
@@ -276,7 +307,7 @@ export default function Footer() {
                     <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-sm text-neutral-600 font-medium">Certified Organic</span>
+                    <span className="text-sm text-neutral-600 font-medium">100% Organic</span>
                   </div>
                   {/* SSL Secured */}
                   <div className="flex items-center space-x-2">
@@ -287,7 +318,11 @@ export default function Footer() {
                   </div>
                   {/* Proudly Filipino */}
                   <div className="flex items-center space-x-2">
-                    <span className="text-xl">🇵🇭</span>
+                    <img
+                      src="/images/philippines-flag.svg"
+                      alt="Philippines Flag"
+                      className="w-6 h-4 object-cover rounded-sm"
+                    />
                     <span className="text-sm text-neutral-600 font-medium">Proudly Filipino-Owned</span>
                   </div>
                 </div>
@@ -296,7 +331,9 @@ export default function Footer() {
           </div>
 
           {/* Bottom Bar with Enhanced Styling */}
-          <div className="mt-8 pt-8 border-t-2 border-gradient-to-r from-green-200 via-neutral-200 to-yellow-200">
+          <div className="mt-8 pt-8 border-t-2 border-gray-200 relative">
+            {/* Decorative gradient line */}
+            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500 via-yellow-500 to-green-500"></div>
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-neutral-600 text-sm">
                 © 2024 Agriko Organic Farm. All rights reserved. Made with 💚 in Zamboanga Del Sur

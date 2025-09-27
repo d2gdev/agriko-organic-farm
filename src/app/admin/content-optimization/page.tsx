@@ -13,8 +13,6 @@ import {
   Sparkles,
   FileText,
   CheckCircle,
-  AlertCircle,
-  TrendingUp,
   Eye,
   Target,
   Zap

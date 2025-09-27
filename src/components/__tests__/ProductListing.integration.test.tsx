@@ -1,6 +1,7 @@
 import React from 'react';
-import { Core } from '@/types/TYPE_REGISTRY';
-import { render, screen, waitFor } from '@testing-library/react';
+import { Money } from '@/lib/money';
+import { render } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import { getAllProducts } from '@/lib/woocommerce';
 import ProductsWithFilters from '@/components/ProductsWithFilters';
@@ -39,7 +40,7 @@ jest.mock('next/image', () => ({
 
 // Mock utils functions to return USD format for tests
 jest.mock('@/lib/utils', () => ({
-  formatPrice: (price: Core.Money) => `$${parseFloat(price.toString()).toFixed(2)}`,
+  formatPrice: (price: Money) => `$${price.toPesos().toFixed(2)}`,
   getProductMainImage: (product: WCProduct) => `/images/${product.slug || 'placeholder'}.jpg`,
   stripHtml: (str: string) => str.replace(/<[^>]*>/g, ''),
   isProductInStock: (product: WCProduct) => product.stock_status === 'instock',
@@ -178,9 +179,9 @@ const mockProducts: WCProduct[] = [
     id: 1,
     name: 'Organic Brown Rice',
     slug: 'organic-brown-rice',
-    price: 1599 as Core.Money,
-    regular_price: 1599 as Core.Money,
-    sale_price: undefined,
+    price: Money.centavos(1599),
+    regular_price: Money.centavos(1599),
+    sale_price: null,
     on_sale: false,
     stock_status: 'instock',
     description: 'Premium organic brown rice from our farm',
@@ -227,9 +228,9 @@ const mockProducts: WCProduct[] = [
     id: 2,
     name: 'Red Rice Premium',
     slug: 'red-rice-premium',
-    price: 1850 as Core.Money,
-    regular_price: 2000 as Core.Money,
-    sale_price: 1850 as Core.Money,
+    price: Money.centavos(1850),
+    regular_price: Money.centavos(2000),
+    sale_price: Money.centavos(1850),
     on_sale: true,
     stock_status: 'instock',
     description: 'Premium red rice with antioxidants',
@@ -283,9 +284,9 @@ const mockProducts: WCProduct[] = [
     id: 3,
     name: 'Turmeric Powder',
     slug: 'turmeric-powder',
-    price: 1299 as Core.Money,
-    regular_price: 1299 as Core.Money,
-    sale_price: undefined,
+    price: Money.centavos(1299),
+    regular_price: Money.centavos(1299),
+    sale_price: null,
     on_sale: false,
     stock_status: 'outofstock',
     description: 'Pure organic turmeric powder',
@@ -332,9 +333,9 @@ const mockProducts: WCProduct[] = [
     id: 4,
     name: 'Organic Honey',
     slug: 'organic-honey',
-    price: 2550 as Core.Money,
-    regular_price: 2550 as Core.Money,
-    sale_price: undefined,
+    price: Money.centavos(2550),
+    regular_price: Money.centavos(2550),
+    sale_price: null,
     on_sale: false,
     stock_status: 'instock',
     description: 'Pure organic honey from local hives',

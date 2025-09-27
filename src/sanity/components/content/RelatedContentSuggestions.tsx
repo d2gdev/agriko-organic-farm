@@ -1,17 +1,42 @@
 import React, { useState, useEffect } from 'react'
-import { Card, Stack, Text, Button, Badge, Flex, Box } from '@sanity/ui'
+import { Card, Stack, Text, Button, Badge, Flex as SanityFlex } from '@sanity/ui'
 import { LinkIcon, RefreshIcon } from '@sanity/icons'
 
+interface SanityDocument {
+  _id: string;
+  _type: string;
+  title?: string;
+  slug?: { current: string };
+  categories?: Array<{ title: string }>;
+  tags?: string[];
+  seo?: {
+    title?: string;
+    description?: string;
+    metaKeywords?: string[];
+  };
+  [key: string]: unknown;
+}
+
+interface ContentSuggestion {
+  _id: string;
+  _type: string;
+  title: string;
+  slug?: { current: string };
+  score?: number;
+  relevanceScore?: number;
+  matchedKeywords?: string[];
+}
+
 interface RelatedContentSuggestionsProps {
-  document: any
+  document: SanityDocument
   documentId: string
 }
 
 export function RelatedContentSuggestions({ document, documentId }: RelatedContentSuggestionsProps) {
-  const [suggestions, setSuggestions] = useState<any[]>([])
+  const [suggestions, setSuggestions] = useState<ContentSuggestion[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  const analyzeSimilarity = (doc1: any, doc2: any): number => {
+  const analyzeSimilarity = (doc1: SanityDocument, doc2: SanityDocument): number => {
     let score = 0
 
     // Title similarity
@@ -132,11 +157,11 @@ export function RelatedContentSuggestions({ document, documentId }: RelatedConte
   return (
     <Card padding={4} radius={2} shadow={1}>
       <Stack space={4}>
-        <Flex align="center" justify="space-between">
-          <Flex align="center" gap={2}>
+        <SanityFlex align="center" justify="space-between">
+          <SanityFlex align="center" gap={2}>
             <LinkIcon />
             <Text size={2} weight="semibold">Related Content Suggestions</Text>
-          </Flex>
+          </SanityFlex>
           <Button
             fontSize={1}
             icon={RefreshIcon}
@@ -145,7 +170,7 @@ export function RelatedContentSuggestions({ document, documentId }: RelatedConte
             loading={isLoading}
             text="Refresh"
           />
-        </Flex>
+        </SanityFlex>
 
         {suggestions.length === 0 && !isLoading ? (
           <Card padding={3} tone="transparent" border>
@@ -157,30 +182,30 @@ export function RelatedContentSuggestions({ document, documentId }: RelatedConte
           <Stack space={2}>
             {suggestions.map((item) => (
               <Card key={item._id} padding={3} radius={2} tone="default" border>
-                <Flex align="center" justify="space-between">
+                <SanityFlex align="center" justify="space-between">
                   <Stack space={2} flex={1}>
-                    <Flex align="center" gap={2}>
+                    <SanityFlex align="center" gap={2}>
                       <Badge tone={getTypeColor(item._type)} fontSize={0}>
                         {getTypeLabel(item._type)}
                       </Badge>
                       <Text size={1} weight="semibold">
                         {item.title}
                       </Text>
-                    </Flex>
-                    <Flex align="center" gap={3}>
+                    </SanityFlex>
+                    <SanityFlex align="center" gap={3}>
                       <Text size={1} muted>
                         Relevance: {item.relevanceScore}%
                       </Text>
                       {item.matchedKeywords && (
-                        <Flex gap={1}>
+                        <SanityFlex gap={1}>
                           {item.matchedKeywords.slice(0, 3).map((keyword: string) => (
                             <Badge key={keyword} tone="default" fontSize={0}>
                               {keyword}
                             </Badge>
                           ))}
-                        </Flex>
+                        </SanityFlex>
                       )}
-                    </Flex>
+                    </SanityFlex>
                   </Stack>
                   <Button
                     fontSize={1}
@@ -188,7 +213,7 @@ export function RelatedContentSuggestions({ document, documentId }: RelatedConte
                     text="Link"
                     tone="primary"
                   />
-                </Flex>
+                </SanityFlex>
               </Card>
             ))}
           </Stack>
@@ -210,18 +235,3 @@ export function RelatedContentSuggestions({ document, documentId }: RelatedConte
   )
 }
 
-function Flex({ children, align, justify, gap, direction, flex, style }: any) {
-  return (
-    <div style={{
-      display: 'flex',
-      alignItems: align,
-      justifyContent: justify,
-      gap: gap ? `${gap * 4}px` : undefined,
-      flexDirection: direction || 'row',
-      flex: flex,
-      ...style
-    }}>
-      {children}
-    </div>
-  )
-}

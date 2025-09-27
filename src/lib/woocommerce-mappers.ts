@@ -51,6 +51,7 @@ import type {
   WCMetaData,
 } from '@/types/woocommerce';
 import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
 
 // Additional WooCommerce types not defined in main types file
 interface WCCustomer {
@@ -152,9 +153,9 @@ export function mapWCProductToDomain(wc: WCProduct): Product {
     catalogVisibility: mapCatalogVisibility(wc.catalog_visibility || 'visible'),
 
     // Pricing
-    price: parseFloat(wc.price?.toString() || '0') || 0,
-    regularPrice: parseFloat(wc.regular_price?.toString() || '0') || 0,
-    salePrice: wc.sale_price ? parseFloat(wc.sale_price.toString()) : null,
+    price: wc.price ? wc.price.toPesos() : 0,
+    regularPrice: wc.regular_price ? wc.regular_price.toPesos() : 0,
+    salePrice: wc.sale_price ? wc.sale_price.toPesos() : null,
     onSale: wc.on_sale || false,
 
     // Inventory
@@ -199,9 +200,9 @@ export function mapDomainProductToWC(product: Product): Partial<WCProduct> {
     catalog_visibility: product.catalogVisibility,
 
     // Pricing
-    price: product.price as Core.Money,
-    regular_price: product.regularPrice as Core.Money,
-    sale_price: product.salePrice ? (product.salePrice as Core.Money) : undefined,
+    price: Money.pesos(product.price),
+    regular_price: Money.pesos(product.regularPrice),
+    sale_price: product.salePrice ? Money.pesos(product.salePrice) : undefined,
     on_sale: product.onSale,
 
     // Inventory
@@ -305,11 +306,11 @@ export function mapWCOrderToDomain(wc: WCOrder): Order {
     currency: wc.currency,
 
     // Totals
-    subtotal: parseFloat(wc.total || '0') || 0, // WCOrder doesn't have subtotal
-    totalTax: parseFloat(wc.total_tax) || 0,
-    totalShipping: parseFloat(wc.shipping_total) || 0,
-    totalDiscount: parseFloat(wc.discount_total) || 0,
-    total: parseFloat(wc.total) || 0,
+    subtotal: wc.total ? Money.fromWooCommerce(wc.total).toPesos() : 0, // WCOrder doesn't have subtotal
+    totalTax: wc.total_tax ? Money.fromWooCommerce(wc.total_tax).toPesos() : 0,
+    totalShipping: wc.shipping_total ? Money.fromWooCommerce(wc.shipping_total).toPesos() : 0,
+    totalDiscount: wc.discount_total ? Money.fromWooCommerce(wc.discount_total).toPesos() : 0,
+    total: wc.total ? Money.fromWooCommerce(wc.total).toPesos() : 0,
 
     // Items
     lineItems: (wc.line_items || []).map(mapWCLineItemToDomain),
@@ -362,8 +363,8 @@ export function mapWCCustomerToDomain(wc: WCCustomer): Customer {
 
     // Stats
     ordersCount: wc.orders_count || 0,
-    totalSpent: parseFloat(wc.total_spent || '0'),
-    averageOrderValue: parseFloat(wc.average_order_value || '0'),
+    totalSpent: Money.parse(wc.total_spent).toPesos(),
+    averageOrderValue: Money.parse(wc.average_order_value).toPesos(),
 
     // Metadata
     createdAt: new Date(wc.date_created),
@@ -538,11 +539,11 @@ function mapWCLineItemToDomain(wc: WCOrderLineItem): OrderLineItem {
     productName: wc.name,
     variantId: wc.variation_id || null,
     quantity: wc.quantity,
-    subtotal: parseFloat(wc.subtotal) || 0,
-    total: parseFloat(wc.total) || 0,
-    tax: parseFloat(wc.total_tax) || 0,
+    subtotal: wc.subtotal ? Money.fromWooCommerce(wc.subtotal).toPesos() : 0,
+    total: wc.total ? Money.fromWooCommerce(wc.total).toPesos() : 0,
+    tax: wc.total_tax ? Money.fromWooCommerce(wc.total_tax).toPesos() : 0,
     sku: wc.sku || '',
-    price: wc.price || 0,
+    price: wc.price ? wc.price : 0, // price is already a number
     attributes: (wc.meta_data || []).map((meta: WCMetaData) => ({
       name: meta.key,
       value: meta.value,
@@ -555,8 +556,8 @@ function mapWCShippingLineToDomain(wc: WCShippingLine): ShippingLine {
     id: wc.id,
     methodTitle: wc.method_title,
     methodId: wc.method_id,
-    total: parseFloat(wc.total) || 0,
-    totalTax: parseFloat(wc.total_tax) || 0,
+    total: wc.total ? Money.fromWooCommerce(wc.total).toPesos() : 0,
+    totalTax: wc.total_tax ? Money.fromWooCommerce(wc.total_tax).toPesos() : 0,
   };
 }
 
@@ -565,7 +566,7 @@ function mapWCTaxLineToDomain(wc: WCTaxLine): TaxLine {
     id: wc.id,
     code: wc.rate_code,
     title: wc.label,
-    total: parseFloat(wc.tax_total) || 0,
+    total: wc.tax_total ? Money.fromWooCommerce(wc.tax_total).toPesos() : 0,
     compound: wc.compound,
   };
 }
@@ -574,8 +575,8 @@ function mapWCFeeLineToDomain(wc: WCFeeLine): FeeLine {
   return {
     id: wc.id,
     name: wc.name,
-    total: parseFloat(wc.total) || 0,
-    totalTax: parseFloat(wc.total_tax) || 0,
+    total: wc.total ? Money.fromWooCommerce(wc.total).toPesos() : 0,
+    totalTax: wc.total_tax ? Money.fromWooCommerce(wc.total_tax).toPesos() : 0,
   };
 }
 
@@ -583,8 +584,8 @@ function mapWCCouponLineToDomain(wc: WCCouponLine): CouponLine {
   return {
     id: wc.id,
     code: wc.code,
-    discount: parseFloat(wc.discount) || 0,
-    discountTax: parseFloat(wc.discount_tax) || 0,
+    discount: wc.discount ? Money.fromWooCommerce(wc.discount).toPesos() : 0,
+    discountTax: wc.discount_tax ? Money.fromWooCommerce(wc.discount_tax).toPesos() : 0,
   };
 }
 

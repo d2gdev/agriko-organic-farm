@@ -143,44 +143,75 @@ class ProductionMonitoringService {
     return health;
   }
 
-  private async checkDatabaseHealth(): Promise<any> {
-    // This would normally check actual database connections
-    // For now, return a mock healthy status
-    return {
-      status: 'ok',
-      connections: 5,
-      responseTime: 25
-    };
+  private async checkDatabaseHealth(): Promise<{
+    status: string;
+    connections: number;
+    responseTime: number;
+  }> {
+    try {
+      // Check Memgraph connection
+      const startTime = Date.now();
+      const { testMemgraphConnection } = await import('./memgraph');
+      const memgraphStatus = await testMemgraphConnection();
+      const responseTime = Date.now() - startTime;
 
-    // TODO: Add real database health check with proper error handling
-    // } catch (error) {
-    //   return {
-    //     status: 'error',
-    //     connections: 0,
-    //     responseTime: -1,
-    //     error: error instanceof Error ? error.message : 'Unknown error'
-    //   };
-    // }
+      if (memgraphStatus.success) {
+        return {
+          status: 'ok',
+          connections: 1, // Default to 1 active connection
+          responseTime
+        };
+      } else {
+        return {
+          status: 'degraded',
+          connections: 0,
+          responseTime
+        };
+      }
+    } catch (error) {
+      logger.error('Database health check failed', { error }, 'monitoring');
+      return {
+        status: 'error',
+        connections: 0,
+        responseTime: -1
+      };
+    }
   }
 
   private async checkRedisHealth(): Promise<any> {
-    // This would normally check Redis connection
-    // For now, return a mock healthy status
-    return {
-      status: 'ok',
-      connected: true,
-      memory: '10MB'
-    };
+    try {
+      // Check Qdrant vector database instead of Redis
+      const startTime = Date.now();
+      const { checkQdrantHealth } = await import('./qdrant');
+      const isHealthy = await checkQdrantHealth();
+      const responseTime = Date.now() - startTime;
 
-    // TODO: Add real Redis health check with proper error handling
-    // } catch (error) {
-    //   return {
-    //     status: 'error',
-    //     connected: false,
-    //     memory: 'unknown',
-    //     error: error instanceof Error ? error.message : 'Unknown error'
-    //   };
-    // }
+      if (isHealthy) {
+        // Get memory usage from memory monitor
+        const memUsage = memoryMonitor.measure();
+        return {
+          status: 'ok',
+          connected: true,
+          memory: `${(memUsage.heapUsed / 1024 / 1024).toFixed(1)}MB`,
+          responseTime
+        };
+      } else {
+        return {
+          status: 'degraded',
+          connected: false,
+          memory: 'unknown',
+          responseTime
+        };
+      }
+    } catch (error) {
+      logger.error('Vector DB health check failed', { error }, 'monitoring');
+      return {
+        status: 'error',
+        connected: false,
+        memory: 'unknown',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
   }
 
   private getAPIHealthMetrics(): any {

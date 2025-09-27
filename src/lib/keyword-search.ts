@@ -1,6 +1,6 @@
 // Keyword Search Engine for Hybrid Search Implementation
-import { Core } from '@/types/TYPE_REGISTRY';
 import { WCProduct } from '../types/woocommerce';
+import { Money } from '@/lib/money';
 
 export interface KeywordSearchOptions {
   fuzzyMatch?: boolean;
@@ -19,7 +19,7 @@ export interface KeywordSearchResult {
   productId: number;
   slug: string;
   title: string;
-  price: Core.Money;
+  price: Money;
   categories: string[];
   inStock: boolean;
   featured: boolean;
@@ -38,7 +38,7 @@ export interface SearchIndex {
   tokens: string[];
   metadata: {
     slug: string;
-    price: Core.Money;
+    price: Money;
     inStock: boolean;
     featured: boolean;
   };
@@ -161,7 +161,7 @@ export function buildSearchIndex(products: WCProduct[]): SearchIndex[] {
       tokens,
       metadata: {
         slug: product.slug ?? '',
-        price: product.price ?? (0 as Core.Money),
+        price: product.price || Money.ZERO,
         inStock: product.stock_status === 'instock',
         featured: product.featured ?? false
       }
@@ -245,7 +245,7 @@ export function keywordSearch(
         productId: item.productId,
         slug: item.metadata.slug || '',
         title: item.title,
-        price: item.metadata.price || (0 as Core.Money),
+        price: item.metadata.price || Money.ZERO,
         categories: item.categories || [],
         inStock: item.metadata.inStock || false,
         featured: item.metadata.featured || false,

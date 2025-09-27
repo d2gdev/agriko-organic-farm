@@ -1,6 +1,7 @@
 // Mapping layer between WooCommerce API (snake_case) and internal types (camelCase)
 
 import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
 import { Order, CartItem, WooCommerceProduct } from '@/lib/business-logic-validator';
 
 // Internal domain types (camelCase)
@@ -73,7 +74,7 @@ export function mapWooCommerceProductToDomain(wooProduct: WooCommerceProduct): D
     stockStatus: wooProduct.stock_status,
     manageStock: wooProduct.manage_stock,
     stockQuantity: wooProduct.stock_quantity,
-    price: parseFloat(wooProduct.price || '0') as Core.Money,
+    price: Money.pesos(parseFloat(wooProduct.price || '0')),
     regularPrice: wooProduct.regular_price,
     salePrice: wooProduct.sale_price?.toString() || '',
     categories: wooProduct.categories,

@@ -1,12 +1,24 @@
-import { Core } from '@/types/TYPE_REGISTRY';
 import { WCProduct, WCCategory, WCOrder, CheckoutData } from '@/types/woocommerce';
 import { logger } from '@/lib/logger';
+import { Money } from '@/lib/money';
 import type { WooCommerceOrderData } from '@/types/business-intelligence-types';
 import { EventType } from '@/types/events';
 import { apiCache } from '@/lib/cache-manager';
 import { handleError } from '@/lib/error-sanitizer';
 import { productCache } from '@/lib/productCache'; // Import from productCache.ts instead of cache-manager.ts
 import { withExternalAPIRetry } from '@/lib/retry-handler';
+import { adaptProductFromAPI, adaptProductsFromAPI, adaptProductsFromAPIForClient } from '@/lib/woocommerce-adapter';
+import { SerializedWCProduct } from '@/lib/product-serializer';
+
+interface WCProductRaw {
+  id: number;
+  name: string;
+  slug: string;
+  price?: string;
+  regular_price?: string;
+  sale_price?: string;
+  [key: string]: unknown;
+}
 // import { urlHelpers } from '@/lib/url-constants';
 
 // Auto-sync imports for real-time persistence
@@ -27,9 +39,9 @@ function getBuildTimeMockProducts(): WCProduct[] {
       permalink: `${shopBaseUrl}/product/premium-organic-black-rice`,
       description: "Our premium organic black rice is packed with antioxidants and nutrients. Perfect for health-conscious families seeking nutritious grains.",
       short_description: "Premium organic black rice rich in antioxidants and nutrients.",
-      price: 29900 as Core.Money, // 299.00 pesos as centavos
-      regular_price: 29900 as Core.Money, // 299.00 pesos as centavos 
-      sale_price: undefined,
+      price: Money.pesos(299.00), // 299.00 pesos
+      regular_price: Money.pesos(299.00), // 299.00 pesos 
+      sale_price: null,
       on_sale: false,
       status: "publish",
       featured: true,
@@ -58,9 +70,9 @@ function getBuildTimeMockProducts(): WCProduct[] {
       permalink: `${shopBaseUrl}/product/organic-brown-rice`, 
       description: "Wholesome organic brown rice with natural fiber and nutrients. Ideal for healthy meals and balanced nutrition.",
       short_description: "Nutritious organic brown rice with natural fiber.",
-      price: 24900 as Core.Money, // 249.00 pesos as centavos
-      regular_price: 24900 as Core.Money, // 249.00 pesos as centavos
-      sale_price: undefined,
+      price: Money.pesos(249.00), // 249.00 pesos
+      regular_price: Money.pesos(249.00), // 249.00 pesos
+      sale_price: null,
       on_sale: false,
       status: "publish",
       featured: true,
@@ -89,9 +101,9 @@ function getBuildTimeMockProducts(): WCProduct[] {
       permalink: `${shopBaseUrl}/product/pure-turmeric-powder`,
       description: "Freshly ground pure turmeric powder from our organic farm. Known for its anti-inflammatory properties and golden color.",
       short_description: "Pure organic turmeric powder with anti-inflammatory benefits.",
-      price: 19900 as Core.Money, // 199.00 pesos as centavos
-      regular_price: 21900 as Core.Money, // 219.00 pesos as centavos
-      sale_price: 19900 as Core.Money, // 199.00 pesos as centavos
+      price: Money.pesos(199.00), // 199.00 pesos
+      regular_price: Money.pesos(219.00), // 219.00 pesos
+      sale_price: Money.pesos(199.00), // 199.00 pesos
       on_sale: true,
       status: "publish",
       featured: false,
@@ -225,7 +237,7 @@ function getBuildTimeMockOrder(): WCOrder {
         taxes: [],
         meta_data: [],
         sku: "AGRIKO-BLACK-RICE-1KG",
-        price: 299 as Core.Money,
+        price: 299,
         image: {
           id: 1,
           src: "",
@@ -264,8 +276,6 @@ import { config } from '@/lib/unified-config';
 const WC_API_URL = config.woocommerce.apiUrl;
 const WC_CONSUMER_KEY = config.woocommerce.consumerKey;
 const WC_CONSUMER_SECRET = config.woocommerce.consumerSecret;
-
-// Debug logging removed - credentials are working
 
 // Create authorization header
 const getAuthHeader = () => {
@@ -497,9 +507,9 @@ async function triggerAutoSync(event: {
             items: (orderData.line_items || []).map(item => ({
               productId: item.product_id,
               quantity: item.quantity,
-              price: parseFloat(item.total) / item.quantity
+              price: item.total ? parseFloat(item.total) / item.quantity : 0
             })),
-            orderTotal: parseFloat(orderData.total || '0'),
+            orderTotal: orderData.total ? parseFloat(orderData.total) : 0,
             timestamp
           });
         }
@@ -608,7 +618,8 @@ export async function getAllProducts(params: {
   const queryString = searchParams.toString();
   const endpoint = `/products${queryString ? `?${queryString}` : ''}`;
 
-  return wcRequest<WCProduct[]>(endpoint);
+  const rawProducts = await wcRequest<WCProductRaw[]>(endpoint);
+  return adaptProductsFromAPI(rawProducts);
 }
 
 export async function getAllProductsWithPagination(params: {
@@ -640,10 +651,10 @@ export async function getAllProductsWithPagination(params: {
   const queryString = searchParams.toString();
   const endpoint = `/products${queryString ? `?${queryString}` : ''}`;
 
-  const response = await wcRequestWithHeaders<WCProduct[]>(endpoint);
+  const response = await wcRequestWithHeaders<WCProductRaw[]>(endpoint);
 
   return {
-    products: response.data,
+    products: adaptProductsFromAPI(response.data),
     total: parseInt(response.headers['x-wp-total'] || '0', 10),
     totalPages: parseInt(response.headers['x-wp-totalpages'] || '1', 10)
   };
@@ -672,7 +683,8 @@ export async function getProductById(id: number, trackingData?: {
   }
 
   try {
-    const product = await wcRequest<WCProduct>(`/products/${id}`);
+    const rawProduct = await wcRequest<WCProductRaw>(`/products/${id}`);
+    const product = rawProduct ? adaptProductFromAPI(rawProduct) : null;
 
     // Cache the result
     if (product) {
@@ -727,7 +739,8 @@ export async function getProductsByIds(ids: number[]): Promise<WCProduct[]> {
   try {
     // Batch fetch uncached products using WooCommerce include parameter
     const idsString = uncachedIds.join(',');
-    const fetchedProducts = await wcRequest<WCProduct[]>(`/products?include=${idsString}&per_page=${uncachedIds.length}`);
+    const rawFetchedProducts = await wcRequest<WCProductRaw[]>(`/products?include=${idsString}&per_page=${uncachedIds.length}`);
+    const fetchedProducts = adaptProductsFromAPI(rawFetchedProducts);
     
     // Cache the fetched products
     for (const product of fetchedProducts) {
@@ -766,7 +779,8 @@ export async function getProductBySlug(slug: string): Promise<WCProduct | null> 
   }
 
   try {
-    const products = await wcRequest<WCProduct[]>(`/products?slug=${slug}`);
+    const rawProducts = await wcRequest<WCProductRaw[]>(`/products?slug=${slug}`);
+    const products = adaptProductsFromAPI(rawProducts);
     const product = products.length > 0 ? products[0] : null;
     
     if (product) {
@@ -798,6 +812,83 @@ export async function getProductBySlug(slug: string): Promise<WCProduct | null> 
 
 export async function getFeaturedProducts(limit: number = 8): Promise<WCProduct[]> {
   return getAllProducts({
+    featured: true,
+    per_page: limit,
+    status: 'publish',
+  });
+}
+
+/**
+ * Client-safe versions that return serialized products for Next.js 15 compatibility
+ */
+export async function getAllProductsForClient(params: {
+  per_page?: number;
+  page?: number;
+  status?: string;
+  featured?: boolean;
+  category?: string;
+  tag?: string;
+  search?: string;
+  orderby?: string;
+  order?: 'asc' | 'desc';
+  min_price?: string;
+  max_price?: string;
+} = {}): Promise<SerializedWCProduct[]> {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      searchParams.append(key, value.toString());
+    }
+  });
+
+  const queryString = searchParams.toString();
+  const endpoint = `/products${queryString ? `?${queryString}` : ''}`;
+  const rawProducts = await wcRequest<WCProductRaw[]>(endpoint);
+  const serializedProducts = adaptProductsFromAPIForClient(rawProducts);
+
+
+  return serializedProducts;
+}
+
+export async function getAllProductsWithPaginationForClient(params: {
+  per_page?: number;
+  page?: number;
+  status?: string;
+  featured?: boolean;
+  category?: string | string[];
+  tag?: string;
+  search?: string;
+  orderby?: string;
+  order?: 'asc' | 'desc';
+  min_price?: string;
+  max_price?: string;
+} = {}): Promise<{ products: SerializedWCProduct[]; total: number; totalPages: number }> {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      if (key === 'category' && Array.isArray(value)) {
+        // For multiple categories, use comma-separated values
+        searchParams.append(key, value.join(','));
+      } else {
+        searchParams.append(key, value.toString());
+      }
+    }
+  });
+  const queryString = searchParams.toString();
+  const endpoint = `/products${queryString ? `?${queryString}` : ''}`;
+  const response = await wcRequestWithHeaders<WCProductRaw[]>(endpoint);
+  const serializedProducts = adaptProductsFromAPIForClient(response.data);
+
+
+  return {
+    products: serializedProducts,
+    total: parseInt(response.headers['x-wp-total'] || '0', 10),
+    totalPages: parseInt(response.headers['x-wp-totalpages'] || '1', 10)
+  };
+}
+
+export async function getFeaturedProductsForClient(limit: number = 8): Promise<SerializedWCProduct[]> {
+  return getAllProductsForClient({
     featured: true,
     per_page: limit,
     status: 'publish',
@@ -895,7 +986,7 @@ export async function createOrder(orderData: CheckoutData, trackingData?: {
       metadata: {
         ...trackingData.metadata,
         orderData: order,
-        orderTotal: parseFloat(order.total),
+        orderTotal: Money.parse(order.total).toPesos(),
         itemCount: order.line_items.length
       }
     });

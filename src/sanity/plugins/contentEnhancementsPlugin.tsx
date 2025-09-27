@@ -1,5 +1,6 @@
 import React from 'react'
 import { definePlugin } from 'sanity'
+import { useDocumentPane } from 'sanity/desk'
 import { LivePreview } from '../components/preview/LivePreview'
 import { SocialMediaPreview } from '../components/preview/SocialMediaPreview'
 import { SEOPreview } from '../components/seo/SEOPreview'
@@ -13,7 +14,7 @@ export const contentEnhancementsPlugin = definePlugin(() => {
     name: 'content-enhancements',
     document: {
       inspectors: (prev, context) => {
-        const { documentType, document, documentId } = context
+        const { documentType, documentId } = context
 
         // Only add to content types that would benefit from these tools
         const supportedTypes = ['blogPost', 'page', 'product']
@@ -24,42 +25,77 @@ export const contentEnhancementsPlugin = definePlugin(() => {
 
         const schemaType = { name: documentType }
 
+        // Component wrapper that uses the hook to get document data
+        const InspectorWrapper = ({ children }: { children: (document: any) => React.ReactNode }) => {
+          const paneContext = useDocumentPane()
+          const document = paneContext?.value
+          return <>{children(document)}</>
+        }
+
         return [
           ...prev,
           {
             name: 'live-preview',
             title: 'Live Preview',
-            component: () => <LivePreview document={document} schemaType={schemaType} />
+            component: () => (
+              <InspectorWrapper>
+                {(document) => <LivePreview document={document} schemaType={schemaType} />}
+              </InspectorWrapper>
+            )
           },
           {
             name: 'seo-preview',
             title: 'SEO Preview',
-            component: () => <SEOPreview document={document} />
+            component: () => (
+              <InspectorWrapper>
+                {(document) => <SEOPreview document={document} />}
+              </InspectorWrapper>
+            )
           },
           {
             name: 'social-preview',
             title: 'Social Media',
-            component: () => <SocialMediaPreview document={document} />
+            component: () => (
+              <InspectorWrapper>
+                {(document) => <SocialMediaPreview document={document} />}
+              </InspectorWrapper>
+            )
           },
           {
             name: 'content-score',
             title: 'Content Score',
-            component: () => <ContentScoring document={document} schemaType={schemaType} />
+            component: () => (
+              <InspectorWrapper>
+                {(document) => <ContentScoring document={document} schemaType={schemaType} />}
+              </InspectorWrapper>
+            )
           },
           {
             name: 'related-content',
             title: 'Related Content',
-            component: () => <RelatedContentSuggestions document={document} documentId={documentId} />
+            component: () => (
+              <InspectorWrapper>
+                {(document) => <RelatedContentSuggestions document={document} documentId={documentId || ''} />}
+              </InspectorWrapper>
+            )
           },
           {
             name: 'link-checker',
             title: 'Link Checker',
-            component: () => <BrokenLinkChecker document={document} />
+            component: () => (
+              <InspectorWrapper>
+                {(document) => <BrokenLinkChecker document={document} />}
+              </InspectorWrapper>
+            )
           },
           {
             name: 'image-optimizer',
             title: 'Image Optimizer',
-            component: () => <ImageOptimizer document={document} />
+            component: () => (
+              <InspectorWrapper>
+                {(document) => <ImageOptimizer document={document} />}
+              </InspectorWrapper>
+            )
           }
         ]
       }

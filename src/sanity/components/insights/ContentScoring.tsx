@@ -1,28 +1,89 @@
 import React, { useMemo } from 'react'
-import { Card, Stack, Text, Badge, Box, Grid } from '@sanity/ui'
+import { Card, Stack, Text, Badge } from '@sanity/ui'
 import { CheckmarkCircleIcon, WarningOutlineIcon, ClockIcon } from '@sanity/icons'
 
+interface SanityDocument {
+  _id?: string;
+  _type?: string;
+  title?: string;
+  slug?: {
+    current?: string;
+  };
+  excerpt?: string;
+  body?: unknown[];
+  content?: unknown;
+  seo?: {
+    title?: string;
+    description?: string;
+    metaDescription?: string;
+    keywords?: string[];
+    metaKeywords?: string[];
+  };
+  mainImage?: unknown;
+  images?: unknown[];
+  backgroundImage?: unknown;
+  [key: string]: unknown;
+}
+
+interface SchemaType {
+  name: string;
+  title?: string;
+  [key: string]: unknown;
+}
+
+interface ContentCheck {
+  name: string;
+  passed: boolean;
+  score: number;
+  maxScore: number;
+  message: string;
+  status?: 'pass' | 'warning' | 'fail' | 'info';
+  points?: number;
+}
+
 interface ContentScoringProps {
-  document: any
-  schemaType: any
+  document: SanityDocument
+  schemaType: SchemaType
 }
 
 export function ContentScoring({ document, schemaType }: ContentScoringProps) {
   const score = useMemo(() => {
     let totalScore = 0
     let maxScore = 0
-    const checks: any[] = []
+    const checks: ContentCheck[] = []
+
+    // Helper to create check objects
+    const addCheck = (
+      name: string,
+      passed: boolean,
+      points: number,
+      maxPoints: number,
+      message?: string
+    ) => {
+      checks.push({
+        name,
+        passed,
+        score: passed ? points : 0,
+        maxScore: maxPoints,
+        message: message || (passed ? 'Pass' : 'Fail'),
+        status: passed ? 'pass' : 'fail',
+        points: passed ? points : 0
+      })
+      if (passed) totalScore += points
+      maxScore += maxPoints
+    }
 
     // Basic content checks
     if (document?.title) {
       const titleLength = document.title.length
-      if (titleLength >= 20 && titleLength <= 60) {
-        totalScore += 10
-        checks.push({ name: 'Title length', status: 'pass', points: 10 })
-      } else {
-        checks.push({ name: 'Title length', status: 'fail', points: 0, message: 'Should be 20-60 characters' })
-      }
-      maxScore += 10
+      const titlePassed = titleLength >= 20 && titleLength <= 60
+      addCheck(
+        'Title length',
+        titlePassed,
+        10,
+        10,
+        titlePassed ? `${titleLength} characters` : `${titleLength} chars (should be 20-60)`
+      )
     }
 
     // Content length check
@@ -30,70 +91,91 @@ export function ContentScoring({ document, schemaType }: ContentScoringProps) {
       const contentText = extractTextFromPortableText(document.content)
       const wordCount = contentText.split(' ').filter(word => word.length > 0).length
 
-      if (wordCount >= 300) {
-        totalScore += 20
-        checks.push({ name: 'Content length', status: 'pass', points: 20, message: `${wordCount} words` })
-      } else {
-        checks.push({ name: 'Content length', status: 'fail', points: 0, message: `${wordCount} words (minimum 300)` })
-      }
-      maxScore += 20
+      const contentPassed = wordCount >= 300
+      addCheck(
+        'Content length',
+        contentPassed,
+        20,
+        20,
+        contentPassed ? `${wordCount} words` : `${wordCount} words (minimum 300)`
+      )
 
-      // Reading time
+      // Reading time (info check - not scored)
       const readingTime = Math.ceil(wordCount / 200) // Average reading speed
-      checks.push({ name: 'Reading time', status: 'info', message: `~${readingTime} min read` })
+      checks.push({
+        name: 'Reading time',
+        passed: true,
+        score: 0,
+        maxScore: 0,
+        message: `~${readingTime} min read`,
+        status: 'info',
+        points: 0
+      })
     }
 
     // SEO checks
     if (document?.seo?.metaDescription) {
       const descLength = document.seo.metaDescription.length
-      if (descLength >= 120 && descLength <= 160) {
-        totalScore += 10
-        checks.push({ name: 'Meta description', status: 'pass', points: 10 })
-      } else {
-        checks.push({ name: 'Meta description', status: 'fail', points: 0, message: 'Should be 120-160 characters' })
-      }
+      const seoPassed = descLength >= 120 && descLength <= 160
+      addCheck(
+        'Meta description',
+        seoPassed,
+        10,
+        10,
+        seoPassed ? `${descLength} characters` : `${descLength} chars (should be 120-160)`
+      )
     } else {
-      checks.push({ name: 'Meta description', status: 'fail', points: 0, message: 'Missing' })
+      addCheck('Meta description', false, 0, 10, 'Missing')
     }
-    maxScore += 10
 
     // Image check
-    if (document?.heroSection?.backgroundImage || document?.image) {
-      totalScore += 10
-      checks.push({ name: 'Featured image', status: 'pass', points: 10 })
-    } else {
-      checks.push({ name: 'Featured image', status: 'fail', points: 0, message: 'No image' })
-    }
-    maxScore += 10
+    const hasImage = !!(document?.backgroundImage || document?.mainImage || document?.images?.length)
+    addCheck(
+      'Featured image',
+      hasImage,
+      10,
+      10,
+      hasImage ? 'Present' : 'No image'
+    )
 
     // Keywords check
-    if (document?.seo?.metaKeywords?.length > 0) {
-      totalScore += 10
-      checks.push({ name: 'Keywords', status: 'pass', points: 10, message: `${document.seo.metaKeywords.length} keywords` })
-    } else {
-      checks.push({ name: 'Keywords', status: 'fail', points: 0, message: 'No keywords' })
-    }
-    maxScore += 10
+    const hasKeywords = (document?.seo?.metaKeywords?.length ?? 0) > 0
+    addCheck(
+      'Keywords',
+      hasKeywords,
+      10,
+      10,
+      hasKeywords ? `${document?.seo?.metaKeywords?.length} keywords` : 'No keywords'
+    )
 
     // Slug check
-    if (document?.slug?.current) {
-      totalScore += 5
-      checks.push({ name: 'URL slug', status: 'pass', points: 5 })
-    } else {
-      checks.push({ name: 'URL slug', status: 'fail', points: 0, message: 'Missing' })
-    }
-    maxScore += 5
+    const hasSlug = !!document?.slug?.current
+    addCheck(
+      'URL slug',
+      hasSlug,
+      5,
+      5,
+      hasSlug ? 'Present' : 'Missing'
+    )
 
     // Internal links check (bonus)
     if (document?.content) {
       const hasLinks = checkForLinks(document.content)
       if (hasLinks) {
-        totalScore += 5
-        checks.push({ name: 'Internal links', status: 'pass', points: 5 })
+        addCheck('Internal links', true, 5, 5, 'Has links')
       } else {
-        checks.push({ name: 'Internal links', status: 'warning', points: 0, message: 'Consider adding links' })
+        // Warning state - still track but don't score
+        checks.push({
+          name: 'Internal links',
+          passed: false,
+          score: 0,
+          maxScore: 5,
+          message: 'Consider adding links',
+          status: 'warning',
+          points: 0
+        })
+        maxScore += 5
       }
-      maxScore += 5
     }
 
     const percentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0
@@ -201,19 +283,34 @@ export function ContentScoring({ document, schemaType }: ContentScoringProps) {
   )
 }
 
-function extractTextFromPortableText(blocks: any[]): string {
-  if (!blocks) return ''
-  return blocks
+interface PortableTextChild {
+  _type?: string;
+  text?: string;
+  marks?: string[];
+  [key: string]: unknown;
+}
+
+interface PortableTextBlock {
+  _type: string;
+  children?: PortableTextChild[];
+  [key: string]: unknown;
+}
+
+function extractTextFromPortableText(blocks: unknown): string {
+  if (!blocks || !Array.isArray(blocks)) return ''
+  const typedBlocks = blocks as PortableTextBlock[]
+  return typedBlocks
     .filter(block => block._type === 'block')
-    .map(block => block.children?.map((child: any) => child.text).join(' ') || '')
+    .map(block => block.children?.map((child) => child.text || '').join(' ') || '')
     .join(' ')
 }
 
-function checkForLinks(content: any[]): boolean {
-  if (!content) return false
-  return content.some(block =>
-    block.children?.some((child: any) =>
-      child.marks?.some((mark: string) => mark.includes('link'))
+function checkForLinks(content: unknown): boolean {
+  if (!content || !Array.isArray(content)) return false
+  const typedContent = content as PortableTextBlock[]
+  return typedContent.some(block =>
+    block.children?.some((child) =>
+      child.marks?.some((mark) => mark.includes('link'))
     )
   )
 }
@@ -227,7 +324,7 @@ function getGrade(percentage: number): string {
   return 'F'
 }
 
-function getScoreTone(percentage: number): string {
+function getScoreTone(percentage: number): "positive" | "caution" | "critical" {
   if (percentage >= 80) return 'positive'
   if (percentage >= 60) return 'caution'
   return 'critical'

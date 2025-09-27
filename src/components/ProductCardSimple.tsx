@@ -92,15 +92,15 @@ export default function ProductCardSimple({
           {product.sale_price && product.regular_price ? (
             <>
               <span className="text-lg font-bold text-primary-600">
-                {formatPrice(product.sale_price)}
+                {product.sale_price?.format() || '$0.00'}
               </span>
               <span className="text-sm text-gray-500 line-through">
-                {formatPrice(product.regular_price)}
+                {product.regular_price?.format() || '$0.00'}
               </span>
             </>
           ) : (
             <span className="text-lg font-bold text-gray-900">
-              {formatPrice((product.price || 0) as number)}
+              {product.price?.format() || '$0.00'}
             </span>
           )}
         </div>

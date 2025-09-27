@@ -2,6 +2,7 @@
 import { logger } from '@/lib/logger';
 import { WCProduct } from '@/types/woocommerce';
 import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
 // Removed APP_CONSTANTS import due to dependency issues
 
 // Qdrant client configuration
@@ -25,8 +26,8 @@ interface QdrantSearchResult {
 
 class QdrantClient {
   private config: QdrantConfig;
-  private baseUrl: string;
-  private headers: HeadersInit;
+  public baseUrl: string;
+  public headers: HeadersInit;
 
   constructor(config: QdrantConfig) {
     this.config = config;
@@ -259,7 +260,7 @@ export async function indexProducts(products: WCProduct[]): Promise<void> {
     payload: {
       name: product.name,
       slug: product.slug,
-      price: product.price ? parseFloat(product.price.toString()) : (0 as Core.Money),
+      price: product.price ? parseFloat(product.price.toString()) : 0,
       sale_price: product.sale_price ? parseFloat(product.sale_price.toString()) : null,
       categories: product.categories?.map(c => c.slug) || [],
       tags: product.tags?.map(t => t.slug) || [],
@@ -516,7 +517,7 @@ export async function checkQdrantHealth(): Promise<boolean> {
     );
     return response.ok;
   } catch (error) {
-    logger.error('Qdrant health check failed:', error);
+    logger.error('Qdrant health check failed:', error as Record<string, unknown>);
     return false;
   }
 }

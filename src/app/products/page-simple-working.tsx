@@ -1,4 +1,5 @@
 import { getAllProducts } from '@/lib/woocommerce';
+import { serializeProducts } from '@/lib/product-serializer';
 import ProductCard from '@/components/ProductCard';
 import type { Metadata } from 'next';
 
@@ -9,12 +10,14 @@ export const metadata: Metadata = {
 
 async function ProductsPageSimple() {
   try {
-    const products = await getAllProducts({
+    const rawProducts = await getAllProducts({
       per_page: 12,
       orderby: 'menu_order',
       order: 'asc',
       status: 'publish'
     });
+
+    const products = serializeProducts(rawProducts);
 
     if (products.length === 0) {
       return (

@@ -38,8 +38,8 @@ const customJestConfig = {
   ],
   // Conservative settings to prevent worker crashes
   maxWorkers: 1, // Single worker to prevent crashes
-  testTimeout: 60000, // Increased to 60 seconds for complex tests
-  workerIdleMemoryLimit: '200MB', // Very low memory limit
+  testTimeout: 30000, // 30 seconds timeout
+  workerIdleMemoryLimit: '512MB', // Reasonable memory limit
   maxConcurrency: 1, // Only run 1 test at a time
 
   // Test file patterns
@@ -53,11 +53,11 @@ const customJestConfig = {
   resetMocks: true,
   restoreMocks: true,
 
-  // Disable problematic features that can cause worker crashes
+  // Enable better debugging and cleanup
   cache: false,
   watchman: false,
-  detectOpenHandles: false,
-  forceExit: true,
+  detectOpenHandles: true, // Enable to detect async operations
+  forceExit: false, // Let Jest exit naturally
 
   // Node.js specific options to prevent crashes
   globals: {

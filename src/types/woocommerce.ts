@@ -7,9 +7,9 @@ export interface WCProduct {
   permalink?: string;
   description?: string;
   short_description?: string;
-  price?: Core.Money;
-  regular_price?: Core.Money;
-  sale_price?: Core.Money;
+  price: Core.Money;  // Required - products must have a price
+  regular_price: Core.Money;  // Required - defaults to price if not on sale
+  sale_price: Core.Money | null;  // Null if not on sale
   on_sale?: boolean;
   status?: 'draft' | 'pending' | 'private' | 'publish';
   featured?: boolean;

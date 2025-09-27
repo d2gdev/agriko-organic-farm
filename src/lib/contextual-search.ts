@@ -1,5 +1,6 @@
 // Enhanced Contextual Search with AI-Powered Features
 import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
 import { hybridSearch, HybridSearchOptions, HybridSearchResult } from './hybrid-search';
 import { logger } from '@/lib/logger';
 import { analyzeSearchIntent, reRankSearchResults, type SearchIntent } from './deepseek';
@@ -245,7 +246,7 @@ export async function contextualSearch(
           name: r.product.name,
           description: r.product.description,
           categories: r.product.categories,
-          price: r.product.price || (0 as Core.Money),
+          price: (r.product.price || Money.ZERO).toNumber(),
           score: r.score
         })),
         {

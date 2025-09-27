@@ -19,9 +19,9 @@ export default function SEOAnalyzer({ content }: SEOAnalyzerProps) {
   const titleOptimal = titleLength >= 30 && titleLength <= 60;
   const descriptionOptimal = descriptionLength >= 120 && descriptionLength <= 160;
   const hasKeywords = content.keywords && content.keywords.length > 0;
-  const keywordDensity = hasKeywords
+  const keywordDensity = hasKeywords && content.content && content.keywords
     ? content.keywords.filter(kw =>
-        content.content.toLowerCase().includes(kw.toLowerCase())
+        content.content?.toLowerCase().includes(kw.toLowerCase())
       ).length / content.keywords.length * 100
     : 0;
 

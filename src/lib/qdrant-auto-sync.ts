@@ -4,6 +4,7 @@ import { initializeQdrant } from './qdrant';
 import { generateEmbedding } from './embeddings';
 import { getProduct } from './woocommerce';
 import { Core } from '@/types/TYPE_REGISTRY';
+import { Money } from '@/lib/money';
 
 // Auto-sync single product to Qdrant when product data changes
 export async function autoSyncProductToQdrant(productData: {
@@ -30,7 +31,7 @@ export async function autoSyncProductToQdrant(productData: {
       id: product.id,
       name: product.name,
       slug: product.slug,
-      price: product.price ? parseFloat(product.price.toString()) : (0 as Core.Money),
+      price: product.price ? product.price.toNumber() : 0,
       categories: product.categories?.map(cat => cat.name) || [],
       tags: product.tags?.map(tag => tag.name) || [],
       stock_status: product.stock_status,

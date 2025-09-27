@@ -167,7 +167,7 @@ async function handleBlogPostSync(postId: string) {
       excerpt: blogPost.excerpt || '',
       body: blogPost.body || [],
       publishedAt: blogPost.publishedAt,
-      categories: blogPost.categories?.map((cat: any) => cat.title) || [],
+      categories: blogPost.categories?.map((cat: { title: string }) => cat.title) || [],
       relatedProducts: [], // Will be populated later via AI analysis
     }
 
@@ -266,14 +266,26 @@ async function deleteBlogPostFromSemanticDb(postId: string) {
 }
 
 // Helper function to extract plain text from Sanity's rich text blocks
-function extractTextFromBlocks(blocks: any[]): string {
+interface SanityBlockChild {
+  _type?: string;
+  text?: string;
+  [key: string]: unknown;
+}
+
+interface SanityBlock {
+  _type: string;
+  children?: SanityBlockChild[];
+  [key: string]: unknown;
+}
+
+function extractTextFromBlocks(blocks: SanityBlock[]): string {
   if (!blocks) return ''
 
   return blocks
     .filter(block => block._type === 'block')
     .map(block => {
       return block.children
-        ?.map((child: any) => child.text)
+        ?.map((child: SanityBlockChild) => child.text || '')
         .join('') || ''
     })
     .join('\n\n')

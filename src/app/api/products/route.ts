@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllProducts } from '@/lib/woocommerce';
+import { getAllProductsForClient } from '@/lib/woocommerce';
 import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
@@ -26,22 +26,45 @@ export async function GET(request: NextRequest) {
 
     logger.info('📦 Products API called', { params: cleanParams });
 
-    const products = await getAllProducts(cleanParams);
+    const products = await getAllProductsForClient(cleanParams);
 
-    // Log first product to see the data structure
+    // Debug logging to verify serialization
+    console.log('API /api/products - getAllProductsForClient result:', {
+      productsLength: products?.length || 0,
+      firstProductType: products?.[0] ? typeof products[0] : 'undefined'
+    });
+
     if (products && products.length > 0) {
-      console.log('First product data:', {
-        id: products[0].id,
-        name: products[0].name,
-        price: products[0].price,
-        regular_price: products[0].regular_price,
-        sale_price: products[0].sale_price,
-        price_type: typeof products[0].price,
-        price_value: products[0].price,
-        is_empty_string: products[0].price === '',
-        is_null: products[0].price === null,
-        is_undefined: products[0].price === undefined
-      });
+      const firstProduct = products[0];
+      if (firstProduct) {
+        console.log('API /api/products - first product details:', {
+          id: firstProduct.id,
+          name: firstProduct.name,
+          price: firstProduct.price,
+          price_type: typeof firstProduct.price,
+          regular_price: firstProduct.regular_price,
+          regular_price_type: typeof firstProduct.regular_price,
+          has_centavos: firstProduct.price && typeof firstProduct.price === 'object' && 'centavos' in firstProduct.price,
+          has_meta_data: 'meta_data' in firstProduct,
+          has_links: '_links' in firstProduct
+        });
+      }
+    }
+
+    // Log first product to see the data structure (now SerializedWCProduct)
+    if (products && products.length > 0) {
+      const firstProduct = products[0];
+      if (firstProduct) {
+        logger.debug('First serialized product data:', {
+          id: firstProduct.id,
+          name: firstProduct.name,
+          price: firstProduct.price,
+          regular_price: firstProduct.regular_price,
+          sale_price: firstProduct.sale_price,
+          price_type: typeof firstProduct.price,
+          price_value: firstProduct.price
+        });
+      }
     }
 
     // Ensure we're returning a valid JSON response

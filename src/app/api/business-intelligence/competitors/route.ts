@@ -6,6 +6,7 @@ import type {
   Competitor
 } from '@/lib/business-intelligence/types/competitor';
 import { CompetitorStatus } from '@/lib/business-intelligence/types/competitor';
+import { competitorDB } from '@/lib/business-intelligence/competitor-database';
 
 // GET /api/business-intelligence/competitors - List all competitors
 export async function GET(request: NextRequest) {
@@ -13,20 +14,31 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
-    const category = searchParams.get('category');
-    const status = searchParams.get('status');
+    const category = searchParams.get('category') || undefined;
+    const status = searchParams.get('status') || undefined;
+    const search = searchParams.get('search') || undefined;
 
-    logger.debug('Fetching competitors', { page, limit, category, status });
+    logger.debug('Fetching competitors', { page, limit, category, status, search });
 
-    // TODO: Implement actual database query
-    const mockCompetitors: Competitor[] = [];
+    // If there's a search query, use search function
+    if (search) {
+      const competitors = await competitorDB.searchCompetitors(search);
+      return NextResponse.json({
+        competitors,
+        total: competitors.length,
+        page: 1,
+        limit: competitors.length
+      });
+    }
 
-    const response: CompetitorListResponse = {
-      competitors: mockCompetitors,
-      total: 0,
-      page,
+    // Otherwise use filters
+    const offset = (page - 1) * limit;
+    const response = await competitorDB.getAllCompetitors({
+      category,
+      status,
       limit,
-    };
+      offset
+    });
 
     return NextResponse.json(response);
   } catch (error) {
@@ -53,25 +65,13 @@ export async function POST(request: NextRequest) {
 
     logger.debug('Creating new competitor', { name: body.name, domain: body.domain });
 
-    // TODO: Implement actual competitor creation
-    const competitorId = `comp_${Date.now()}`;
+    // Create competitor in database
+    const newCompetitor = await competitorDB.createCompetitor(body);
 
-    const newCompetitor: Competitor = {
-      id: competitorId,
-      name: body.name,
-      domain: body.domain,
-      industry: body.industry,
-      size: body.size,
-      founded: body.founded,
-      category: body.category,
-      monitoringScope: body.monitoringScope,
-      monitoringFrequency: body.monitoringFrequency,
-      status: CompetitorStatus.ACTIVE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    logger.info('Competitor created successfully', { competitorId, name: body.name });
+    logger.info('Competitor created successfully', {
+      competitorId: newCompetitor.id,
+      name: body.name
+    });
 
     return NextResponse.json(newCompetitor, { status: 201 });
   } catch (error) {

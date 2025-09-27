@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { logger } from '@/lib/logger';
 
 import { getProductsByCategory } from '@/lib/woocommerce';
+import { serializeProducts } from '@/lib/product-serializer';
 import ProductCard from '@/components/ProductCard';
 import { GraphRecommendations } from '@/components/GraphRecommendations';
 
@@ -13,9 +14,10 @@ interface RelatedProductsProps {
 async function WooCommerceRelatedProducts({ categoryId, currentProductId }: RelatedProductsProps) {
   try {
     const relatedProducts = await getProductsByCategory(categoryId, 8);
-    
-    // Filter out the current product
-    const filteredProducts = relatedProducts.filter(product => product.id !== currentProductId);
+
+    // Serialize and filter out the current product
+    const serializedProducts = serializeProducts(relatedProducts);
+    const filteredProducts = serializedProducts.filter(product => product.id !== currentProductId);
 
     if (filteredProducts.length === 0) {
       return null;

@@ -325,6 +325,8 @@ export function withCriticalRetry<T>(
 }
 
 // HTTP-specific retry with status code awareness
+// Function overloads for TypeScript type safety
+/* eslint-disable no-redeclare */
 export async function withHttpRetry<T>(
   httpOperation: () => Promise<Response>,
   dataExtractor: (response: Response) => Promise<T>,
@@ -340,6 +342,7 @@ export async function withHttpRetry<T>(
   dataExtractor?: (response: Response) => Promise<T>,
   operationKey?: string
 ): Promise<T | Response> {
+/* eslint-enable no-redeclare */
   const config: RetryConfig = {
     ...DEFAULT_RETRY_CONFIGS.external_api,
     retryableErrors: (error: unknown) => {

@@ -1,6 +1,21 @@
 // Auto Tracking Hooks Tests
 import { renderHook, act } from '@testing-library/react';
-import { Core } from '@/types/TYPE_REGISTRY';
+// Mock Money class for tests
+class Money {
+  constructor(private centavos: number) {}
+
+  static pesos(amount: number): Money {
+    return new Money(Math.round(amount * 100));
+  }
+
+  toPesos(): number {
+    return this.centavos / 100;
+  }
+
+  toCentavos(): number {
+    return this.centavos;
+  }
+}
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
@@ -122,7 +137,7 @@ describe('Auto Tracking Hooks', () => {
       const productData = {
         id: 123,
         name: 'Test Product',
-        price: 25.99 as Core.Money,
+        price: 25.99,
         category: 'grains',
         quantity: 2
       };
@@ -153,7 +168,7 @@ describe('Auto Tracking Hooks', () => {
       const productData = {
         id: 456,
         name: 'Another Product',
-        price: 15.50 as Core.Money,
+        price: 15.50,
         category: 'spices'
       };
 
@@ -178,7 +193,7 @@ describe('Auto Tracking Hooks', () => {
       const productData = {
         id: 789,
         name: 'Removed Product',
-        price: 30.00 as Core.Money,
+        price: 30.00,
         category: 'oils'
       };
 
@@ -200,7 +215,7 @@ describe('Auto Tracking Hooks', () => {
       const productData = {
         id: 101,
         name: 'Purchased Product',
-        price: 45.00 as Core.Money,
+        price: 45.00,
         category: 'tea'
       };
 
@@ -388,7 +403,7 @@ describe('Auto Tracking Hooks', () => {
         await result.current.trackProduct('view', {
           id: 999,
           name: 'Test',
-          price: 10 as Core.Money,
+          price: 10,
           category: 'test'
         });
       });
@@ -408,7 +423,7 @@ describe('Auto Tracking Hooks', () => {
         await result.current.trackProduct('view', {
           id: 1,
           name: 'Test',
-          price: 10 as Core.Money,
+          price: 10,
           category: 'test'
         });
       });
@@ -429,7 +444,7 @@ describe('Auto Tracking Hooks', () => {
         await result.current.trackProduct('view', {
           id: 1,
           name: 'Test',
-          price: 10 as Core.Money,
+          price: 10,
           category: 'test'
         });
       });
@@ -451,7 +466,7 @@ describe('Auto Tracking Hooks', () => {
         await result.current.trackProduct('view', {
           id: 1,
           name: 'Test',
-          price: 10 as Core.Money,
+          price: 10,
           category: 'test'
         });
       });
@@ -479,7 +494,7 @@ describe('Auto Tracking Hooks', () => {
         await result.current.trackProduct('view', {
           id: 1,
           name: 'Test',
-          price: 10 as Core.Money,
+          price: 10,
           category: 'test'
         });
       });

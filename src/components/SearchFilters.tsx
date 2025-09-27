@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { WCProduct } from '@/types/woocommerce';
+import { SerializedWCProduct } from '@/lib/product-serializer';
 import { cn } from '@/lib/utils';
 import Button from '@/components/Button';
+import { Money } from '@/lib/money';
 
 export interface SearchFilters {
   category?: string | string[];
-  minPrice?: number;
-  maxPrice?: number;
+  minPrice?: Money;
+  maxPrice?: Money;
   sortBy?: 'name' | 'price_low' | 'price_high' | 'newest' | 'popularity';
   inStock?: boolean;
   featured?: boolean;
@@ -18,7 +20,7 @@ export interface SearchFilters {
 }
 
 interface SearchFiltersProps {
-  products: WCProduct[];
+  products: WCProduct[] | SerializedWCProduct[];
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
   className?: string;
@@ -76,12 +78,12 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['sort', 'price']));
   const [priceRange, setPriceRange] = useState({
-    min: filters.minPrice?.toString() ?? '',
-    max: filters.maxPrice?.toString() ?? ''
+    min: filters.minPrice?.toNumber().toString() ?? '',
+    max: filters.maxPrice?.toNumber().toString() ?? ''
   });
   const [tempPriceRange, setTempPriceRange] = useState({
-    min: filters.minPrice?.toString() ?? '',
-    max: filters.maxPrice?.toString() ?? ''
+    min: filters.minPrice?.toNumber().toString() ?? '',
+    max: filters.maxPrice?.toNumber().toString() ?? ''
   });
 
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -98,7 +100,20 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
   }, [products]);
 
   const { prices, minProductPrice, maxProductPrice } = useMemo(() => {
-    const prices = products.map(p => (p.price || 0)).filter(p => !isNaN(p));
+    const moneyPrices = products.map(p => {
+      try {
+        // Handle SerializedWCProduct price (number | null)
+        if (typeof p.price === 'number') {
+          return Money.pesos(p.price);
+        }
+        // Handle WCProduct price (Money)
+        return p.price || Money.ZERO;
+      } catch {
+        return Money.ZERO;
+      }
+    }).filter(price => price && price.isPositive);
+
+    const prices = moneyPrices.map(p => p.toNumber());
     return {
       prices,
       minProductPrice: prices.length > 0 ? Math.min(...prices) : 0,
@@ -136,13 +151,21 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
         }
 
         if (testFilters.minPrice !== undefined) {
-          const price = (product.price || 0);
-          if (isNaN(price) || price < testFilters.minPrice) return false;
+          try {
+            const productPrice = typeof product.price === 'number' ? Money.pesos(product.price) : (product.price || Money.ZERO);
+            if (productPrice.lessThan(testFilters.minPrice)) return false;
+          } catch {
+            return false;
+          }
         }
 
         if (testFilters.maxPrice !== undefined) {
-          const price = (product.price || 0);
-          if (isNaN(price) || price > testFilters.maxPrice) return false;
+          try {
+            const productPrice = typeof product.price === 'number' ? Money.pesos(product.price) : (product.price || Money.ZERO);
+            if (productPrice.greaterThan(testFilters.maxPrice)) return false;
+          } catch {
+            return false;
+          }
         }
 
         if (testFilters.inStock && product.stock_status !== 'instock') return false;
@@ -163,10 +186,17 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      const minPrice = min ? parseFloat(min) : undefined;
-      const maxPrice = max ? parseFloat(max) : undefined;
+      const minPrice = min ? Money.pesos(parseFloat(min)) : undefined;
+      const maxPrice = max ? Money.pesos(parseFloat(max)) : undefined;
 
-      if (minPrice !== filters.minPrice || maxPrice !== filters.maxPrice) {
+      const minChanged = !minPrice && !filters.minPrice ? false :
+                        !minPrice || !filters.minPrice ? true :
+                        !minPrice.equals(filters.minPrice);
+      const maxChanged = !maxPrice && !filters.maxPrice ? false :
+                        !maxPrice || !filters.maxPrice ? true :
+                        !maxPrice.equals(filters.maxPrice);
+
+      if (minChanged || maxChanged) {
         onFiltersChange({
           ...filters,
           minPrice,
@@ -179,8 +209,8 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
   // Update price range when filters change
   useEffect(() => {
     const newPriceRange = {
-      min: filters.minPrice?.toString() ?? '',
-      max: filters.maxPrice?.toString() ?? ''
+      min: filters.minPrice?.toNumber().toString() ?? '',
+      max: filters.maxPrice?.toNumber().toString() ?? ''
     };
     setPriceRange(newPriceRange);
     setTempPriceRange(newPriceRange);
@@ -195,7 +225,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
     };
   }, []);
 
-  const handleFilterChange = useCallback((key: keyof SearchFilters, value: string | number | boolean | string[] | undefined) => {
+  const handleFilterChange = useCallback((key: keyof SearchFilters, value: string | number | boolean | string[] | Money | undefined) => {
     onFiltersChange({
       ...filters,
       [key]: value
@@ -224,8 +254,8 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
   }, [filters.category, handleFilterChange]);
 
   const handlePriceRangeSubmit = useCallback(() => {
-    const minPrice = priceRange.min ? parseFloat(priceRange.min) : undefined;
-    const maxPrice = priceRange.max ? parseFloat(priceRange.max) : undefined;
+    const minPrice = priceRange.min ? Money.pesos(parseFloat(priceRange.min)) : undefined;
+    const maxPrice = priceRange.max ? Money.pesos(parseFloat(priceRange.max)) : undefined;
 
     onFiltersChange({
       ...filters,
@@ -487,10 +517,10 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                   <div className="flex flex-wrap gap-2">
                     {[
                       { value: 'all', label: 'All Prices', minPrice: undefined, maxPrice: undefined },
-                      { value: 'under-100', label: 'Under ₱100', minPrice: undefined, maxPrice: 100 },
-                      { value: '100-300', label: '₱100 - ₱300', minPrice: 100, maxPrice: 300 },
-                      { value: '300-500', label: '₱300 - ₱500', minPrice: 300, maxPrice: 500 },
-                      { value: 'over-500', label: 'Over ₱500', minPrice: 500, maxPrice: undefined }
+                      { value: 'under-100', label: 'Under ₱100', minPrice: undefined, maxPrice: Money.pesos(100) },
+                      { value: '100-300', label: '₱100 - ₱300', minPrice: Money.pesos(100), maxPrice: Money.pesos(300) },
+                      { value: '300-500', label: '₱300 - ₱500', minPrice: Money.pesos(300), maxPrice: Money.pesos(500) },
+                      { value: 'over-500', label: 'Over ₱500', minPrice: Money.pesos(500), maxPrice: undefined }
                     ].map(range => {
                       const testFilters = { ...filters, minPrice: range.minPrice, maxPrice: range.maxPrice };
                       const previewCount = filterPreviews.getFilteredCount(testFilters);
@@ -505,10 +535,10 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                           className={cn(
                             'px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center space-x-2 border',
                             (range.value === 'all' && !filters.minPrice && !filters.maxPrice) ||
-                            (range.value === 'under-100' && !filters.minPrice && filters.maxPrice === 100) ||
-                            (range.value === '100-300' && filters.minPrice === 100 && filters.maxPrice === 300) ||
-                            (range.value === '300-500' && filters.minPrice === 300 && filters.maxPrice === 500) ||
-                            (range.value === 'over-500' && filters.minPrice === 500 && !filters.maxPrice)
+                            (range.value === 'under-100' && !filters.minPrice && filters.maxPrice?.equals(Money.pesos(100))) ||
+                            (range.value === '100-300' && filters.minPrice?.equals(Money.pesos(100)) && filters.maxPrice?.equals(Money.pesos(300))) ||
+                            (range.value === '300-500' && filters.minPrice?.equals(Money.pesos(300)) && filters.maxPrice?.equals(Money.pesos(500))) ||
+                            (range.value === 'over-500' && filters.minPrice?.equals(Money.pesos(500)) && !filters.maxPrice)
                               ? 'bg-gradient-to-r from-green-600 to-green-700 text-white border-green-700 shadow-md hover:shadow-lg transform hover:scale-105'
                               : 'bg-white text-neutral-700 hover:bg-green-50 border-green-200 hover:border-green-300'
                           )}
@@ -517,10 +547,10 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
                           <span className={cn(
                             'text-xs px-1.5 py-0.5 rounded-full',
                             (range.value === 'all' && !filters.minPrice && !filters.maxPrice) ||
-                            (range.value === 'under-100' && !filters.minPrice && filters.maxPrice === 100) ||
-                            (range.value === '100-300' && filters.minPrice === 100 && filters.maxPrice === 300) ||
-                            (range.value === '300-500' && filters.minPrice === 300 && filters.maxPrice === 500) ||
-                            (range.value === 'over-500' && filters.minPrice === 500 && !filters.maxPrice)
+                            (range.value === 'under-100' && !filters.minPrice && filters.maxPrice?.equals(Money.pesos(100))) ||
+                            (range.value === '100-300' && filters.minPrice?.equals(Money.pesos(100)) && filters.maxPrice?.equals(Money.pesos(300))) ||
+                            (range.value === '300-500' && filters.minPrice?.equals(Money.pesos(300)) && filters.maxPrice?.equals(Money.pesos(500))) ||
+                            (range.value === 'over-500' && filters.minPrice?.equals(Money.pesos(500)) && !filters.maxPrice)
                               ? 'bg-white/20 text-white'
                               : 'bg-neutral-200 text-neutral-600'
                           )}>
@@ -743,7 +773,7 @@ const SearchFiltersComponent = React.memo(function SearchFiltersComponent({
             
             {(filters.minPrice ?? filters.maxPrice) && (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                ₱{filters.minPrice ?? 0} - ₱{filters.maxPrice ?? '∞'}
+                ₱{filters.minPrice?.toNumber() ?? 0} - ₱{filters.maxPrice?.toNumber() ?? '∞'}
                 <button
                   onClick={() => {
                     handleFilterChange('minPrice', undefined);
@@ -852,7 +882,7 @@ const HEALTH_KEYWORDS = {
 const healthBenefitsCache = new Map<string, string[]>();
 
 // Helper function to extract health benefits from product data with caching
-function extractHealthBenefits(product: WCProduct): string[] {
+function extractHealthBenefits(product: WCProduct | SerializedWCProduct): string[] {
   // Create a cache key from product id and modification date for cache invalidation
   const cacheKey = `${product.id}-${product.date_modified || 'no-date'}`;
 
@@ -886,7 +916,7 @@ function extractHealthBenefits(product: WCProduct): string[] {
 }
 
 // Helper function to check if product is organic
-function isOrganic(product: WCProduct): boolean {
+function isOrganic(product: WCProduct | SerializedWCProduct): boolean {
   const text = `${product.name} ${product.description ?? ''} ${product.short_description ?? ''}`.toLowerCase();
   const organicKeywords = ['organic', 'naturally grown', 'pesticide-free', 'chemical-free', 'bio', 'natural'];
   return organicKeywords.some(keyword => text.includes(keyword));

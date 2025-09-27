@@ -1,8 +1,8 @@
 'use client';
 
-import { Core } from '@/types/TYPE_REGISTRY';
 import { useState } from 'react';
 import { logger } from '@/lib/logger';
+import { Money } from '@/lib/money';
 
 import Link from 'next/link';
 
@@ -10,7 +10,7 @@ interface SearchResult {
   productId: number;
   slug: string;
   title: string;
-  price: Core.Money;
+  price: Money;
   categories: string[];
   inStock: boolean;
   featured: boolean;
@@ -126,7 +126,7 @@ export default function TestSearchPage() {
                   
                   <div className="flex items-center gap-4 mb-3">
                     <span className="text-2xl font-bold text-primary-600">
-                      ₱{result.price}
+                      {result.price.format()}
                     </span>
                     <div className="flex items-center gap-2">
                       {result.inStock ? (

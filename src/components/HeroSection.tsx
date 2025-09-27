@@ -1,7 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 import Button from '@/components/Button';
 import ScrollButton from '@/components/ScrollButton';
 import ClientOnly from '@/components/ClientOnly';
+import { useRef, useEffect } from 'react';
 
 interface HeroSectionProps {
   title: string;
@@ -12,6 +15,10 @@ interface HeroSectionProps {
   secondaryButtonText?: string;
   secondaryButtonHref?: string;
   showButtons?: boolean;
+  videoSrc?: string;
+  pauseAtEnd?: boolean;
+  pauseDuration?: number;
+  playbackSpeed?: number;
 }
 
 export default function HeroSection({
@@ -22,19 +29,55 @@ export default function HeroSection({
   primaryButtonHref = "#latest-products",
   secondaryButtonText = "Learn Our Story",
   secondaryButtonHref = "/about",
-  showButtons = true
+  showButtons = true,
+  videoSrc = "/videos/hero-vid.mp4",
+  pauseAtEnd = false,
+  pauseDuration = 5000,
+  playbackSpeed = 1.0
 }: HeroSectionProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+
+    const video = videoRef.current;
+
+    // Set playback speed
+    video.playbackRate = playbackSpeed;
+
+    // Handle pause at end functionality
+    const handleVideoEnd = () => {
+      if (pauseAtEnd) {
+        video.pause();
+        setTimeout(() => {
+          video.currentTime = 0;
+          video.play();
+        }, pauseDuration);
+      }
+    };
+
+    if (pauseAtEnd) {
+      video.addEventListener('ended', handleVideoEnd);
+    }
+
+    return () => {
+      if (pauseAtEnd) {
+        video.removeEventListener('ended', handleVideoEnd);
+      }
+    };
+  }, [pauseAtEnd, pauseDuration, playbackSpeed]);
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
       {/* Animated background video with slow zoom */}
       <video
+        ref={videoRef}
         autoPlay
         muted
-        loop
+        loop={!pauseAtEnd}
         playsInline
         className="absolute inset-0 w-full h-full object-cover object-center animate-slow-zoom"
       >
-        <source src="/videos/hero-vid.mp4" type="video/mp4" />
+        <source src={videoSrc} type="video/mp4" />
         {/* Fallback image if video doesn't load */}
         Your browser does not support the video tag.
       </video>

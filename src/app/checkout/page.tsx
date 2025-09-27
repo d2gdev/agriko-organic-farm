@@ -10,7 +10,6 @@ import { useCart } from '@/context/CartContext';
 import { formatPrice, getProductMainImage } from '@/lib/utils';
 import { Money } from '@/lib/money';
 import { CheckoutData, WCAddress } from '@/types/woocommerce';
-import { Core } from '@/types/TYPE_REGISTRY';
 import HeroSection from '@/components/HeroSection';
 import { PlantGrowingLoader } from '@/components/OrganicLoadingStates';
 import SafeLocalStorage from '@/lib/safe-localstorage';
@@ -658,7 +657,7 @@ export default function CheckoutPage() {
                           {item.product.name}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          Qty: {item.quantity} × {formatPrice((item.product.price || 0) as Core.Money)}
+                          Qty: {item.quantity} × {formatPrice(item.product.price || Money.ZERO)}
                         </p>
                         <p className="text-sm font-medium text-gray-900">
                           {formatPrice(itemTotal)}

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Core } from '@/types/TYPE_REGISTRY';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { Money } from '@/lib/money';
+import { render } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/dom';
 import '@testing-library/jest-dom';
 import ProductCard from '../ProductCard';
 import { WCProduct } from '@/types/woocommerce';
@@ -61,9 +62,9 @@ const mockProduct: WCProduct = {
   id: 1,
   name: 'Test Organic Product',
   slug: 'test-organic-product',
-  price: 9999 as Core.Money,
-  regular_price: 12999 as Core.Money,
-  sale_price: 9999 as Core.Money,
+  price: Money.centavos(9999),
+  regular_price: Money.centavos(12999),
+  sale_price: Money.centavos(9999),
   on_sale: true,
   stock_status: 'instock',
   manage_stock: false,
@@ -136,7 +137,7 @@ describe('ProductCard', () => {
   });
 
   it('should not show sale badge when product is not on sale', () => {
-    const regularProduct = { ...mockProduct, on_sale: false, sale_price: undefined };
+    const regularProduct = { ...mockProduct, on_sale: false, sale_price: null };
     render(<ProductCard product={regularProduct} />);
 
     expect(screen.queryByText(/-\d+%/)).not.toBeInTheDocument();
@@ -203,11 +204,12 @@ describe('ProductCard', () => {
     expect(screen.getByText('Test product with HTML')).toBeInTheDocument();
   });
 
-  it('should handle missing or invalid prices', () => {
-    const productWithInvalidPrice = { ...mockProduct, price: undefined, regular_price: undefined };
-    render(<ProductCard product={productWithInvalidPrice} />);
+  it('should handle zero prices', () => {
+    const productWithZeroPrice = { ...mockProduct, price: Money.ZERO, regular_price: Money.ZERO, sale_price: null };
+    render(<ProductCard product={productWithZeroPrice} />);
 
-    expect(screen.getByText('N/A')).toBeInTheDocument();
+    // Product should still display but with zero price
+    expect(screen.getByText(/₱0\.00/)).toBeInTheDocument();
   });
 
   it('should link to correct product page', () => {

@@ -11,7 +11,7 @@ interface ProductAnalyticsProps {
 export default function ProductAnalytics({ product }: ProductAnalyticsProps) {
   useEffect(() => {
     // Track view_item event when product page loads
-    const price = (product.price || 0) || 0;
+    const price = product.price?.toNumber() || 0;
     const category = product.categories?.[0]?.name || 'Uncategorized';
     
     ecommerceEvent.viewItem(

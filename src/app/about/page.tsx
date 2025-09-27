@@ -156,7 +156,7 @@ export default function AboutPage() {
       "@type": "Country",
       "name": "Philippines"
     },
-    "award": "Certified Organic Producer",
+    "award": "100% Organic Producer",
     "slogan": "From Our Farm, To Your Cup - Agree ka? Agriko!",
     "mission": "To provide premium organic agricultural products while empowering local farmers and promoting sustainable practices for a healthier community."
   };
@@ -759,7 +759,7 @@ export default function AboutPage() {
                         <svg className="w-4 h-4 text-green-600 mr-1.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
-                        Certified Organic
+                        100% Organic
                       </span>
                       <span className="text-gray-500" aria-hidden="true">•</span>
                       <span className="inline-flex items-center text-sm font-medium text-yellow-700 bg-white px-3 py-1 rounded-full shadow-sm" role="listitem">

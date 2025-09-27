@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { WCProduct } from '@/types/woocommerce';
+import { SerializedWCProduct, deserializeProduct } from '@/lib/product-serializer';
 import SearchFiltersComponent, { SearchFilters } from '@/components/SearchFilters';
 import ProductCard from '@/components/ProductCard';
 import Button from '@/components/Button';
+import { Money } from '@/lib/money';
 
 interface ProductsWithFiltersProps {
-  products: WCProduct[];
+  products: SerializedWCProduct[];
   searchParams?: Record<string, string | undefined>;
   totalProducts?: number;
   totalPages?: number;
@@ -35,8 +37,8 @@ export default function ProductsWithFilters({
   // Initialize filters from URL params (server-side params take precedence)
   const initialFilters: SearchFilters = {
     category: searchParams.category ?? undefined,
-    minPrice: searchParams.minPrice ? parseFloat(searchParams.minPrice) : undefined,
-    maxPrice: searchParams.maxPrice ? parseFloat(searchParams.maxPrice) : undefined,
+    minPrice: searchParams.minPrice ? Money.pesos(parseFloat(searchParams.minPrice)) : undefined,
+    maxPrice: searchParams.maxPrice ? Money.pesos(parseFloat(searchParams.maxPrice)) : undefined,
     sortBy: (searchParams.sortBy as SearchFilters['sortBy']) ?? undefined,
     inStock: searchParams.inStock === 'true' ? true : undefined
   };
